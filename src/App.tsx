@@ -353,7 +353,7 @@ export default function App() {
         )}
 
         {/* Main content */}
-        <div className="app-content">
+        <div className={`app-content${activeView === 'notes' ? ' app-content--canvas' : ''}`}>
           {activeView === 'chat' ? (
             <ChatView links={links} />
           ) : activeView === 'notes' ? (

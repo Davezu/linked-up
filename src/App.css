@@ -1,11 +1,9 @@
-﻿@reference "tailwindcss";
+@reference "tailwindcss";
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   LINK ORGANIZER - TAILWIND CSS V4 INTEGRATION SYSTEM
+/* LINK ORGANIZER - TAILWIND CSS V4 INTEGRATION SYSTEM
    
    1. TRANSFERABLE COMPONENTS: Component classes using Tailwind & @apply
-   2. UNTOUCHED COMPLEX CSS: 3D Fan stack math, animations, pseudo-glows
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+   2. UNTOUCHED COMPLEX CSS: 3D Fan stack math, animations, pseudo-glows */
 
 /* Layout & Structure */
 .app-layout {
@@ -70,7 +68,7 @@
   gap: var(--space-6);
   background: linear-gradient(180deg, var(--bg-sidebar) 0%, var(--color-bg) 100%);
   transition: background 0.35s ease;
-  /* Top accent line â€” signature amberâ†’violet gradient edge */
+  /* Top accent line  signature amberâ†’violet gradient edge */
   background-image: linear-gradient(180deg, var(--bg-sidebar) 0%, var(--color-bg) 100%);
 }
 
@@ -172,7 +170,7 @@
   gap: var(--space-3);
   padding-bottom: var(--space-4);
   position: relative;
-  /* Gradient separator instead of flat border â€” fades at edges */
+  /* Gradient separator instead of flat border fades at edges */
   border-bottom: none;
 }
 
@@ -455,7 +453,7 @@
   /* Let the fan wrapper handle hover transforms */
 }
 
-/* Center â€” active card */
+/* Center active card */
 .link-fan-card--center {
   transform: translateX(0) translateY(0) rotate(0deg);
   opacity: 1;
@@ -478,7 +476,7 @@
   transform: translateX(0) translateY(-4px) rotate(0deg) !important;
 }
 
-/* Right card â€” rotated right, peeking */
+/* Right card  rotated right, peeking */
 .link-fan-card--right {
   transform: translateX(var(--fan-spread)) translateY(4px) rotate(6deg);
   opacity: 0.6;
@@ -488,7 +486,7 @@
   border-radius: var(--radius-lg);
 }
 
-/* Left card â€” rotated left, peeking */
+/* Left card rotated left, peeking */
 .link-fan-card--left {
   transform: translateX(calc(var(--fan-spread) * -1)) translateY(4px) rotate(-6deg);
   opacity: 0.6;
@@ -604,7 +602,7 @@
 
 /* Category Headers
    Left-accent bar encodes: these are filing categories.
-   The gradient line is the one signature visual element across the grid â€”
+   The gradient line is the one signature visual element across the grid 
    quiet, structural, specific to this brief. */
 .category-header {
   position: relative;
@@ -749,9 +747,7 @@
   animation: slideUpFade 0.5s var(--ease-out) forwards;
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   Processing / Skeleton Card State
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* Processing / Skeleton Card State */
 @keyframes shimmer {
   0% {
     background-position: -200% 0;
@@ -997,7 +993,7 @@
   /* keep action row pinned at the bottom of a stretched card */
 }
 
-/* Status buttons â€” visible in both themes with proper contrast */
+/* Status buttons visible in both themes with proper contrast */
 .status-btn {
   flex: 1;
   padding: 8px 8px;
@@ -1983,9 +1979,7 @@
   margin: 0;
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   Theme Toggle
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* Theme Toggle*/
 .theme-toggle {
   display: flex;
   align-items: center;
@@ -2076,10 +2070,9 @@
   background: linear-gradient(180deg, var(--color-bg) 70%, transparent 100%);
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/*
    Desktop Web View Sizing Enhancements
-   (Mobile view sizes are preserved untouched)
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+   (Mobile view sizes are preserved untouched)*/
 @media (min-width: 769px) {
 
   /* Logo & Header Title */
@@ -2169,27 +2162,32 @@
 
 /* Post-it note palette */
 :root {
-  --postit-yellow: #fef3c7;
-  --postit-pink: #fce7f3;
-  --postit-blue: #dbeafe;
-  --postit-green: #d1fae5;
-  --postit-orange: #ffedd5;
+  --postit-yellow: #FFF176;
+  --postit-pink: #FF80AB;
+  --postit-blue: #80D8FF;
+  --postit-green: #CCFF90;
+  --postit-orange: #FFAB40;
+  /* Excalidraw dark-mode canvas */
+  --canvas-bg: #121212;
+  --canvas-dot: rgba(255, 255, 255, 0.08);
 }
 
 [data-theme="dark"] {
-  --postit-yellow: #78350f;
-  --postit-pink: #831843;
-  --postit-blue: #1e3a5f;
-  --postit-green: #064e3b;
-  --postit-orange: #7c2d12;
-  --canvas-bg: #0c0f1a;
-  --canvas-dot: rgba(255, 255, 255, 0.04);
+  --postit-yellow: #FFF176;
+  --postit-pink: #FF80AB;
+  --postit-blue: #80D8FF;
+  --postit-green: #CCFF90;
+  --postit-orange: #FFAB40;
+  --canvas-bg: #121212;
+  --canvas-dot: rgba(255, 255, 255, 0.08);
 }
 
 [data-theme="light"] {
-  --canvas-bg: #f1f5f9;
-  --canvas-dot: rgba(0, 0, 0, 0.05);
+  --canvas-bg: #ffffff;
+  --canvas-dot: rgba(0, 0, 0, 0.08);
 }
+
+
 
 /* App Shell Layout */
 .app-shell {
@@ -2220,6 +2218,13 @@
   min-height: 0;
   overflow-y: auto;
   position: relative;
+}
+
+/* When notes canvas is active — kill all spacing & scrollbars */
+.app-content--canvas {
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
 /* Top Navigation Bar */
@@ -2451,179 +2456,218 @@
   color: var(--text-muted);
 }
 
-/* 
-   FREE-FORM CANVAS BOARD â€” Excalidraw-style open space for note*/
 
-.canvas-board-view {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-height: 0;
-  gap: 0;
+/*  EXCALIDRAW-STYLE INFINITE CANVAS pan, zoom, no scrollbars */
+
+/* Containerfills the entire content area */
+.excalidraw-canvas-wrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
 }
 
-.canvas-board-toolbar {
+/* The pannable / zoomable canvas surface */
+.excalidraw-canvas {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  cursor: grab;
+  background-color: var(--canvas-bg);
+  /* Excalidraw-style dot grid */
+  background-image: radial-gradient(circle, var(--canvas-dot) 1.5px, transparent 1.5px);
+  background-size: 20px 20px;
+}
+
+
+.excalidraw-canvas:active {
+  cursor: grabbing;
+}
+
+/* Inner surface that gets transformed via translate + scale */
+.excalidraw-canvas-inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  overflow: visible;
+  will-change: transform;
+}
+
+/* Floating toolbar overlaid top-right*/
+.canvas-float-toolbar {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 30;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0 0 0.75rem 0;
-  flex-shrink: 0;
+  gap: 0.5rem;
 }
 
-.canvas-board-count {
-  font-size: 0.8125rem;
-  color: var(--text-muted);
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.canvas-board-search-wrap {
-  flex: 1;
-  max-width: 260px;
+.canvas-float-search-wrap {
   position: relative;
 }
 
-.canvas-board-search-icon {
+.canvas-float-search-icon {
   position: absolute;
-  left: 10px;
+  left: 9px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-muted);
   pointer-events: none;
 }
 
-.canvas-board-search {
-  width: 100%;
+.canvas-float-search {
+  width: 180px;
   height: 32px;
-  background: var(--bg-input);
+  background: var(--bg-sidebar);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: 0 0.75rem 0 2rem;
-  font-size: 0.78125rem;
+  padding: 0 0.625rem 0 1.75rem;
+  font-size: 0.75rem;
   color: var(--text-main);
+  backdrop-filter: blur(12px);
   transition: all 0.2s ease;
 }
 
-.canvas-board-search:focus {
+.canvas-float-search:focus {
   outline: none;
   border-color: var(--border-hover);
   box-shadow: 0 0 0 2px var(--focus-ring);
+  width: 240px;
 }
 
-.notes-new-btn {
+.canvas-float-new-btn {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
-  padding: 0.375rem 0.875rem;
+  gap: 0.35rem;
+  padding: 0.375rem 0.8rem;
   border-radius: var(--radius-md);
-  font-size: 0.8125rem;
+  font-size: 0.78125rem;
   font-weight: 600;
   background: var(--gradient-accent);
   color: var(--color-bg);
   border: none;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   transition: all 0.2s ease;
   white-space: nowrap;
-  margin-left: auto;
 }
 
-.notes-new-btn:hover {
+.canvas-float-new-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
 }
 
-.notes-empty-state {
+/*Floating note count top-left */
+.canvas-float-count {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 30;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: var(--bg-sidebar);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.3rem 0.65rem;
+  backdrop-filter: blur(12px);
+}
+
+/* Floating zoom controls bottom-left (like Excalidraw)*/
+.canvas-float-zoom {
+  position: absolute;
+  bottom: 0.75rem;
+  left: 0.75rem;
+  z-index: 30;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  background: var(--bg-sidebar);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.canvas-zoom-btn {
+  display: flex;
   align-items: center;
   justify-content: center;
-  flex: 1;
-  gap: 0.75rem;
-  text-align: center;
-  padding: 4rem 1rem;
+  width: 30px;
+  height: 30px;
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
 
-.notes-empty-icon {
-  font-size: 3rem;
-  opacity: 0.35;
-}
-
-.notes-empty-title {
-  font-size: 1rem;
-  font-weight: 600;
+.canvas-zoom-btn:hover {
+  background: var(--nav-bg-hover);
   color: var(--text-main);
 }
 
-.notes-empty-desc {
-  font-size: 0.8125rem;
+.canvas-zoom-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 30px;
+  background: transparent;
+  border: none;
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
   color: var(--text-dim);
-  max-width: 320px;
-  line-height: 1.55;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
 
-/* The scrollable canvas â€” infinite board feel */
-.canvas-board {
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
-  border-radius: var(--radius-lg);
-  background-color: var(--canvas-bg);
-  /* Dot grid background â€” gives the Excalidraw feel */
-  background-image: radial-gradient(circle, var(--canvas-dot) 1px, transparent 1px);
-  background-size: 24px 24px;
-  border: 1px solid var(--border);
-  position: relative;
+.canvas-zoom-label:hover {
+  background: var(--nav-bg-hover);
+  color: var(--text-main);
 }
 
-.canvas-board-inner {
-  position: relative;
-  min-width: 100%;
-  min-height: 100%;
-  /* Extend the canvas so notes have room to be placed far */
-  width: max(100%, 2400px);
-  height: max(100%, 1600px);
-}
-
-/*Individual Post-it Note Card*/
+/* Individual Post-it Note Card*/
 .postit-note {
   position: absolute;
   background-color: var(--postit-color, var(--postit-yellow));
   border: none;
-  border-radius: 2px;
+  border-radius: 3px;
   cursor: grab;
   user-select: none;
   touch-action: none;
-  transition: box-shadow 0.2s ease, transform 0.15s ease;
+  transition: box-shadow 0.2s ease, filter 0.2s ease;
   transform: rotate(var(--postit-rotation, 0deg));
   box-shadow:
-    2px 3px 8px rgba(0, 0, 0, 0.15),
-    inset 0 -2px 6px rgba(0, 0, 0, 0.06);
+    2px 4px 10px rgba(0, 0, 0, 0.18),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.05);
   z-index: 1;
 }
 
 .postit-note:hover {
   z-index: 20;
   box-shadow:
-    3px 6px 18px rgba(0, 0, 0, 0.25),
-    inset 0 -2px 6px rgba(0, 0, 0, 0.06);
-  transform: rotate(0deg) scale(1.04);
+    3px 8px 22px rgba(0, 0, 0, 0.28),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.05);
+  filter: brightness(1.05);
 }
 
 .postit-note:active {
   cursor: grabbing;
   z-index: 30;
   box-shadow:
-    4px 8px 24px rgba(0, 0, 0, 0.3),
-    inset 0 -2px 6px rgba(0, 0, 0, 0.06);
-  transform: rotate(0deg) scale(1.06);
+    5px 10px 28px rgba(0, 0, 0, 0.35),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.05);
 }
 
 .postit-note--highlight {
   z-index: 25;
-  box-shadow:
-    0 0 0 3px var(--gradient-accent),
-    3px 6px 18px rgba(0, 0, 0, 0.25);
   animation: pulseHighlight 1.5s ease-in-out 3;
 }
 
@@ -2631,22 +2675,22 @@
 
   0%,
   100% {
-    box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.6), 3px 6px 18px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.6), 3px 8px 22px rgba(0, 0, 0, 0.25);
   }
 
   50% {
-    box-shadow: 0 0 0 6px rgba(245, 166, 35, 0.3), 3px 6px 18px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 0 0 7px rgba(245, 166, 35, 0.25), 3px 8px 22px rgba(0, 0, 0, 0.25);
   }
 }
 
 /* Push-pin centered at top */
 .postit-pin {
   position: absolute;
-  top: -8px;
+  top: -18px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 10;
-  filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.3));
+  filter: drop-shadow(0px 4px 5px rgba(0, 0, 0, 0.55));
   pointer-events: none;
 }
 
@@ -2664,20 +2708,16 @@
   font-family: var(--font-display);
   font-size: 0.875rem;
   font-weight: 700;
-  color: #1a1a2e;
+  color: #0f172a;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   margin: 0;
 }
 
-[data-theme="dark"] .postit-title {
-  color: #f1f5f9;
-}
-
 .postit-preview {
   font-size: 0.75rem;
-  color: #374151;
+  color: #334155;
   line-height: 1.45;
   display: -webkit-box;
   -webkit-line-clamp: 4;
@@ -2685,10 +2725,6 @@
   overflow: hidden;
   margin: 0;
   flex: 1;
-}
-
-[data-theme="dark"] .postit-preview {
-  color: #cbd5e1;
 }
 
 .postit-tags {
@@ -2700,45 +2736,39 @@
 
 .postit-tag {
   font-size: 0.5625rem;
+  font-weight: 600;
   padding: 0.1rem 0.35rem;
   border-radius: 4px;
-  background: rgba(0, 0, 0, 0.08);
-  color: #4b5563;
-}
-
-[data-theme="dark"] .postit-tag {
-  background: rgba(255, 255, 255, 0.1);
-  color: #94a3b8;
+  background: rgba(0, 0, 0, 0.1);
+  color: #1e293b;
 }
 
 .postit-tag--more {
-  opacity: 0.6;
+  opacity: 0.75;
 }
 
 .postit-date {
   font-size: 0.625rem;
-  color: #6b7280;
+  font-weight: 600;
+  color: #475569;
   margin-top: 0.25rem;
 }
 
-[data-theme="dark"] .postit-date {
-  color: #64748b;
-}
-
-/* Folded corner effect on post-it */
+/* Folded corner effect */
 .postit-note::after {
   content: '';
   position: absolute;
   bottom: 0;
   right: 0;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   background: linear-gradient(135deg,
       transparent 50%,
       rgba(0, 0, 0, 0.06) 50%,
       rgba(0, 0, 0, 0.1) 100%);
-  border-radius: 0 0 2px 0;
+  border-radius: 0 0 3px 0;
 }
+
 
 /* Note Modal Editor Overlay  */
 .note-modal-overlay {
@@ -2771,20 +2801,45 @@
 .note-modal-toolbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   padding: 0.75rem 1.25rem;
   border-bottom: 1px solid var(--border);
-}
-
-.note-modal-autosave {
-  font-size: 0.6875rem;
-  color: var(--text-muted);
 }
 
 .note-modal-toolbar-actions {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+.note-modal-save-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: var(--accent-crimson, #F5A623);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.note-modal-save-btn:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.note-modal-save-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.note-modal-save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .note-modal-delete-btn,

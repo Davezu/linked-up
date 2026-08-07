@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
-import { Plus, Trash2, Tag, X, Search, ZoomIn, ZoomOut } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Plus, Trash2, Tag, X, Search, ZoomIn, ZoomOut, Save } from 'lucide-react'
 import type { NoteRecord } from '../types'
 import { generateId } from '../lib/helpers'
 import { createNoteApi, updateNoteApi, deleteNoteApi } from '../lib/notes-api'
@@ -56,7 +56,7 @@ export function NotesView({ notes, onNotesChange }: NotesViewProps) {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [highlightId, setHighlightId] = useState<string | null>(null)
-  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const canvasRef = useRef<HTMLDivElement>(null)
 
@@ -151,13 +151,14 @@ export function NotesView({ notes, onNotesChange }: NotesViewProps) {
     // Note dragging
     if (dragRef.current) {
       e.preventDefault()
-      const dx = (e.clientX - dragRef.current.startX) / zoom
-      const dy = (e.clientY - dragRef.current.startY) / zoom
-      const newX = dragRef.current.origX + dx
-      const newY = dragRef.current.origY + dy
+      const { noteId, startX, startY, origX, origY } = dragRef.current
+      const dx = (e.clientX - startX) / zoom
+      const dy = (e.clientY - startY) / zoom
+      const newX = origX + dx
+      const newY = origY + dy
 
       onNotesChange(prev => prev.map(n =>
-        n.id === dragRef.current!.noteId ? { ...n, x: newX, y: newY } : n
+        n.id === noteId ? { ...n, x: newX, y: newY } : n
       ))
     }
   }
@@ -169,13 +170,14 @@ export function NotesView({ notes, onNotesChange }: NotesViewProps) {
     }
 
     if (dragRef.current) {
-      const dx = Math.abs(e.clientX - dragRef.current.startX)
-      const dy = Math.abs(e.clientY - dragRef.current.startY)
+      const { noteId, startX, startY } = dragRef.current
+      dragRef.current = null
+      const dx = Math.abs(e.clientX - startX)
+      const dy = Math.abs(e.clientY - startY)
       if (dx < 5 && dy < 5) {
-        const note = notes.find(n => n.id === dragRef.current!.noteId)
+        const note = notes.find(n => n.id === noteId)
         if (note) openNote(note)
       }
-      dragRef.current = null
     }
   }
 
@@ -204,40 +206,43 @@ export function NotesView({ notes, onNotesChange }: NotesViewProps) {
     setTagInput('')
   }
 
+  // Close without saving — discard changes, remove empty new notes
   function closeEditor() {
-    if (saveTimer.current) clearTimeout(saveTimer.current)
-    if (editingId) flushSave(editingId)
+    if (editingId) {
+      const note = notes.find(n => n.id === editingId)
+      if (note?.isNew) {
+        onNotesChange(prev => prev.filter(n => n.id !== editingId))
+      }
+    }
     setEditingId(null)
+    setIsSaving(false)
   }
 
-  const scheduleSave = useCallback((id: string, content: string, title: string, tags: string[]) => {
-    if (saveTimer.current) clearTimeout(saveTimer.current)
-    saveTimer.current = setTimeout(() => doSave(id, content, title, tags), 1000)
-  }, [])
-
-  async function doSave(id: string, content: string, title: string, tags: string[]) {
+  // Explicit save — called by Save button only
+  async function handleSave() {
+    if (!editingId || isSaving) return
+    setIsSaving(true)
+    const id = editingId
     const isNew = notes.find(n => n.id === id)?.isNew
     const now = new Date().toISOString()
-    const resolvedTitle = title.trim() || deriveTitle(content)
-    const resolvedTags = tags
+    const resolvedTitle = draftTitle.trim() || deriveTitle(draftContent)
+    const resolvedTags = parseTags(draftTags)
 
     onNotesChange(prev => prev.map(n =>
-      n.id === id ? { ...n, content, title: resolvedTitle, tags: resolvedTags, updated_at: now, isNew: false } : n
+      n.id === id ? { ...n, content: draftContent, title: resolvedTitle, tags: resolvedTags, updated_at: now, isNew: false } : n
     ))
 
     if (isNew) {
-      const remote = await createNoteApi({ content, title: resolvedTitle, tags: resolvedTags })
+      const remote = await createNoteApi({ content: draftContent, title: resolvedTitle, tags: resolvedTags })
       if (remote) {
         onNotesChange(prev => prev.map(n => n.id === id ? { ...remote, x: n.x, y: n.y, isNew: false } : n))
       }
     } else {
-      await updateNoteApi(id, { content, title: resolvedTitle, tags: resolvedTags })
+      await updateNoteApi(id, { content: draftContent, title: resolvedTitle, tags: resolvedTags })
     }
-  }
 
-  function flushSave(id: string) {
-    if (saveTimer.current) clearTimeout(saveTimer.current)
-    doSave(id, draftContent, draftTitle.trim() || deriveTitle(draftContent), parseTags(draftTags))
+    setEditingId(null)
+    setIsSaving(false)
   }
 
   function parseTags(raw: string): string[] {
@@ -246,14 +251,10 @@ export function NotesView({ notes, onNotesChange }: NotesViewProps) {
 
   function handleContentChange(val: string) {
     setDraftContent(val)
-    if (!editingId) return
-    scheduleSave(editingId, val, draftTitle, parseTags(draftTags))
   }
 
   function handleTitleChange(val: string) {
     setDraftTitle(val)
-    if (!editingId) return
-    scheduleSave(editingId, draftContent, val, parseTags(draftTags))
   }
 
   function addTag(raw: string) {
@@ -264,13 +265,11 @@ export function NotesView({ notes, onNotesChange }: NotesViewProps) {
     const next = [...existing, tag].join(', ')
     setDraftTags(next)
     setTagInput('')
-    if (editingId) scheduleSave(editingId, draftContent, draftTitle, parseTags(next))
   }
 
   function removeTag(tag: string) {
     const next = parseTags(draftTags).filter(t => t !== tag).join(', ')
     setDraftTags(next)
-    if (editingId) scheduleSave(editingId, draftContent, draftTitle, parseTags(next))
   }
 
   function handleNewNote() {
@@ -394,12 +393,34 @@ export function NotesView({ notes, onNotesChange }: NotesViewProps) {
                 tabIndex={0}
                 aria-label={`Note: ${displayTitle}. Drag to move.`}
               >
-                {/* Push-pin */}
-                <div className="postit-pin" style={{ color: color.pin }}>
-                  <svg width="18" height="24" viewBox="0 0 18 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <ellipse cx="9" cy="7" rx="7" ry="7" fill="currentColor" />
-                    <ellipse cx="9" cy="7" rx="4" ry="4" fill="rgba(255,255,255,0.3)" />
-                    <rect x="8" y="12" width="2" height="12" rx="1" fill="currentColor" opacity="0.5" />
+                {/* Realistic 3D Push-pin */}
+                <div className="postit-pin">
+                  <svg width="28" height="38" viewBox="0 0 28 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    {/* Drop shadow */}
+                    <ellipse cx="14" cy="16" rx="10" ry="3" fill="rgba(0,0,0,0.25)" />
+                    {/* Pin body — dark rim */}
+                    <circle cx="14" cy="11" r="11" fill="#8B0000" />
+                    {/* Main dome fill */}
+                    <circle cx="14" cy="11" r="9.5" fill="#E8192C" />
+                    {/* Inner gradient sheen */}
+                    <circle cx="14" cy="11" r="9.5" fill="url(#pinGrad)" />
+                    {/* Specular highlight — top left */}
+                    <ellipse cx="10.5" cy="7" rx="3.5" ry="2.2" fill="rgba(255,255,255,0.55)" transform="rotate(-20 10.5 7)" />
+                    {/* Small secondary highlight */}
+                    <circle cx="17" cy="14" r="1.2" fill="rgba(255,255,255,0.18)" />
+                    {/* Needle shaft */}
+                    <rect x="13" y="20" width="2" height="17" rx="1" fill="#b0b0b0" />
+                    {/* Needle tip */}
+                    <ellipse cx="14" cy="37" rx="1" ry="0.6" fill="#888" />
+                    {/* Needle sheen */}
+                    <rect x="13.2" y="21" width="0.6" height="14" rx="0.3" fill="rgba(255,255,255,0.35)" />
+                    <defs>
+                      <radialGradient id="pinGrad" cx="38%" cy="32%" r="70%">
+                        <stop offset="0%" stopColor="rgba(255,255,255,0.25)" />
+                        <stop offset="60%" stopColor="rgba(0,0,0,0)" />
+                        <stop offset="100%" stopColor="rgba(0,0,0,0.25)" />
+                      </radialGradient>
+                    </defs>
                   </svg>
                 </div>
 
@@ -471,13 +492,22 @@ export function NotesView({ notes, onNotesChange }: NotesViewProps) {
         <div className="note-modal-overlay" onClick={closeEditor} role="dialog" aria-modal="true" aria-label="Note editor">
           <div className="note-modal" onClick={e => e.stopPropagation()}>
             <div className="note-modal-toolbar">
-              <span className="note-modal-autosave">Auto-saving…</span>
               <div className="note-modal-toolbar-actions">
                 <button className="note-modal-delete-btn" onClick={() => setDeleteTarget(editingId)} aria-label="Delete note" title="Delete note">
                   <Trash2 size={14} strokeWidth={1.75} />
                 </button>
-                <button className="note-modal-close-btn" onClick={closeEditor} aria-label="Close editor" title="Close">
+                <button className="note-modal-close-btn" onClick={closeEditor} aria-label="Discard and close" title="Discard changes">
                   <X size={16} strokeWidth={2} />
+                </button>
+                <button
+                  className={`note-modal-save-btn${isSaving ? ' note-modal-save-btn--saving' : ''}`}
+                  onClick={handleSave}
+                  disabled={isSaving}
+                  aria-label="Save note"
+                  title="Save note"
+                >
+                  <Save size={13} strokeWidth={2} />
+                  {isSaving ? 'Saving…' : 'Save'}
                 </button>
               </div>
             </div>
