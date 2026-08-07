@@ -1,14 +1,16 @@
-import { Sparkles, Library } from 'lucide-react'
+import { Sparkles, Library, NotebookPen } from 'lucide-react'
+
+type AppView = 'library' | 'notes' | 'chat'
 
 export function MobileBottomNav({
   activeView,
   onViewChange,
 }: {
-  activeView: 'library' | 'chat'
-  onViewChange: (view: 'library' | 'chat') => void
+  activeView: AppView
+  onViewChange: (view: AppView) => void
 }) {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-30 w-full grid grid-cols-2 items-stretch bg-[var(--mobile-nav-bg)] border-t border-[var(--border)] backdrop-blur-lg mobile-bottom-nav" aria-label="Main navigation">
+    <nav className="fixed bottom-0 left-0 right-0 z-30 w-full grid grid-cols-3 items-stretch bg-[var(--mobile-nav-bg)] border-t border-[var(--border)] backdrop-blur-lg mobile-bottom-nav" aria-label="Main navigation">
       <button
         type="button"
         className={`flex flex-col items-center justify-center gap-1 w-full min-h-[56px] p-2 text-xs font-medium border-none cursor-pointer transition-all nav-tab ${activeView === 'library' ? 'text-[var(--nav-icon-active)] bg-[var(--nav-bg-active)] active' : 'text-[var(--nav-icon)] hover:text-[var(--nav-icon-hover)] hover:bg-[var(--nav-bg-hover)]'}`}
@@ -19,6 +21,17 @@ export function MobileBottomNav({
           <Library size={22} strokeWidth={1.75} />
         </span>
         <span className="block leading-tight whitespace-nowrap nav-tab-label-text">Library</span>
+      </button>
+      <button
+        type="button"
+        className={`flex flex-col items-center justify-center gap-1 w-full min-h-[56px] p-2 text-xs font-medium border-none cursor-pointer transition-all nav-tab ${activeView === 'notes' ? 'text-[var(--nav-icon-active)] bg-[var(--nav-bg-active)] active' : 'text-[var(--nav-icon)] hover:text-[var(--nav-icon-hover)] hover:bg-[var(--nav-bg-hover)]'}`}
+        onClick={() => onViewChange('notes')}
+        aria-current={activeView === 'notes' ? 'page' : undefined}
+      >
+        <span className="flex items-center justify-center w-6 h-6 flex-shrink-0 nav-tab-icon" aria-hidden="true">
+          <NotebookPen size={22} strokeWidth={1.75} />
+        </span>
+        <span className="block leading-tight whitespace-nowrap nav-tab-label-text">Notes</span>
       </button>
       <button
         type="button"

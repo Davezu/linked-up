@@ -1,4 +1,5 @@
 export const STORAGE_KEY = 'link-organizer-links'
+export const NOTES_STORAGE_KEY = 'link-organizer-notes'
 export const API_UNAVAILABLE_KEY = 'link-organizer-api-unavailable'
 
 export const API_BASE = import.meta.env.VITE_API_BASE ?? ''

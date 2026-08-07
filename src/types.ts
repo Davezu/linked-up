@@ -13,9 +13,24 @@ export interface LinkRecord {
   processing?: boolean
 }
 
+export interface NoteRecord {
+  id: string
+  title: string
+  content: string
+  tags: string[]
+  created_at: string
+  updated_at: string
+  isNew?: boolean
+  /** Canvas X position (persisted in localStorage only) */
+  x?: number
+  /** Canvas Y position (persisted in localStorage only) */
+  y?: number
+}
+
 export interface ChatMessage {
   role: 'user' | 'assistant'
   content: string
   sources?: { id: string; title: string; url: string; category: string }[]
   timestamp: Date
 }
+

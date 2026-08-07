@@ -4,6 +4,7 @@ import { HttpError } from './utils/errors'
 import { ok, err, CORS } from './utils/response'
 import { handleRegister, handleLogin } from './handlers/auth'
 import { listLinks, createLink, deleteLink, updateLinkStatus } from './handlers/links'
+import { listNotes, createNote, updateNote, deleteNote } from './handlers/notes'
 
 type LambdaEvent = APIGatewayProxyEvent & {
   rawPath?: string
@@ -35,6 +36,10 @@ function endsWith(path: string, suffix: string): boolean {
   return path.replace(/\/+$/, '').endsWith(suffix)
 }
 
+/**
+ * Matches '/links' or bare stage path (e.g. '/link-organizer')
+ * supported for backwards compatibility with legacy frontend API_BASE calls.
+ */
 function isLinksListPath(path: string): boolean {
   const normalized = path.replace(/\/+$/, '')
   return normalized.endsWith('/links') || normalized.endsWith('/link-organizer')
@@ -70,17 +75,23 @@ async function route(event: LambdaEvent): Promise<APIGatewayProxyResult> {
 
   if (method === 'GET' && isLinksListPath(path)) { return ok(await listLinks(accountId)) }
   if (method === 'POST' && isLinksListPath(path)) { return ok(await createLink(accountId, body)) }
-  if (method === 'DELETE') { return ok(await deleteLink(accountId, body, event.queryStringParameters?.id)) }
-  if (method === 'PUT') { return ok(await updateLinkStatus(accountId, body)) }
+  if (method === 'DELETE' && isLinksListPath(path)) { return ok(await deleteLink(accountId, body, event.queryStringParameters?.id)) }
+  if (method === 'PUT' && isLinksListPath(path)) { return ok(await updateLinkStatus(accountId, body)) }
+
+  /* Notes Routes */
+  if (method === 'GET' && endsWith(path, '/notes')) { return ok(await listNotes(accountId)) }
+  if (method === 'POST' && endsWith(path, '/notes')) { return ok(await createNote(accountId, body)) }
+  if (method === 'PUT' && endsWith(path, '/notes')) { return ok(await updateNote(accountId, body)) }
+  if (method === 'DELETE' && endsWith(path, '/notes')) { return ok(await deleteNote(accountId, body, event.queryStringParameters?.id)) }
 
   throw new HttpError(404, 'Not Found')
 }
 
 /**
- * Single global error boundary. Route handlers and services throw
- * HttpError for expected failures (bad input, not found, unauthorized,
- * rate limited); anything else is logged and returned as a generic 500
- * so callers never see internal error details.
+ * Single global error boundary. Route handlers and services (auth, links,
+ * notes) throw HttpError for expected failures (bad input, not found,
+ * unauthorized, rate limited); anything else is logged and returned as a
+ * generic 500 so callers never see internal error details.
  */
 export const handler = async (event: LambdaEvent): Promise<APIGatewayProxyResult> => {
   try {

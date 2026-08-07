@@ -96,7 +96,7 @@ export function AuthGate({ onSuccess }: { onSuccess: () => void }) {
                             type="text"
                             value={loginCode}
                             onChange={e => { setLoginCode(e.target.value); setError(null) }}
-                            placeholder="LO-acc-...-XXX-XXX-XXX"
+                            placeholder="e.g. 8TD-SBW-3QK"
                             autoFocus
                             className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--bg-input)] text-[var(--text-main)] text-sm font-mono focus:border-[var(--accent-crimson)] focus:ring-2 focus:ring-[var(--focus-ring)] outline-none transition-all"
                         />
