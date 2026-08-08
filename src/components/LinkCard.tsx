@@ -16,6 +16,7 @@ export function LinkCard({
   const favicon = getFaviconUrl(link.url)
   const related = getRelated(link, allLinks)
   const isProcessing = link.processing === true
+  const cardBlurb = (link.summary || link.description || '').trim()
 
   function handleDeleteClick(e: React.MouseEvent) {
     e.preventDefault(); e.stopPropagation()
@@ -51,7 +52,9 @@ export function LinkCard({
           {isProcessing ? (
             <div className="text-xs text-[var(--text-dim)] line-clamp-3 leading-relaxed card-summary skeleton-text">{link.description}</div>
           ) : (
-            link.summary && <div className="text-xs text-[var(--text-dim)] line-clamp-3 leading-relaxed card-summary">{link.summary}</div>
+            cardBlurb ? (
+              <div className="text-xs text-[var(--text-dim)] line-clamp-3 leading-relaxed card-summary">{cardBlurb}</div>
+            ) : null
           )}
 
           {isProcessing ? (

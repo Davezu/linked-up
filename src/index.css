@@ -1,6 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
 @import "tailwindcss";
 
+/* Ensure utilities in src/components and App.tsx are scanned (Tailwind v4) */
+@source "./**/*.{js,ts,jsx,tsx}";
+
 /* ═══════════════════════════════════════════
    Shared design tokens (theme-independent)
    ═══════════════════════════════════════════ */
@@ -291,16 +294,18 @@ a {
   text-decoration: none;
 }
 
-button, input {
-  font-family: inherit;
-  font-size: inherit;
-  border: none;
-  background: none;
-  outline: none;
-}
+/* Keep resets in @layer base so Tailwind utilities (bg, border, padding) win on buttons */
+@layer base {
+  button,
+  input,
+  textarea {
+    font-family: inherit;
+    font-size: inherit;
+  }
 
-button {
-  cursor: pointer;
+  button {
+    cursor: pointer;
+  }
 }
 
 /* ═══════════════════════════════════════════
@@ -365,3 +370,6 @@ body::after {
 @media (prefers-reduced-motion: reduce) {
   body::before, body::after { animation: none; }
 }
+
+/* App layout + fan stack + notes canvas (uses @apply — processed via @reference in App.css) */
+@import "./App.css";

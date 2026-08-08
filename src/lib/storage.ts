@@ -69,9 +69,10 @@ export function removeDeletedId(id: string) {
 
 export function loadLinks(): LinkRecord[] {
   try {
+    const deleted = getDeletedIds()
     const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]') as any[]
     return raw
-      .filter(l => l && l.id && !(l.isSaving || l.title === 'Saving link...'))
+      .filter(l => l && l.id && !deleted.has(l.id) && !(l.isSaving || l.title === 'Saving link...'))
       .map(l => ({
         ...l,
         summary: l.summary ?? '',

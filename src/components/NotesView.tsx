@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Plus, Trash2, Tag, X, Search, ZoomIn, ZoomOut, Save } from 'lucide-react'
+import { Plus, Trash2, Tag, X, Search, ZoomIn, ZoomOut, Save, Edit3 } from 'lucide-react'
 import type { NoteRecord } from '../types'
 import { generateId } from '../lib/helpers'
 import { createNoteApi, updateNoteApi, deleteNoteApi } from '../lib/notes-api'
@@ -10,14 +10,30 @@ interface NotesViewProps {
   onNotesChange: (updater: (prev: NoteRecord[]) => NoteRecord[]) => void
 }
 
+export const MAX_CONTENT_LENGTH = 1000
+export const MAX_TITLE_LENGTH = 80
+
+export const NOTE_PALETTE = [
+  { id: 'yellow', bg: '#fff59d', gradient: 'linear-gradient(175deg, #fff9c4 0%, #fff176 100%)', label: 'Canary Yellow' },
+  { id: 'cyan', bg: '#e0f2fe', gradient: 'linear-gradient(175deg, #f0f9ff 0%, #bae6fd 100%)', label: 'Sky Blue' },
+  { id: 'green', bg: '#dcfce7', gradient: 'linear-gradient(175deg, #f0fdf4 0%, #bbf7d0 100%)', label: 'Mint Green' },
+  { id: 'pink', bg: '#fde8f4', gradient: 'linear-gradient(175deg, #fff1f2 0%, #fbcfe8 100%)', label: 'Pastel Pink' },
+  { id: 'lavender', bg: '#f3e8ff', gradient: 'linear-gradient(175deg, #faf5ff 0%, #e9d5ff 100%)', label: 'Lavender' },
+  { id: 'peach', bg: '#ffedd5', gradient: 'linear-gradient(175deg, #fff7ed 0%, #fed7aa 100%)', label: 'Warm Peach' },
+]
+
 function formatDate(iso: string) {
   const d = new Date(iso)
   const now = new Date()
   const diffMs = now.getTime() - d.getTime()
-  const diffDays = Math.floor(diffMs / 86400000)
-  if (diffDays === 0) return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-  if (diffDays === 1) return 'Yesterday'
-  if (diffDays < 7) return d.toLocaleDateString([], { weekday: 'short' })
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+
+  if (diffHours < 1) return 'Just now'
+  if (diffHours < 24) return `${diffHours}h ago`
+  if (diffDays === 1) return '1 day ago'
+  if (diffDays < 7) return `${diffDays} days ago`
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`
   return d.toLocaleDateString([], { month: 'short', day: 'numeric' })
 }
 
@@ -25,24 +41,46 @@ function deriveTitle(content: string): string {
   return content.split('\n').find(l => l.trim())?.slice(0, 60) ?? 'Untitled'
 }
 
-// Post-it color palette
-const NOTE_COLORS = [
-  { bg: 'var(--postit-yellow)', pin: '#e63946' },
-  { bg: 'var(--postit-pink)', pin: '#2a9d8f' },
-  { bg: 'var(--postit-blue)', pin: '#e76f51' },
-  { bg: 'var(--postit-green)', pin: '#9b5de5' },
-  { bg: 'var(--postit-orange)', pin: '#264653' },
-]
-
-function noteStyle(id: string, idx: number) {
-  const colorIdx = idx % NOTE_COLORS.length
+function noteRotation(id: string) {
   const charCode = id.charCodeAt(id.length - 1) % 5
-  const rotation = [-2.5, -1.2, 0, 1.2, 2.5][charCode]
-  return { color: NOTE_COLORS[colorIdx], rotation }
+  return [-2.5, -1.2, 0.5, 1.5, 2.5][charCode]
 }
 
-const CARD_W = 180
-const CARD_H = 180
+// 3D Pushpin Component
+function PushPinSVG() {
+  return (
+    <div className="postit-pin" aria-hidden="true">
+      <svg width="28" height="38" viewBox="0 0 28 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+        {/* Drop shadow on paper */}
+        <ellipse cx="14" cy="18" rx="8" ry="3" fill="rgba(0,0,0,0.3)" filter="blur(1px)" />
+        {/* Needle shaft */}
+        <rect x="13" y="18" width="2" height="16" rx="1" fill="#a0a0a0" />
+        <rect x="13.2" y="19" width="0.7" height="14" fill="rgba(255,255,255,0.7)" />
+        {/* Needle tip */}
+        <path d="M13 34L14 37L15 34Z" fill="#777777" />
+        {/* Pin base shadow */}
+        <circle cx="14" cy="12" r="10" fill="#7a000d" />
+        {/* Main pin sphere fill */}
+        <circle cx="14" cy="11" r="9" fill="#e61c24" />
+        {/* Radial highlight for 3D sphere depth */}
+        <circle cx="14" cy="11" r="9" fill="url(#pinGrad)" />
+        {/* Specular highlight */}
+        <ellipse cx="11" cy="7.5" rx="3.5" ry="2.2" fill="rgba(255,255,255,0.85)" transform="rotate(-25 11 7.5)" />
+        <circle cx="10" cy="6.5" r="1" fill="#ffffff" />
+        <defs>
+          <radialGradient id="pinGrad" cx="35%" cy="30%" r="70%">
+            <stop offset="0%" stopColor="rgba(255,255,255,0.4)" />
+            <stop offset="60%" stopColor="rgba(0,0,0,0)" />
+            <stop offset="100%" stopColor="rgba(0,0,0,0.35)" />
+          </radialGradient>
+        </defs>
+      </svg>
+    </div>
+  )
+}
+
+const CARD_W = 200
+const CARD_H = 200
 const MIN_ZOOM = 0.2
 const MAX_ZOOM = 3
 const ZOOM_STEP = 0.1
@@ -52,6 +90,7 @@ export function NotesView({ notes, onNotesChange }: NotesViewProps) {
   const [draftContent, setDraftContent] = useState('')
   const [draftTitle, setDraftTitle] = useState('')
   const [draftTags, setDraftTags] = useState('')
+  const [draftColor, setDraftColor] = useState<string>(NOTE_PALETTE[0].bg)
   const [tagInput, setTagInput] = useState('')
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
@@ -84,14 +123,6 @@ export function NotesView({ notes, onNotesChange }: NotesViewProps) {
 
   const currentNote = editingId ? notes.find(n => n.id === editingId) ?? null : null
 
-  // Auto-resize textarea
-  useEffect(() => {
-    const ta = textareaRef.current
-    if (!ta) return
-    ta.style.height = 'auto'
-    ta.style.height = `${ta.scrollHeight}px`
-  }, [draftContent])
-
   // Close modal on Escape
   useEffect(() => {
     if (!editingId) return
@@ -113,7 +144,6 @@ export function NotesView({ notes, onNotesChange }: NotesViewProps) {
         const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP
         setZoom(prev => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, prev + delta)))
       } else {
-        // Regular scroll → pan
         setPanX(prev => prev - e.deltaX)
         setPanY(prev => prev - e.deltaY)
       }
@@ -125,7 +155,6 @@ export function NotesView({ notes, onNotesChange }: NotesViewProps) {
 
   // ── Canvas pan (drag on empty space) ───────────────────────────
   function handleCanvasPointerDown(e: React.PointerEvent) {
-    // Only if clicking on the canvas itself, not on a note
     if ((e.target as HTMLElement).closest('.postit-note')) return
     if (e.button !== 0) return
 
@@ -148,7 +177,6 @@ export function NotesView({ notes, onNotesChange }: NotesViewProps) {
       return
     }
 
-    // Note dragging
     if (dragRef.current) {
       e.preventDefault()
       const { noteId, startX, startY, origX, origY } = dragRef.current
@@ -181,9 +209,10 @@ export function NotesView({ notes, onNotesChange }: NotesViewProps) {
     }
   }
 
-  // ── Note drag ──────────────────────────────────────────────────
+  // Note drag
   function handleNotePointerDown(e: React.PointerEvent, note: NoteRecord) {
     if (e.button !== 0) return
+    if ((e.target as HTMLElement).closest('.postit-hover-actions')) return
     e.stopPropagation()
     const el = e.currentTarget as HTMLElement
     el.setPointerCapture(e.pointerId)
@@ -197,16 +226,16 @@ export function NotesView({ notes, onNotesChange }: NotesViewProps) {
     }
   }
 
-  // ── Note CRUD ─────────────────────────────────────────────────
+  // Note CRUD
   function openNote(note: NoteRecord) {
     setEditingId(note.id)
     setDraftContent(note.content)
     setDraftTitle(note.title)
     setDraftTags(note.tags.join(', '))
+    setDraftColor(note.color || NOTE_PALETTE[0].bg)
     setTagInput('')
   }
 
-  // Close without saving — discard changes, remove empty new notes
   function closeEditor() {
     if (editingId) {
       const note = notes.find(n => n.id === editingId)
@@ -218,7 +247,6 @@ export function NotesView({ notes, onNotesChange }: NotesViewProps) {
     setIsSaving(false)
   }
 
-  // Explicit save — called by Save button only
   async function handleSave() {
     if (!editingId || isSaving) return
     setIsSaving(true)
@@ -229,13 +257,23 @@ export function NotesView({ notes, onNotesChange }: NotesViewProps) {
     const resolvedTags = parseTags(draftTags)
 
     onNotesChange(prev => prev.map(n =>
-      n.id === id ? { ...n, content: draftContent, title: resolvedTitle, tags: resolvedTags, updated_at: now, isNew: false } : n
+      n.id === id
+        ? {
+          ...n,
+          content: draftContent,
+          title: resolvedTitle,
+          tags: resolvedTags,
+          color: draftColor,
+          updated_at: now,
+          isNew: false
+        }
+        : n
     ))
 
     if (isNew) {
       const remote = await createNoteApi({ content: draftContent, title: resolvedTitle, tags: resolvedTags })
       if (remote) {
-        onNotesChange(prev => prev.map(n => n.id === id ? { ...remote, x: n.x, y: n.y, isNew: false } : n))
+        onNotesChange(prev => prev.map(n => n.id === id ? { ...remote, x: n.x, y: n.y, color: draftColor, isNew: false } : n))
       }
     } else {
       await updateNoteApi(id, { content: draftContent, title: resolvedTitle, tags: resolvedTags })
@@ -247,14 +285,6 @@ export function NotesView({ notes, onNotesChange }: NotesViewProps) {
 
   function parseTags(raw: string): string[] {
     return raw.split(',').map(t => t.trim()).filter(Boolean)
-  }
-
-  function handleContentChange(val: string) {
-    setDraftContent(val)
-  }
-
-  function handleTitleChange(val: string) {
-    setDraftTitle(val)
   }
 
   function addTag(raw: string) {
@@ -276,17 +306,19 @@ export function NotesView({ notes, onNotesChange }: NotesViewProps) {
     const tempId = generateId()
     const now = new Date().toISOString()
 
-    // Place near center of current viewport
     const centerX = (-panX + (canvasRef.current?.clientWidth ?? 800) / 2) / zoom
     const centerY = (-panY + (canvasRef.current?.clientHeight ?? 600) / 2) / zoom
     const jitterX = (Math.random() - 0.5) * 100
     const jitterY = (Math.random() - 0.5) * 100
+
+    const randomColor = NOTE_PALETTE[Math.floor(Math.random() * NOTE_PALETTE.length)].bg
 
     const newNote: NoteRecord = {
       id: tempId,
       title: '',
       content: '',
       tags: [],
+      color: randomColor,
       created_at: now,
       updated_at: now,
       isNew: true,
@@ -318,7 +350,6 @@ export function NotesView({ notes, onNotesChange }: NotesViewProps) {
     )
     if (found) {
       setHighlightId(found.id)
-      // Pan to the found note
       if (found.x != null && found.y != null) {
         const cw = canvasRef.current?.clientWidth ?? 800
         const ch = canvasRef.current?.clientHeight ?? 600
@@ -344,10 +375,11 @@ export function NotesView({ notes, onNotesChange }: NotesViewProps) {
 
   const tags = parseTags(draftTags)
   const zoomPercent = Math.round(zoom * 100)
+  const isNearLimit = draftContent.length >= MAX_CONTENT_LENGTH * 0.9
 
   return (
     <div className="excalidraw-canvas-wrap">
-      {/* The infinite canvas */}
+      {/* The canvas */}
       <div
         ref={canvasRef}
         className="excalidraw-canvas"
@@ -364,13 +396,18 @@ export function NotesView({ notes, onNotesChange }: NotesViewProps) {
         >
           {notes.length === 0 && (
             <div className="canvas-empty-hint" style={{ position: 'absolute', left: '50%', top: '40%', transform: 'translate(-50%, -50%)' }}>
-              <div style={{ fontSize: '3rem', opacity: 0.15 }}>📌</div>
-              <p style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-dim)', opacity: 0.4 }}>Click "+ New Note" to pin a thought</p>
+              <div style={{ fontSize: '3rem', opacity: 0.25 }}>📌</div>
+              <p style={{ fontSize: '1.1rem', fontFamily: "'Patrick Hand', cursive", fontWeight: 600, color: 'rgba(255,255,255,0.7)', textAlign: 'center' }}>
+                Click "+ New Note" to pin a thought on your board
+              </p>
             </div>
           )}
 
           {notes.map((note, idx) => {
-            const { color, rotation } = noteStyle(note.id, idx)
+            const noteColorObj = NOTE_PALETTE.find(p => p.bg === note.color) || NOTE_PALETTE[idx % NOTE_PALETTE.length]
+            const noteColor = noteColorObj.bg
+            const noteGradient = noteColorObj.gradient
+            const rotation = noteRotation(note.id)
             const displayTitle = note.title || deriveTitle(note.content) || 'Untitled'
             const isHighlighted = highlightId === note.id
             const posX = note.x ?? 100 + (idx % 4) * (CARD_W + 24)
@@ -385,58 +422,54 @@ export function NotesView({ notes, onNotesChange }: NotesViewProps) {
                   top: posY,
                   width: CARD_W,
                   minHeight: CARD_H,
-                  '--postit-color': color.bg,
-                  '--postit-rotation': `${rotation}deg`,
-                } as React.CSSProperties}
+                  background: noteGradient || noteColor,
+                  transform: `rotate(${rotation}deg)`,
+                }}
                 onPointerDown={e => handleNotePointerDown(e, note)}
                 role="button"
                 tabIndex={0}
                 aria-label={`Note: ${displayTitle}. Drag to move.`}
               >
-                {/* Realistic 3D Push-pin */}
-                <div className="postit-pin">
-                  <svg width="28" height="38" viewBox="0 0 28 38" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    {/* Drop shadow */}
-                    <ellipse cx="14" cy="16" rx="10" ry="3" fill="rgba(0,0,0,0.25)" />
-                    {/* Pin body — dark rim */}
-                    <circle cx="14" cy="11" r="11" fill="#8B0000" />
-                    {/* Main dome fill */}
-                    <circle cx="14" cy="11" r="9.5" fill="#E8192C" />
-                    {/* Inner gradient sheen */}
-                    <circle cx="14" cy="11" r="9.5" fill="url(#pinGrad)" />
-                    {/* Specular highlight — top left */}
-                    <ellipse cx="10.5" cy="7" rx="3.5" ry="2.2" fill="rgba(255,255,255,0.55)" transform="rotate(-20 10.5 7)" />
-                    {/* Small secondary highlight */}
-                    <circle cx="17" cy="14" r="1.2" fill="rgba(255,255,255,0.18)" />
-                    {/* Needle shaft */}
-                    <rect x="13" y="20" width="2" height="17" rx="1" fill="#b0b0b0" />
-                    {/* Needle tip */}
-                    <ellipse cx="14" cy="37" rx="1" ry="0.6" fill="#888" />
-                    {/* Needle sheen */}
-                    <rect x="13.2" y="21" width="0.6" height="14" rx="0.3" fill="rgba(255,255,255,0.35)" />
-                    <defs>
-                      <radialGradient id="pinGrad" cx="38%" cy="32%" r="70%">
-                        <stop offset="0%" stopColor="rgba(255,255,255,0.25)" />
-                        <stop offset="60%" stopColor="rgba(0,0,0,0)" />
-                        <stop offset="100%" stopColor="rgba(0,0,0,0.25)" />
-                      </radialGradient>
-                    </defs>
-                  </svg>
+                {/* 3D Red Push-pin */}
+                <PushPinSVG />
+
+                {/* Hover Quick Action Buttons */}
+                <div className="postit-hover-actions">
+                  <button
+                    className="postit-hover-btn"
+                    onClick={(e) => { e.stopPropagation(); openNote(note) }}
+                    title="Edit note"
+                    aria-label="Edit note"
+                  >
+                    <Edit3 size={11} />
+                  </button>
+                  <button
+                    className="postit-hover-btn postit-hover-btn--delete"
+                    onClick={(e) => { e.stopPropagation(); setDeleteTarget(note.id) }}
+                    title="Delete note"
+                    aria-label="Delete note"
+                  >
+                    <Trash2 size={11} />
+                  </button>
                 </div>
 
                 <div className="postit-body">
-                  <p className="postit-title">{displayTitle}</p>
+                  <h3 className="postit-title">{displayTitle}</h3>
+                  <div className="postit-divider" />
+
                   <p className="postit-preview">{note.content || 'Empty note…'}</p>
+
                   {note.tags.length > 0 && (
                     <div className="postit-tags">
                       {note.tags.slice(0, 2).map(t => (
-                        <span key={t} className="postit-tag">{t}</span>
+                        <span key={t} className="postit-tag">#{t}</span>
                       ))}
                       {note.tags.length > 2 && (
                         <span className="postit-tag postit-tag--more">+{note.tags.length - 2}</span>
                       )}
                     </div>
                   )}
+
                   <span className="postit-date">{formatDate(note.updated_at)}</span>
                 </div>
               </div>
@@ -445,10 +478,10 @@ export function NotesView({ notes, onNotesChange }: NotesViewProps) {
         </div>
       </div>
 
-      {/* ── Floating toolbar (overlays canvas top-right) ────── */}
+      {/* Floating toolbar (top-right) */}
       <div className="canvas-float-toolbar">
         <div className="canvas-float-search-wrap">
-          <Search size={12} className="canvas-float-search-icon" aria-hidden="true" />
+          <Search size={14} className="canvas-float-search-icon" aria-hidden="true" />
           <input
             type="search"
             className="canvas-float-search"
@@ -464,17 +497,17 @@ export function NotesView({ notes, onNotesChange }: NotesViewProps) {
           onClick={handleNewNote}
           aria-label="Create new note"
         >
-          <Plus size={14} strokeWidth={2.5} aria-hidden="true" />
+          <Plus size={15} strokeWidth={2.5} aria-hidden="true" />
           New Note
         </button>
       </div>
 
-      {/* ── Floating note count (top-left) ────── */}
+      {/* Floating note count (top-left) */}
       <div className="canvas-float-count">
-        {notes.length} {notes.length === 1 ? 'note' : 'notes'}
+        📌 {notes.length} {notes.length === 1 ? 'note' : 'notes'}
       </div>
 
-      {/* ── Floating zoom controls (bottom-left, like Excalidraw) ────── */}
+      {/* Floating zoom controls (bottom-left) */}
       <div className="canvas-float-zoom">
         <button className="canvas-zoom-btn" onClick={handleZoomOut} aria-label="Zoom out" title="Zoom out">
           <ZoomOut size={14} />
@@ -487,20 +520,113 @@ export function NotesView({ notes, onNotesChange }: NotesViewProps) {
         </button>
       </div>
 
-      {/* Note editor modal */}
+      {/* ── Note Click / Editor Modal ── */}
       {editingId && (
         <div className="note-modal-overlay" onClick={closeEditor} role="dialog" aria-modal="true" aria-label="Note editor">
-          <div className="note-modal" onClick={e => e.stopPropagation()}>
-            <div className="note-modal-toolbar">
-              <div className="note-modal-toolbar-actions">
-                <button className="note-modal-delete-btn" onClick={() => setDeleteTarget(editingId)} aria-label="Delete note" title="Delete note">
-                  <Trash2 size={14} strokeWidth={1.75} />
-                </button>
-                <button className="note-modal-close-btn" onClick={closeEditor} aria-label="Discard and close" title="Discard changes">
-                  <X size={16} strokeWidth={2} />
+          <div
+            className="note-modal-paper"
+            style={{
+              background: NOTE_PALETTE.find(p => p.bg === draftColor)?.gradient || draftColor
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* 3D Pushpin on top center */}
+            <PushPinSVG />
+
+            {/* Close cross button top right */}
+            <button className="note-modal-paper-close" onClick={closeEditor} aria-label="Close note" title="Close note">
+              <X size={16} strokeWidth={2.5} />
+            </button>
+
+            {/* Title Section with Max Length */}
+            <div className="note-modal-paper-header">
+              <input
+                type="text"
+                className="note-modal-paper-title-input"
+                placeholder="Title…"
+                maxLength={MAX_TITLE_LENGTH}
+                value={draftTitle}
+                onChange={e => setDraftTitle(e.target.value)}
+              />
+            </div>
+
+            {/* Horizontal Divider Line under Title */}
+            <div className="note-modal-paper-divider" />
+
+            {/* Notebook Ruled Body with scroll & left red margin line */}
+            <div className="note-modal-paper-body">
+              <div className="note-modal-paper-margin-line" />
+              <textarea
+                ref={textareaRef}
+                className="note-modal-paper-content"
+                placeholder="Write your note here…"
+                maxLength={MAX_CONTENT_LENGTH}
+                value={draftContent}
+                onChange={e => setDraftContent(e.target.value)}
+                autoFocus
+              />
+            </div>
+
+            {/* Tag Editor Row */}
+            <div className="note-modal-paper-tags-row">
+              <Tag size={11} className="note-modal-tag-icon" aria-hidden="true" />
+              {tags.map(t => (
+                <span key={t} className="note-modal-paper-tag">
+                  #{t}
+                  <button onClick={() => removeTag(t)} className="note-modal-tag-remove" aria-label={`Remove tag ${t}`}><X size={9} /></button>
+                </span>
+              ))}
+              <input
+                type="text"
+                className="note-modal-tag-input"
+                placeholder="Add tag…"
+                value={tagInput}
+                onChange={e => setTagInput(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addTag(tagInput) } }}
+                onBlur={() => addTag(tagInput)}
+              />
+            </div>
+
+            {/* Footer with Character Limit Counter */}
+            <div className="note-modal-paper-footer">
+              {/* Color swatches */}
+              <div className="note-modal-colors">
+                {NOTE_PALETTE.map(p => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    className={`note-color-dot ${draftColor === p.bg ? 'note-color-dot--active' : ''}`}
+                    style={{ background: p.gradient || p.bg }}
+                    onClick={() => {
+                      setDraftColor(p.bg)
+                      if (editingId) {
+                        onNotesChange(prev => prev.map(n => n.id === editingId ? { ...n, color: p.bg } : n))
+                      }
+                    }}
+                    title={`Color: ${p.label}`}
+                    aria-label={`Select ${p.label} color`}
+                  />
+                ))}
+              </div>
+
+              {/* Timestamp, Character Limit & Actions */}
+              <div className="note-modal-footer-right">
+                <span className={`note-modal-char-count ${isNearLimit ? 'note-modal-char-count--limit' : ''}`}>
+                  {draftContent.length}/{MAX_CONTENT_LENGTH}
+                </span>
+                <span className="note-modal-paper-date">
+                  {formatDate(currentNote?.updated_at || new Date().toISOString())}
+                </span>
+                <button
+                  className="note-modal-paper-delete-btn"
+                  onClick={() => setDeleteTarget(editingId)}
+                  aria-label="Delete note"
+                  title="Delete note"
+                >
+                  <Trash2 size={15} strokeWidth={1.75} />
                 </button>
                 <button
-                  className={`note-modal-save-btn${isSaving ? ' note-modal-save-btn--saving' : ''}`}
+                  className={`note-modal-paper-save-btn${isSaving ? ' note-modal-paper-save-btn--saving' : ''}`}
                   onClick={handleSave}
                   disabled={isSaving}
                   aria-label="Save note"
@@ -511,28 +637,11 @@ export function NotesView({ notes, onNotesChange }: NotesViewProps) {
                 </button>
               </div>
             </div>
-            <input type="text" className="note-modal-title-input" placeholder="Title (optional)" value={draftTitle} onChange={e => handleTitleChange(e.target.value)} />
-            <div className="note-modal-tags-row">
-              <Tag size={11} className="note-modal-tag-icon" aria-hidden="true" />
-              {tags.map(t => (
-                <span key={t} className="note-modal-tag">
-                  {t}
-                  <button onClick={() => removeTag(t)} className="note-modal-tag-remove" aria-label={`Remove tag ${t}`}><X size={9} /></button>
-                </span>
-              ))}
-              <input type="text" className="note-modal-tag-input" placeholder="Add tag…" value={tagInput} onChange={e => setTagInput(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addTag(tagInput) } }}
-                onBlur={() => addTag(tagInput)} />
-            </div>
-            <textarea ref={textareaRef} className="note-modal-content" placeholder="Start writing…" value={draftContent} onChange={e => handleContentChange(e.target.value)} autoFocus />
-            <div className="note-modal-footer">
-              <span className="note-modal-footer-date">{currentNote ? `Edited ${formatDate(currentNote.updated_at)}` : ''}</span>
-            </div>
           </div>
         </div>
       )}
 
-      {/* Delete confirm */}
+      {/* Delete confirm dialog */}
       {deleteTarget && (
         <div className="note-delete-overlay" onClick={() => setDeleteTarget(null)}>
           <div className="note-delete-dialog" onClick={e => e.stopPropagation()}>

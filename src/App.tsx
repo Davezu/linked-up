@@ -5,7 +5,7 @@ import './App.css'
 import type { LinkRecord, NoteRecord } from './types'
 import { API_BASE, AI_API_BASE, LOAD_FROM_API, STATUS_FILTERS } from './lib/constants'
 import { generateId, delay } from './lib/helpers'
-import { loadLinks, saveLinks, normalizeCategory, loadNotes, saveNotes, DELETED_IDS_KEY } from './lib/storage'
+import { loadLinks, saveLinks, normalizeCategory, loadNotes, saveNotes, DELETED_IDS_KEY, recordDeletedId, getDeletedIds } from './lib/storage'
 import { apiMutate, fetchLinksFromApi, buildRecordFromAi } from './lib/api'
 import { fetchNotesFromApi } from './lib/notes-api'
 import { makeMockRecord } from './lib/mock'
@@ -57,7 +57,7 @@ export default function App() {
     setTheme(prev => prev === 'dark' ? 'light' : 'dark')
   }
 
-  // Fetch links from backend on auth
+  // Fetch links from backend on auth — filter out local tombstones
   useEffect(() => {
     if (!API_BASE || !LOAD_FROM_API || !authenticated) return
 
@@ -66,7 +66,8 @@ export default function App() {
     fetchLinksFromApi(ctrl.signal)
       .then(data => {
         if (data) {
-          setLinks(data.filter(l => l && l.id).map(l => ({ ...l, category: normalizeCategory(l.category) })))
+          const deleted = getDeletedIds()
+          setLinks(data.filter(l => l && l.id && !deleted.has(l.id)).map(l => ({ ...l, category: normalizeCategory(l.category) })))
         }
       })
       .finally(() => setLoading(false))
@@ -275,7 +276,7 @@ export default function App() {
     if (!deleteTarget) return
     const id = deleteTarget.id
     setDeleteTarget(null)
-    // Optimistically remove from UI — no tombstone needed for links
+    recordDeletedId(id) // Save tombstone locally so link never comes back!
     setLinks(prev => prev.filter(l => l.id !== id))
     await apiMutate({
       method: 'DELETE',

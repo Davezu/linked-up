@@ -21,6 +21,8 @@ export interface NoteRecord {
   created_at: string
   updated_at: string
   isNew?: boolean
+  /** Sticky note color hex code or css var */
+  color?: string
   /** Canvas X position (persisted in localStorage only) */
   x?: number
   /** Canvas Y position (persisted in localStorage only) */
