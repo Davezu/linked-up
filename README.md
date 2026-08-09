@@ -1,75 +1,74 @@
-# React + TypeScript + Vite
+# Linked Up
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A link and notes organizer with a browser extension for quick capture, an "Ask AI" chat for querying your saved items, and a web app for browsing and organizing everything.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Save links and notes from anywhere via a browser extension (quick capture with Ctrl+Q)
+- Organize and browse saved items in a web app
+- Ask natural-language questions about your saved items via "Ask AI"
+- Account-based storage, scoped per user
+- Rate limiting and retry logic on API requests
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Layer | Technology |
+|---|---|
+| Durable storage | DynamoDB |
+| Ephemeral/TTL storage | Redis (Upstash) |
+| Auth | JWT |
+| AI chat | Groq |
+| Compute | AWS Lambda |
+| API | API Gateway |
+| Bundler | esbuild |
 
-## Expanding the ESLint configuration
+## Architecture
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Data storage
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- **DynamoDB** stores account-owned data: accounts, links, and notes.
+- **Redis (Upstash)** stores ephemeral/TTL data such as rate limiting counters.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### DynamoDB tables
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- **`link-organizer-accounts`** — `accountId` (partition key), `codeHash`, `createdAt`
+- **`link-organizer-item`** — combined links + notes table. `accountId` as partition key, `itemKey` as sort key, prefixed `LINK#` or `NOTE#` depending on item type.
 
-```
+### Authentication
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+- Login credential is a single combined string (prefix + accountId + secret code). On login, it's split apart for a DynamoDB lookup plus a bcrypt compare.
+- Authenticated requests carry a JWT. Handlers require a valid JWT and scope all data access by the `accountId` embedded in the verified token — never by an `accountId` passed in the request body.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### AI chat ("Ask AI")
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- Uses Groq for the chat completion.
+- Retrieval currently uses simple keyword scoring done in code (no vector search yet).
+
+### API routing
+
+- API Gateway uses a wildcard route (`ANY /link-organizer/{proxy+}`) so all sub-paths (e.g. `/auth/register`) reach the Lambda.
+- The Lambda is bundled with esbuild to a root-level `handler.js` (`--format=cjs`).
+
+## Project Structure
 
 ```
+backend/
+  src/
+    auth/       # login, JWT verification
+    handlers/   # request handlers per resource
+    services/   # business logic
+    utils/      # shared helpers
+frontend/
+  App.tsx       # main app: links view, notes view, theme toggle, Ask AI
+extension/
+  ...           # browser extension for quick capture
+```
+
+## Frontend Notes
+
+- Optimistic link insert: a fast metadata prefetch runs before the full AI classify call, so links appear immediately while classification finishes in the background.
+- Includes a theme toggle and separate views for links and notes.
+
+## Roadmap
+
+The project is organized into four phases: Deployment, Accounts, Notes, and Extension.
