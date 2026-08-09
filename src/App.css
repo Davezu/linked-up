@@ -51,6 +51,78 @@
   background-clip: padding-box;
 }
 
+.tab-switch-badge--active {
+  background: color-mix(in srgb, var(--accent-crimson) 20%, transparent);
+  color: var(--accent-crimson);
+}
+
+/* Light mode fixes for tab switcher */
+[data-theme="light"] .tab-switch-btn--active-neutral {
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--text-main);
+}
+
+[data-theme="light"] .tab-switch-btn {
+  color: var(--text-dim);
+}
+
+[data-theme="light"] .tab-switch-btn:hover {
+  color: var(--text-main);
+}
+
+.top-nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 6px;
+  flex-shrink: 0;
+}
+
+.top-nav-logo-img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.top-nav-logo-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--text-main);
+  white-space: nowrap;
+}
+
+.top-nav-logo-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--color-bg);
+  opacity: 0.9;
+}
+
+.top-nav-logo-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--text-main);
+  opacity: 0.85;
+  white-space: nowrap;
+  transition: opacity 0.15s ease;
+}
+
+.top-nav-logo-btn:hover .top-nav-logo-name {
+  opacity: 1;
+}
+
+.top-nav-divider {
+  width: 1px;
+  height: 16px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
 .sidebar {
   position: sticky;
   top: 0;
@@ -162,6 +234,73 @@
   @apply flex-1 h-screen p-6 flex flex-col gap-4 min-w-0 min-h-0 overflow-hidden;
 }
 
+.tab-switcher {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--radius-md);
+  background: var(--chip-bg);
+  flex-shrink: 0;
+}
+
+.tab-switch-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.tab-switch-btn:hover {
+  color: var(--text-dim);
+}
+
+.tab-switch-btn svg {
+  flex-shrink: 0;
+}
+
+.tab-switch-btn--active-neutral {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.tab-switch-btn--active-accent {
+  background: color-mix(in srgb, var(--accent-crimson) 15%, transparent);
+  color: var(--accent-crimson);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.tab-switch-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: var(--radius-sm);
+  font-size: 0.625rem;
+  font-weight: 600;
+  line-height: 1;
+  background: var(--badge-bg);
+  color: var(--text-muted);
+}
+
+.tab-switch-badge--active {
+  background: color-mix(in srgb, var(--accent-crimson) 20%, transparent);
+  color: var(--accent-crimson);
+}
+
 /* Header */
 .header {
   flex-shrink: 0;
@@ -216,18 +355,61 @@
   @apply flex items-center justify-between gap-3 w-full;
 }
 
-.search-input {
-  @apply bg-[var(--bg-input)] border border-[var(--border)] text-[var(--text-main)] rounded-[var(--radius-lg)] px-3.5 py-2.5 text-[14px] w-[200px] h-[42px] transition-all duration-300;
+.search-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 380px;
+  min-width: 80px;
+  height: 36px;
+  padding: 0 10px;
+  border-radius: var(--radius-md);
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.search-input::placeholder {
+.search-bar-wrap:focus-within {
+  border-color: var(--border-hover);
+  box-shadow: 0 0 0 2px var(--focus-ring);
+}
+
+.search-bar-icon {
+  flex-shrink: 0;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.search-bar-input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 0.8125rem;
+  color: var(--text-main);
+}
+
+.search-bar-input::placeholder {
   color: var(--text-muted);
 }
 
-.search-input:focus {
-  border-color: var(--border-hover);
-  background: var(--bg-input);
-  box-shadow: 0 0 0 3px var(--focus-ring);
+.search-bar-kbd {
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--radius-sm);
+  font-size: 0.6875rem;
+  line-height: 1;
+  font-weight: 500;
+  background: var(--badge-bg);
+  color: var(--text-muted);
+  pointer-events: none;
+  user-select: none;
 }
 
 .header-count {
@@ -2170,6 +2352,7 @@
   /* Excalidraw dark-mode canvas */
   --canvas-bg: #121212;
   --canvas-dot: rgba(255, 255, 255, 0.08);
+  --tab-active-bg: rgba(255, 255, 255, 0.08);
 }
 
 [data-theme="dark"] {
@@ -2183,9 +2366,81 @@
 }
 
 [data-theme="light"] {
+  --tab-active-bg: rgba(0, 0, 0, 0.06);
   --canvas-bg: #ffffff;
   --canvas-dot: rgba(0, 0, 0, 0.08);
 }
+
+/* Segmented nav control (Links / Notes) */
+.nav-segment {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-sidebar);
+  flex-shrink: 0;
+}
+
+.nav-segment-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--text-dim);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.nav-segment-btn:hover {
+  color: var(--text-main);
+  background: var(--nav-bg-hover);
+}
+
+.nav-segment-btn svg {
+  flex-shrink: 0;
+}
+
+.nav-segment-btn--active-neutral {
+  background: var(--tab-active-bg);
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.nav-segment-btn--active-accent {
+  background: var(--gradient-accent);
+  color: var(--color-bg);
+  font-weight: 600;
+}
+
+.nav-segment-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1;
+  background: var(--badge-bg);
+  color: var(--text-muted);
+}
+
+.nav-segment-badge--on-accent {
+  background: rgba(0, 0, 0, 0.15);
+  color: var(--color-bg);
+}
+
 
 
 

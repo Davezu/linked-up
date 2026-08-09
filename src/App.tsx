@@ -331,10 +331,13 @@ export default function App() {
         onViewChange={v => { setActiveView(v) }}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        theme={theme}
-        onToggleTheme={toggleTheme}
         notesCount={notes.length}
         linksCount={links.length}
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        onNewClick={() => { /* wire up your "create new" action here */ }}
+        onNotificationsClick={() => { /* wire up notifications here */ }}
+        onAssistantClick={() => { /* wire up assistant panel here */ }}
       />
 
       {/* Page body */}

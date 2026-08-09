@@ -29,8 +29,10 @@
   --duration: 0.3s;
 
   /* ── Accents (Knowledge Vault palette) ── */
-  --accent-crimson: #F5A623;  /* Illumination — warm amber (primary accent) */
-  --accent-sky:     #7C5CFC;  /* Intelligence — deep violet (secondary accent) */
+  --accent-crimson: #F5A623;
+  /* Illumination — warm amber (primary accent) */
+  --accent-sky: #7C5CFC;
+  /* Intelligence — deep violet (secondary accent) */
   --accent-light-crimson: #F7B84B;
 
   /* ── Display typeface ── */
@@ -38,6 +40,9 @@
      Used with restraint: headings and category names only.
      Body text stays Inter for maximum readability. */
   --font-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+
+  --tab-active-bg: rgba(255, 255, 255, 0.08);
+
 }
 
 /* ═══════════════════════════════════════════
@@ -46,60 +51,72 @@
    Accent: Amber #F5A623 → Violet #7C5CFC
    ═══════════════════════════════════════════ */
 :root,
+[data-theme="light"] {
+  --tab-active-bg: rgba(0, 0, 0, 0.06);
+}
+
 [data-theme="dark"] {
-  --color-bg:        #09080F;  /* Void */
-  --color-base:      #120F1D;  /* Vault */
+  --color-bg: #09080F;
+  /* Void */
+  --color-base: #120F1D;
+  /* Vault */
 
   /* Surfaces */
-  --bg-panel:        rgba(255, 255, 255, 0.03);
-  --bg-card:         #1B1829;  /* Chamber */
-  --bg-card-hover:   #231F33;
-  --bg-input:        #0D0B1A;
+  --bg-panel: rgba(255, 255, 255, 0.03);
+  --bg-card: #1B1829;
+  /* Chamber */
+  --bg-card-hover: #231F33;
+  --bg-input: #0D0B1A;
 
   /* Sidebar */
-  --bg-sidebar:      #0E0B1A;
+  --bg-sidebar: #0E0B1A;
 
   /* Borders */
-  --border:          rgba(255, 255, 255, 0.09);
-  --border-hover:    rgba(245, 166, 35, 0.55);  /* Amber glow */
-  --border-glow:     rgba(124, 92, 252, 0.40);  /* Violet glow */
+  --border: rgba(255, 255, 255, 0.09);
+  --border-hover: rgba(245, 166, 35, 0.55);
+  /* Amber glow */
+  --border-glow: rgba(124, 92, 252, 0.40);
+  /* Violet glow */
 
   /* Typography */
-  --text-main:       #EAE5FF;  /* Manuscript — warm off-white with violet undertone */
-  --text-dim:        #8A84A8;  /* Margin */
-  --text-muted:      #5A5478;
+  --text-main: #EAE5FF;
+  /* Manuscript — warm off-white with violet undertone */
+  --text-dim: #8A84A8;
+  /* Margin */
+  --text-muted: #5A5478;
 
   /* Gradient Accent: Illumination (amber) → Intelligence (violet) */
   --gradient-accent: linear-gradient(135deg, #F5A623 0%, #7C5CFC 100%);
-  --gradient-hover:  linear-gradient(135deg, #F7B84B 0%, #9375FF 100%);
+  --gradient-hover: linear-gradient(135deg, #F7B84B 0%, #9375FF 100%);
 
   /* Nav tokens */
-  --nav-icon:        #8A84A8;
-  --nav-icon-hover:  #EAE5FF;
+  --nav-icon: #8A84A8;
+  --nav-icon-hover: #EAE5FF;
   --nav-icon-active: #ffffff;
-  --nav-bg-hover:    rgba(255, 255, 255, 0.06);
-  --nav-bg-active:   #F5A623;  /* Amber active */
+  --nav-bg-hover: rgba(255, 255, 255, 0.06);
+  --nav-bg-active: #F5A623;
+  /* Amber active */
 
   /* Feedback — destructive stays red (semantic, not accent) */
-  --color-destructive:        #F85149;
-  --color-destructive-text:   #FF7B72;
+  --color-destructive: #F85149;
+  --color-destructive-text: #FF7B72;
   --color-destructive-border: rgba(248, 81, 73, 0.45);
-  --color-destructive-ring:   rgba(248, 81, 73, 0.15);
+  --color-destructive-ring: rgba(248, 81, 73, 0.15);
 
   /* Chips / filters */
-  --chip-bg:            #1B1829;
-  --chip-bg-hover:      #231F33;
-  --chip-bg-active:     #F5A623;
-  --chip-text:          #8A84A8;
-  --chip-text-active:   #09080F;
-  --chip-border:        rgba(255, 255, 255, 0.09);
+  --chip-bg: #1B1829;
+  --chip-bg-hover: #231F33;
+  --chip-bg-active: #F5A623;
+  --chip-text: #8A84A8;
+  --chip-text-active: #09080F;
+  --chip-border: rgba(255, 255, 255, 0.09);
   --chip-border-active: transparent;
 
   /* Focus */
   --focus-ring: rgba(124, 92, 252, 0.40);
 
   /* Scrollbar */
-  --scrollbar-thumb:       rgba(255, 255, 255, 0.14);
+  --scrollbar-thumb: rgba(255, 255, 255, 0.14);
   --scrollbar-thumb-hover: rgba(124, 92, 252, 0.55);
 
   /* Mobile bottom nav */
@@ -118,7 +135,7 @@
   --card-delete-bg: rgba(0, 0, 0, 0.7);
   --card-image-placeholder-bg: linear-gradient(135deg, #1B1829 0%, #231F33 100%);
   --card-footer-border: rgba(255, 255, 255, 0.07);
-  --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 1px 0 rgba(255,255,255,0.04) inset;
+  --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 1px 0 rgba(255, 255, 255, 0.04) inset;
   --card-shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.75), 0 0 28px rgba(124, 92, 252, 0.20);
 
   /* Dialog */
@@ -126,7 +143,7 @@
   --dialog-shadow: 0 24px 48px rgba(0, 0, 0, 0.7);
 
   /* Auth / Header title */
-  --auth-title-gradient:   linear-gradient(135deg, #F5A623 0%, #7C5CFC 100%);
+  --auth-title-gradient: linear-gradient(135deg, #F5A623 0%, #7C5CFC 100%);
   --header-title-gradient: linear-gradient(135deg, #F5A623 0%, #7C5CFC 100%);
 
   /* Body bg — subtle depth from void to vault */
@@ -157,59 +174,64 @@
    Accent: Amber #E09920 → Violet #6B4EE8
    ═══════════════════════════════════════════ */
 [data-theme="light"] {
-  --color-bg:        #F7F5FF;  /* Parchment — white with the faintest violet */
-  --color-base:      #ffffff;
+  --color-bg: #F7F5FF;
+  /* Parchment — white with the faintest violet */
+  --color-base: #ffffff;
 
   /* Surfaces */
-  --bg-panel:        #ffffff;
-  --bg-card:         #ffffff;
-  --bg-card-hover:   #FDFCFF;
-  --bg-input:        #ffffff;
+  --bg-panel: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-hover: #FDFCFF;
+  --bg-input: #ffffff;
 
   /* Sidebar */
-  --bg-sidebar:      #F0EBFF;  /* Vellum — pale violet, like natural parchment */
+  --bg-sidebar: #F0EBFF;
+  /* Vellum — pale violet, like natural parchment */
 
   /* Borders */
-  --border:          #E2DCF5;
-  --border-hover:    #6B4EE8;  /* Violet hover */
-  --border-glow:     rgba(107, 78, 232, 0.22);
+  --border: #E2DCF5;
+  --border-hover: #6B4EE8;
+  /* Violet hover */
+  --border-glow: rgba(107, 78, 232, 0.22);
 
   /* Typography */
-  --text-main:       #18152A;  /* Ink — near-black with violet undertone */
-  --text-dim:        #5A5478;  /* Annotation */
-  --text-muted:      #8B85A8;
+  --text-main: #18152A;
+  /* Ink — near-black with violet undertone */
+  --text-dim: #5A5478;
+  /* Annotation */
+  --text-muted: #8B85A8;
 
   /* Gradient Accent: Amber (deepened for light bg) → Violet */
   --gradient-accent: linear-gradient(135deg, #E09920 0%, #6B4EE8 100%);
-  --gradient-hover:  linear-gradient(135deg, #C88515 0%, #5B3EDB 100%);
+  --gradient-hover: linear-gradient(135deg, #C88515 0%, #5B3EDB 100%);
 
   /* Nav tokens */
-  --nav-icon:        #5A5478;
-  --nav-icon-hover:  #18152A;
+  --nav-icon: #5A5478;
+  --nav-icon-hover: #18152A;
   --nav-icon-active: #ffffff;
-  --nav-bg-hover:    #EDE8FF;
-  --nav-bg-active:   #6B4EE8;
+  --nav-bg-hover: #EDE8FF;
+  --nav-bg-active: #6B4EE8;
 
   /* Feedback */
-  --color-destructive:        #CF222E;
-  --color-destructive-text:   #A40E26;
+  --color-destructive: #CF222E;
+  --color-destructive-text: #A40E26;
   --color-destructive-border: rgba(207, 34, 46, 0.35);
-  --color-destructive-ring:   rgba(207, 34, 46, 0.15);
+  --color-destructive-ring: rgba(207, 34, 46, 0.15);
 
   /* Chips / filters */
-  --chip-bg:            #ffffff;
-  --chip-bg-hover:      #EDE8FF;
-  --chip-bg-active:     #6B4EE8;
-  --chip-text:          #5A5478;
-  --chip-text-active:   #ffffff;
-  --chip-border:        #E2DCF5;
+  --chip-bg: #ffffff;
+  --chip-bg-hover: #EDE8FF;
+  --chip-bg-active: #6B4EE8;
+  --chip-text: #5A5478;
+  --chip-text-active: #ffffff;
+  --chip-border: #E2DCF5;
   --chip-border-active: transparent;
 
   /* Focus */
   --focus-ring: rgba(107, 78, 232, 0.30);
 
   /* Scrollbar */
-  --scrollbar-thumb:       #C8C0E8;
+  --scrollbar-thumb: #C8C0E8;
   --scrollbar-thumb-hover: #8B70E8;
 
   /* Mobile bottom nav */
@@ -236,7 +258,7 @@
   --dialog-shadow: 0 24px 48px rgba(24, 21, 42, 0.18);
 
   /* Auth / Header title */
-  --auth-title-gradient:   linear-gradient(135deg, #E09920 0%, #6B4EE8 100%);
+  --auth-title-gradient: linear-gradient(135deg, #E09920 0%, #6B4EE8 100%);
   --header-title-gradient: linear-gradient(135deg, #E09920 0%, #6B4EE8 100%);
 
   /* Body bg */
@@ -296,6 +318,7 @@ a {
 
 /* Keep resets in @layer base so Tailwind utilities (bg, border, padding) win on buttons */
 @layer base {
+
   button,
   input,
   textarea {
@@ -328,8 +351,8 @@ body::before {
   width: clamp(300px, 45vw, 580px);
   height: clamp(300px, 45vw, 580px);
   background: radial-gradient(ellipse at center,
-    rgba(245, 166, 35, 0.08) 0%,
-    transparent 68%);
+      rgba(245, 166, 35, 0.08) 0%,
+      transparent 68%);
   top: -12%;
   right: 4%;
   animation: ambientDrift1 22s ease-in-out infinite alternate;
@@ -341,8 +364,8 @@ body::after {
   width: clamp(250px, 38vw, 480px);
   height: clamp(250px, 38vw, 480px);
   background: radial-gradient(ellipse at center,
-    rgba(124, 92, 252, 0.07) 0%,
-    transparent 68%);
+      rgba(124, 92, 252, 0.07) 0%,
+      transparent 68%);
   bottom: -10%;
   left: 4%;
   animation: ambientDrift2 28s ease-in-out infinite alternate;
@@ -350,25 +373,40 @@ body::after {
 
 [data-theme="light"] body::before {
   background: radial-gradient(ellipse at center,
-    rgba(224, 153, 32, 0.09) 0%, transparent 68%);
+      rgba(224, 153, 32, 0.09) 0%, transparent 68%);
 }
+
 [data-theme="light"] body::after {
   background: radial-gradient(ellipse at center,
-    rgba(107, 78, 232, 0.07) 0%, transparent 68%);
+      rgba(107, 78, 232, 0.07) 0%, transparent 68%);
 }
 
 @keyframes ambientDrift1 {
-  from { transform: translate(0, 0) scale(1); }
-  to   { transform: translate(50px, 65px) scale(1.14); }
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+
+  to {
+    transform: translate(50px, 65px) scale(1.14);
+  }
 }
 
 @keyframes ambientDrift2 {
-  from { transform: translate(0, 0) scale(1); }
-  to   { transform: translate(-40px, -55px) scale(1.10); }
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+
+  to {
+    transform: translate(-40px, -55px) scale(1.10);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  body::before, body::after { animation: none; }
+
+  body::before,
+  body::after {
+    animation: none;
+  }
 }
 
 /* App layout + fan stack + notes canvas (uses @apply — processed via @reference in App.css) */
