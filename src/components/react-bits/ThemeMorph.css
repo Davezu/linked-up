@@ -1,0 +1,64 @@
+/* Smooth crossfade when toggling light/dark — no overlay, content stays visible */
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.42s;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+::view-transition-old(root) {
+  animation-name: theme-fade-out;
+}
+
+::view-transition-new(root) {
+  animation-name: theme-fade-in;
+}
+
+@keyframes theme-fade-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes theme-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* Fallback for browsers without View Transitions API */
+html.theme-morphing .app-shell {
+  animation: themeSettle 0.42s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes themeSettle {
+  0% {
+    opacity: 0.97;
+    filter: brightness(1.04);
+  }
+
+  100% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+
+  html.theme-morphing .app-shell {
+    animation: none;
+  }
+}

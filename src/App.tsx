@@ -10,7 +10,6 @@ import { apiMutate, fetchLinksFromApi, buildRecordFromAi } from './lib/api'
 import { fetchNotesFromApi } from './lib/notes-api'
 import { makeMockRecord } from './lib/mock'
 
-import { FilterPillList } from './components/FilterPillList'
 import { MobileBottomNav } from './components/MobileBottomNav'
 import { ChatView } from './components/ChatView'
 import { DeleteConfirmDialog } from './components/DeleteConfirmDialog'
@@ -18,10 +17,11 @@ import { LinkCard } from './components/LinkCard'
 import { LinkFan } from './components/LinkFan'
 import { NotesView } from './components/NotesView'
 import { TopNav } from './components/TopNav'
-import { FilterPanel } from './components/FilterPanel'
 
 import { hasToken, authHeaders } from './lib/auth/tokenStorage'
 import { AuthGate } from './components/AuthGate'
+import { isColorPalette, type ColorPalette } from './lib/palettes'
+import { runThemeToggleAnimation } from './components/react-bits/themeTransition'
 
 type AppView = 'library' | 'notes' | 'chat'
 
@@ -39,7 +39,6 @@ export default function App() {
   const [deleteTarget, setDeleteTarget] = useState<LinkRecord | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const [authenticated, setAuthenticated] = useState(hasToken())
-  const [filterPanelOpen, setFilterPanelOpen] = useState(false)
 
   // Theme state
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -48,14 +47,25 @@ export default function App() {
     return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
   })
 
+  const [palette, setPalette] = useState<ColorPalette>(() => {
+    const stored = localStorage.getItem('lo-palette')
+    if (stored && isColorPalette(stored)) return stored
+    return 'velvet'
+  })
+
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
+    document.documentElement.setAttribute('data-palette', palette)
     localStorage.setItem('lo-theme', theme)
-  }, [theme])
+    localStorage.setItem('lo-palette', palette)
+  }, [theme, palette])
 
-  function toggleTheme() {
-    setTheme(prev => prev === 'dark' ? 'light' : 'dark')
+  function handleToggleTheme(originEl: HTMLElement | null) {
+    runThemeToggleAnimation(originEl, () => {
+      setTheme(prev => (prev === 'dark' ? 'light' : 'dark'))
+    })
   }
+
 
   // Fetch links from backend on auth — filter out local tombstones
   useEffect(() => {
@@ -318,7 +328,6 @@ export default function App() {
 
   const isProcessing = loading
   const allCategories = Array.from(new Set(links.map(l => l.category))).sort()
-  const filterPills = [...STATUS_FILTERS, ...allCategories]
 
   if (!authenticated) {
     return <AuthGate onSuccess={() => setAuthenticated(true)} />
@@ -333,28 +342,22 @@ export default function App() {
         onSearchChange={setSearchQuery}
         notesCount={notes.length}
         linksCount={links.length}
+        activeFilter={activeFilter}
+        onFilterChange={setActiveFilter}
+        statusFilters={STATUS_FILTERS}
+        categories={allCategories}
+        filterLinks={links}
         theme={theme}
-        onToggleTheme={toggleTheme}
+        onToggleTheme={handleToggleTheme}
+        palette={palette}
+        onPaletteChange={setPalette}
         onNewClick={() => { /* wire up your "create new" action here */ }}
         onNotificationsClick={() => { /* wire up notifications here */ }}
         onAssistantClick={() => { /* wire up assistant panel here */ }}
       />
 
       {/* Page body */}
-      <div className={`app-body ${activeView === 'library' && filterPanelOpen ? 'app-body--panel-open' : ''}`}>
-
-        {/* Filter panel — only in library view */}
-        {activeView === 'library' && (
-          <FilterPanel
-            isOpen={filterPanelOpen}
-            onToggle={() => setFilterPanelOpen(p => !p)}
-            activeFilter={activeFilter}
-            onSelectFilter={f => { setActiveFilter(f) }}
-            statusFilters={STATUS_FILTERS}
-            categories={allCategories}
-            links={links}
-          />
-        )}
+      <div className="app-body">
 
         {/* Main content */}
         <div className={`app-content${activeView === 'notes' ? ' app-content--canvas' : ''}`}>
@@ -364,17 +367,10 @@ export default function App() {
             <NotesView notes={notes} onNotesChange={setNotes} />
           ) : (
             <>
-              {/* Filter pills (mobile + desktop supplement) */}
-              <FilterPillList
-                filters={filterPills}
-                activeFilter={activeFilter}
-                onSelect={setActiveFilter}
-              />
-
               {/* URL Input zone */}
               <section className="flex-shrink-0 input-zone" aria-label="Add a new link">
                 <label htmlFor="url-input" className="hidden input-label">Paste a link</label>
-                <div className={`flex gap-2 bg-[var(--bg-input)] border border-[var(--border)] p-1.5 rounded-xl transition-all input-row ${error ? 'border-[var(--color-destructive-border)] input-row--error' : ''}`}>
+                <div className={`input-row${error ? ' input-row--error' : ''}`}>
                   <input
                     id="url-input"
                     ref={inputRef}
@@ -393,7 +389,7 @@ export default function App() {
                   />
                   <button
                     id="save-link-btn"
-                    className="bg-[var(--gradient-accent)] text-[var(--color-bg)] font-semibold text-xs px-4.5 rounded-lg flex items-center gap-1.5 min-h-[30px] shadow-sm hover:shadow-md transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed save-btn"
+                    className="text-[var(--color-bg)] font-semibold text-xs px-4.5 rounded-lg flex items-center gap-1.5 min-h-[30px] transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed save-btn"
                     onClick={handleSave}
                     disabled={isProcessing || !url.trim()}
                     aria-label="Save link"

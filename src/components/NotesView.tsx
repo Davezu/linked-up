@@ -4,6 +4,7 @@ import type { NoteRecord } from '../types'
 import { generateId } from '../lib/helpers'
 import { createNoteApi, updateNoteApi, deleteNoteApi } from '../lib/notes-api'
 import { recordDeletedId, removeDeletedId } from '../lib/storage'
+import { animateNoteDrop } from './react-bits/animations'
 
 interface NotesViewProps {
   notes: NoteRecord[]
@@ -96,6 +97,8 @@ export function NotesView({ notes, onNotesChange }: NotesViewProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [highlightId, setHighlightId] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
+  const [dropAnimId, setDropAnimId] = useState<string | null>(null)
+  const [draggingNoteId, setDraggingNoteId] = useState<string | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const canvasRef = useRef<HTMLDivElement>(null)
 
@@ -182,6 +185,13 @@ export function NotesView({ notes, onNotesChange }: NotesViewProps) {
       const { noteId, startX, startY, origX, origY } = dragRef.current
       const dx = (e.clientX - startX) / zoom
       const dy = (e.clientY - startY) / zoom
+      const pointerDx = e.clientX - startX
+      const pointerDy = e.clientY - startY
+
+      if (Math.hypot(pointerDx, pointerDy) > 5) {
+        setDraggingNoteId(noteId)
+      }
+
       const newX = origX + dx
       const newY = origY + dy
 
@@ -200,6 +210,7 @@ export function NotesView({ notes, onNotesChange }: NotesViewProps) {
     if (dragRef.current) {
       const { noteId, startX, startY } = dragRef.current
       dragRef.current = null
+      setDraggingNoteId(null)
       const dx = Math.abs(e.clientX - startX)
       const dy = Math.abs(e.clientY - startY)
       if (dx < 5 && dy < 5) {
@@ -224,6 +235,7 @@ export function NotesView({ notes, onNotesChange }: NotesViewProps) {
       origX: note.x ?? 0,
       origY: note.y ?? 0,
     }
+    setDraggingNoteId(null)
   }
 
   // Note CRUD
@@ -327,6 +339,8 @@ export function NotesView({ notes, onNotesChange }: NotesViewProps) {
     }
     onNotesChange(prev => [newNote, ...prev])
     openNote(newNote)
+    setDropAnimId(tempId)
+    window.setTimeout(() => setDropAnimId(null), 900)
     setTimeout(() => textareaRef.current?.focus(), 50)
   }
 
@@ -413,27 +427,33 @@ export function NotesView({ notes, onNotesChange }: NotesViewProps) {
             const posX = note.x ?? 100 + (idx % 4) * (CARD_W + 24)
             const posY = note.y ?? 100 + Math.floor(idx / 4) * (CARD_H + 24)
 
+            const bg = noteGradient || noteColor
+            const isDragging = draggingNoteId === note.id
+
             return (
               <div
                 key={note.id}
-                className={`postit-note ${isHighlighted ? 'postit-note--highlight' : ''}`}
+                ref={el => {
+                  if (el && note.id === dropAnimId) animateNoteDrop(el)
+                }}
+                className={`postit-note${isDragging ? ' postit-note--dragging' : ''}${isHighlighted ? ' postit-note--highlight' : ''}`}
                 style={{
                   left: posX,
                   top: posY,
                   width: CARD_W,
+                  height: CARD_H,
                   minHeight: CARD_H,
-                  background: noteGradient || noteColor,
+                  background: bg,
                   transform: `rotate(${rotation}deg)`,
+                  ['--note-rot' as string]: `${rotation}deg`,
                 }}
                 onPointerDown={e => handleNotePointerDown(e, note)}
                 role="button"
                 tabIndex={0}
                 aria-label={`Note: ${displayTitle}. Drag to move.`}
               >
-                {/* 3D Red Push-pin */}
                 <PushPinSVG />
 
-                {/* Hover Quick Action Buttons */}
                 <div className="postit-hover-actions">
                   <button
                     className="postit-hover-btn"
@@ -547,6 +567,7 @@ export function NotesView({ notes, onNotesChange }: NotesViewProps) {
                 maxLength={MAX_TITLE_LENGTH}
                 value={draftTitle}
                 onChange={e => setDraftTitle(e.target.value)}
+                spellCheck={false}
               />
             </div>
 
@@ -563,6 +584,7 @@ export function NotesView({ notes, onNotesChange }: NotesViewProps) {
                 maxLength={MAX_CONTENT_LENGTH}
                 value={draftContent}
                 onChange={e => setDraftContent(e.target.value)}
+                spellCheck={false}
                 autoFocus
               />
             </div>

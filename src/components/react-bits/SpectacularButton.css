@@ -1,0 +1,108 @@
+.spectacular-btn {
+  position: relative;
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.spectacular-btn-inner {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--chip-text);
+  background: var(--chip-bg);
+  border: 1px solid var(--chip-border);
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.spectacular-btn:hover .spectacular-btn-inner {
+  color: var(--chip-text-active);
+  border-color: color-mix(in srgb, var(--chip-border) 60%, var(--text-main));
+}
+
+.spectacular-btn--active .spectacular-btn-inner {
+  color: var(--chip-text-active);
+  background: color-mix(in srgb, var(--accent-crimson) 18%, var(--chip-bg-active));
+  border-color: color-mix(in srgb, var(--accent-crimson) 35%, transparent);
+  font-weight: 600;
+}
+
+.spectacular-btn-shine {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    105deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.42) 50%,
+    transparent 62%
+  );
+  transform: translateX(-130%);
+  opacity: 0;
+}
+
+.spectacular-btn-spark {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+.spectacular-btn-spark-dot {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--gradient-accent);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.spectacular-btn:focus-visible .spectacular-btn-inner {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.spectacular-filter-track {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.spectacular-filter-thumb {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 0;
+  border-radius: var(--radius-sm);
+  pointer-events: none;
+  background: color-mix(in srgb, var(--accent-crimson) 22%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent-crimson) 28%, transparent),
+    0 4px 14px color-mix(in srgb, var(--accent-crimson) 18%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spectacular-btn-inner {
+    transition: none;
+  }
+}

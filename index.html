@@ -17,6 +17,11 @@
           ? stored
           : (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
         document.documentElement.setAttribute('data-theme', theme);
+
+        var storedPalette = localStorage.getItem('lo-palette');
+        var validPalettes = ['velvet', 'amber', 'slate', 'teal', 'rose', 'citrine', 'electric'];
+        var palette = validPalettes.indexOf(storedPalette) >= 0 ? storedPalette : 'velvet';
+        document.documentElement.setAttribute('data-palette', palette);
       } catch (e) { }
     })();
   </script>

@@ -46,8 +46,8 @@
 }
 
 /* ═══════════════════════════════════════════
-   Dark Theme — Knowledge Vault
-   Palette: Void · Vault · Chamber · Illumination · Intelligence
+   Dark Theme — Deep Velvet
+   Base #0E0C1A · Cards #16132A · Ink #EAE5FF · Margin #8A85A8
    Accent: Amber #F5A623 → Violet #7C5CFC
    ═══════════════════════════════════════════ */
 :root,
@@ -56,23 +56,21 @@
 }
 
 [data-theme="dark"] {
-  --color-bg: #09080F;
-  /* Void */
-  --color-base: #120F1D;
-  /* Vault */
+  --color-bg: #0E0C1A;
+  /* Deep Velvet */
+  --color-base: #12101F;
 
   /* Surfaces */
   --bg-panel: rgba(255, 255, 255, 0.03);
-  --bg-card: #1B1829;
-  /* Chamber */
-  --bg-card-hover: #231F33;
-  --bg-input: #0D0B1A;
+  --bg-card: #16132A;
+  --bg-card-hover: #1C1934;
+  --bg-input: #12101F;
 
   /* Sidebar */
-  --bg-sidebar: #0E0B1A;
+  --bg-sidebar: #100E1C;
 
-  /* Borders */
-  --border: rgba(255, 255, 255, 0.09);
+  /* Borders — faint violet tint */
+  --border: rgba(124, 92, 252, 0.12);
   --border-hover: rgba(245, 166, 35, 0.55);
   /* Amber glow */
   --border-glow: rgba(124, 92, 252, 0.40);
@@ -81,16 +79,16 @@
   /* Typography */
   --text-main: #EAE5FF;
   /* Manuscript — warm off-white with violet undertone */
-  --text-dim: #8A84A8;
-  /* Margin */
-  --text-muted: #5A5478;
+  --text-dim: #8A85A8;
+  /* Margin — warm purple-grey */
+  --text-muted: #6B6688;
 
   /* Gradient Accent: Illumination (amber) → Intelligence (violet) */
   --gradient-accent: linear-gradient(135deg, #F5A623 0%, #7C5CFC 100%);
   --gradient-hover: linear-gradient(135deg, #F7B84B 0%, #9375FF 100%);
 
   /* Nav tokens */
-  --nav-icon: #8A84A8;
+  --nav-icon: #8A85A8;
   --nav-icon-hover: #EAE5FF;
   --nav-icon-active: #ffffff;
   --nav-bg-hover: rgba(255, 255, 255, 0.06);
@@ -104,12 +102,12 @@
   --color-destructive-ring: rgba(248, 81, 73, 0.15);
 
   /* Chips / filters */
-  --chip-bg: #1B1829;
-  --chip-bg-hover: #231F33;
+  --chip-bg: #16132A;
+  --chip-bg-hover: #1C1934;
   --chip-bg-active: #F5A623;
-  --chip-text: #8A84A8;
-  --chip-text-active: #09080F;
-  --chip-border: rgba(255, 255, 255, 0.09);
+  --chip-text: #8A85A8;
+  --chip-text-active: #0E0C1A;
+  --chip-border: rgba(124, 92, 252, 0.12);
   --chip-border-active: transparent;
 
   /* Focus */
@@ -120,12 +118,12 @@
   --scrollbar-thumb-hover: rgba(124, 92, 252, 0.55);
 
   /* Mobile bottom nav */
-  --mobile-nav-bg: rgba(9, 8, 15, 0.97);
+  --mobile-nav-bg: rgba(14, 12, 26, 0.97);
 
   /* Chat */
-  --chat-bubble-user: #1B1829;
-  --chat-bubble-assistant: #120F1D;
-  --chat-input-bg: #09080F;
+  --chat-bubble-user: #16132A;
+  --chat-bubble-assistant: #12101F;
+  --chat-input-bg: #0E0C1A;
   --chat-send-bg: #F5A623;
   --chat-send-bg-hover: #D9901A;
 
@@ -133,8 +131,8 @@
   --card-tag-bg: rgba(124, 92, 252, 0.15);
   --card-tag-color: #A48EFF;
   --card-delete-bg: rgba(0, 0, 0, 0.7);
-  --card-image-placeholder-bg: linear-gradient(135deg, #1B1829 0%, #231F33 100%);
-  --card-footer-border: rgba(255, 255, 255, 0.07);
+  --card-image-placeholder-bg: linear-gradient(135deg, #16132A 0%, #1C1934 100%);
+  --card-footer-border: rgba(124, 92, 252, 0.10);
   --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 1px 0 rgba(255, 255, 255, 0.04) inset;
   --card-shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.75), 0 0 28px rgba(124, 92, 252, 0.20);
 
@@ -146,8 +144,8 @@
   --auth-title-gradient: linear-gradient(135deg, #F5A623 0%, #7C5CFC 100%);
   --header-title-gradient: linear-gradient(135deg, #F5A623 0%, #7C5CFC 100%);
 
-  /* Body bg — subtle depth from void to vault */
-  --body-bg-gradient: linear-gradient(180deg, #09080F 0%, #120F1D 100%);
+  /* Body bg — subtle depth under violet undertone */
+  --body-bg-gradient: linear-gradient(180deg, #0E0C1A 0%, #12101F 100%);
 
   /* Badge */
   --badge-bg: rgba(255, 255, 255, 0.08);
@@ -166,16 +164,21 @@
   /* Theme toggle */
   --toggle-bg: rgba(255, 255, 255, 0.07);
   --toggle-bg-hover: rgba(255, 255, 255, 0.13);
+
+  /* Edgeless nav surfaces */
+  --nav-solid-bg: var(--chip-bg);
+  --nav-solid-bg-hover: var(--chip-bg-hover);
+  --nav-bar-bg: var(--bg-card);
 }
 
 /* ═══════════════════════════════════════════
-   Light Theme — Parchment & Vellum
-   Parchment base with violet-cast neutrals.
+   Light Theme — Velvet Parchment
+   Base #F8F6FF · Ink #13111F · Borders rgba(91,63,232,0.1)
    Accent: Amber #E09920 → Violet #6B4EE8
    ═══════════════════════════════════════════ */
 [data-theme="light"] {
-  --color-bg: #F7F5FF;
-  /* Parchment — white with the faintest violet */
+  --color-bg: #F8F6FF;
+  /* Velvet Parchment */
   --color-base: #ffffff;
 
   /* Surfaces */
@@ -185,29 +188,29 @@
   --bg-input: #ffffff;
 
   /* Sidebar */
-  --bg-sidebar: #F0EBFF;
-  /* Vellum — pale violet, like natural parchment */
+  --bg-sidebar: #F0ECFF;
+  /* Vellum — pale violet echo of parchment */
 
-  /* Borders */
-  --border: #E2DCF5;
+  /* Borders — faint purple tint */
+  --border: rgba(91, 63, 232, 0.1);
   --border-hover: #6B4EE8;
   /* Violet hover */
-  --border-glow: rgba(107, 78, 232, 0.22);
+  --border-glow: rgba(91, 63, 232, 0.22);
 
   /* Typography */
-  --text-main: #18152A;
-  /* Ink — near-black with violet undertone */
+  --text-main: #13111F;
+  /* Ink — purple-tinted near-black */
   --text-dim: #5A5478;
   /* Annotation */
-  --text-muted: #8B85A8;
+  --text-muted: #8A85A8;
 
   /* Gradient Accent: Amber (deepened for light bg) → Violet */
   --gradient-accent: linear-gradient(135deg, #E09920 0%, #6B4EE8 100%);
-  --gradient-hover: linear-gradient(135deg, #C88515 0%, #5B3EDB 100%);
+  --gradient-hover: linear-gradient(135deg, #C88515 0%, #5B3FE8 100%);
 
   /* Nav tokens */
   --nav-icon: #5A5478;
-  --nav-icon-hover: #18152A;
+  --nav-icon-hover: #13111F;
   --nav-icon-active: #ffffff;
   --nav-bg-hover: #EDE8FF;
   --nav-bg-active: #6B4EE8;
@@ -224,63 +227,68 @@
   --chip-bg-active: #6B4EE8;
   --chip-text: #5A5478;
   --chip-text-active: #ffffff;
-  --chip-border: #E2DCF5;
+  --chip-border: rgba(91, 63, 232, 0.1);
   --chip-border-active: transparent;
 
   /* Focus */
-  --focus-ring: rgba(107, 78, 232, 0.30);
+  --focus-ring: rgba(91, 63, 232, 0.30);
 
   /* Scrollbar */
-  --scrollbar-thumb: #C8C0E8;
-  --scrollbar-thumb-hover: #8B70E8;
+  --scrollbar-thumb: rgba(91, 63, 232, 0.22);
+  --scrollbar-thumb-hover: rgba(91, 63, 232, 0.40);
 
   /* Mobile bottom nav */
-  --mobile-nav-bg: rgba(255, 255, 255, 0.97);
+  --mobile-nav-bg: rgba(248, 246, 255, 0.97);
 
   /* Chat */
   --chat-bubble-user: #EDE8FF;
   --chat-bubble-assistant: #ffffff;
   --chat-input-bg: #ffffff;
   --chat-send-bg: #6B4EE8;
-  --chat-send-bg-hover: #5B3EDB;
+  --chat-send-bg-hover: #5B3FE8;
 
   /* Card extras */
-  --card-tag-bg: rgba(107, 78, 232, 0.10);
-  --card-tag-color: #5B3EDB;
+  --card-tag-bg: rgba(91, 63, 232, 0.10);
+  --card-tag-color: #5B3FE8;
   --card-delete-bg: #ffffff;
-  --card-image-placeholder-bg: linear-gradient(135deg, #F0EBFF 0%, #E8E2FF 100%);
-  --card-footer-border: #E2DCF5;
-  --card-shadow: 0 4px 16px rgba(24, 21, 42, 0.07), 0 1px 3px rgba(24, 21, 42, 0.04);
-  --card-shadow-hover: 0 16px 36px rgba(24, 21, 42, 0.12), 0 0 0 1px #6B4EE8;
+  --card-image-placeholder-bg: linear-gradient(135deg, #F0ECFF 0%, #E8E2FF 100%);
+  --card-footer-border: rgba(91, 63, 232, 0.1);
+  --card-shadow: 0 4px 16px rgba(19, 17, 31, 0.07), 0 1px 3px rgba(19, 17, 31, 0.04);
+  --card-shadow-hover: 0 16px 36px rgba(19, 17, 31, 0.12), 0 0 0 1px #6B4EE8;
 
   /* Dialog */
-  --dialog-overlay-bg: rgba(24, 21, 42, 0.50);
-  --dialog-shadow: 0 24px 48px rgba(24, 21, 42, 0.18);
+  --dialog-overlay-bg: rgba(19, 17, 31, 0.50);
+  --dialog-shadow: 0 24px 48px rgba(19, 17, 31, 0.18);
 
   /* Auth / Header title */
   --auth-title-gradient: linear-gradient(135deg, #E09920 0%, #6B4EE8 100%);
   --header-title-gradient: linear-gradient(135deg, #E09920 0%, #6B4EE8 100%);
 
   /* Body bg */
-  --body-bg-gradient: linear-gradient(180deg, #F7F5FF 0%, #EDE8FF 100%);
+  --body-bg-gradient: linear-gradient(180deg, #F8F6FF 0%, #F0ECFF 100%);
 
   /* Badge */
   --badge-bg: #EDE8FF;
 
   /* Sidebar active shadow */
-  --sidebar-active-shadow: 0 4px 14px rgba(107, 78, 232, 0.28);
+  --sidebar-active-shadow: 0 4px 14px rgba(91, 63, 232, 0.28);
 
   /* Beta badge */
-  --beta-badge-bg: linear-gradient(135deg, rgba(224, 153, 32, 0.15), rgba(107, 78, 232, 0.15));
+  --beta-badge-bg: linear-gradient(135deg, rgba(224, 153, 32, 0.15), rgba(91, 63, 232, 0.15));
 
   /* Related */
-  --related-bg: #F0EBFF;
+  --related-bg: #F0ECFF;
   --related-item-bg: #ffffff;
   --related-item-bg-hover: #EDE8FF;
 
   /* Theme toggle */
   --toggle-bg: #EDE8FF;
   --toggle-bg-hover: #DFD9F5;
+
+  /* Edgeless nav surfaces */
+  --nav-solid-bg: var(--chip-bg);
+  --nav-solid-bg-hover: var(--chip-bg-hover);
+  --nav-bar-bg: var(--bg-sidebar);
 }
 
 /* ═══════════════════════════════════════════
@@ -331,82 +339,469 @@ a {
   }
 }
 
+/* Ambient orbs removed — flat page background only */
+
 /* ═══════════════════════════════════════════
-   Ambient Atmosphere — Cinematic Dark Depth
-   Two slow-drifting radial orbs give the
-   app volumetric depth without JS.
-   Amber = Illumination  Violet = Intelligence
+   Palette: Warm Amber
+   Light #FDF6EE · Dark #120D08 · Primary #E07B39
    ═══════════════════════════════════════════ */
-body::before,
-body::after {
-  content: '';
-  position: fixed;
-  pointer-events: none;
-  border-radius: 50%;
+[data-palette="amber"][data-theme="dark"] {
+  --accent-crimson: #E07B39;
+  --accent-light-crimson: #F09050;
+  --accent-sky: #C8652A;
+
+  --color-bg: #120D08;
+  --color-base: #1A120F;
+  --bg-panel: rgba(255, 255, 255, 0.03);
+  --bg-card: #1E1610;
+  --bg-card-hover: #261C14;
+  --bg-input: #1A120F;
+  --bg-sidebar: #160F0A;
+
+  --border: rgba(224, 123, 57, 0.14);
+  --border-hover: rgba(224, 123, 57, 0.55);
+  --border-glow: rgba(224, 123, 57, 0.35);
+
+  --text-main: #F5EDE4;
+  --text-dim: #A89888;
+  --text-muted: #7A6E62;
+
+  --gradient-accent: linear-gradient(135deg, #E07B39 0%, #C8652A 100%);
+  --gradient-hover: linear-gradient(135deg, #F09050 0%, #E07B39 100%);
+
+  --nav-icon: #A89888;
+  --nav-bg-active: #E07B39;
+  --chip-bg: #1E1610;
+  --chip-bg-hover: #261C14;
+  --chip-bg-active: #E07B39;
+  --chip-text: #A89888;
+  --chip-text-active: #120D08;
+  --chip-border: rgba(224, 123, 57, 0.14);
+
+  --focus-ring: rgba(224, 123, 57, 0.40);
+  --scrollbar-thumb-hover: rgba(224, 123, 57, 0.55);
+  --mobile-nav-bg: rgba(18, 13, 8, 0.97);
+
+  --chat-bubble-user: #1E1610;
+  --chat-bubble-assistant: #1A120F;
+  --chat-input-bg: #120D08;
+  --chat-send-bg: #E07B39;
+  --chat-send-bg-hover: #C8652A;
+
+  --card-tag-bg: rgba(224, 123, 57, 0.15);
+  --card-tag-color: #F09050;
+  --card-image-placeholder-bg: linear-gradient(135deg, #1E1610 0%, #261C14 100%);
+  --card-footer-border: rgba(224, 123, 57, 0.12);
+  --card-shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.75), 0 0 28px rgba(224, 123, 57, 0.18);
+
+  --auth-title-gradient: linear-gradient(135deg, #E07B39 0%, #C8652A 100%);
+  --header-title-gradient: linear-gradient(135deg, #E07B39 0%, #C8652A 100%);
+  --body-bg-gradient: linear-gradient(180deg, #120D08 0%, #1A120F 100%);
+  --sidebar-active-shadow: 0 4px 16px rgba(224, 123, 57, 0.30);
+  --beta-badge-bg: linear-gradient(135deg, rgba(224, 123, 57, 0.25), rgba(200, 101, 42, 0.20));
 }
 
-body::before {
-  /* Amber orb — top-right quadrant */
-  z-index: 0;
-  width: clamp(300px, 45vw, 580px);
-  height: clamp(300px, 45vw, 580px);
-  background: radial-gradient(ellipse at center,
-      rgba(245, 166, 35, 0.08) 0%,
-      transparent 68%);
-  top: -12%;
-  right: 4%;
-  animation: ambientDrift1 22s ease-in-out infinite alternate;
+[data-palette="amber"][data-theme="light"] {
+  --accent-crimson: #E07B39;
+  --accent-light-crimson: #F09050;
+  --accent-sky: #C8652A;
+
+  --color-bg: #FDF6EE;
+  --color-base: #FFFCF8;
+  --bg-panel: #FFFCF8;
+  --bg-card: #FFFCF8;
+  --bg-card-hover: #FBF3E8;
+  --bg-input: #FFFCF8;
+  --bg-sidebar: #F5E8D8;
+
+  --border: rgba(224, 123, 57, 0.12);
+  --border-hover: #E07B39;
+  --border-glow: rgba(224, 123, 57, 0.22);
+
+  --text-main: #1A1208;
+  --text-dim: #6B5E4E;
+  --text-muted: #9A8878;
+
+  --gradient-accent: linear-gradient(135deg, #E07B39 0%, #C8652A 100%);
+  --gradient-hover: linear-gradient(135deg, #C8652A 0%, #B05520 100%);
+
+  --nav-icon: #6B5E4E;
+  --nav-icon-hover: #1A1208;
+  --nav-bg-hover: #F5E8D8;
+  --nav-bg-active: #E07B39;
+
+  --chip-bg: #FFFCF8;
+  --chip-bg-hover: #F5E8D8;
+  --chip-bg-active: #E07B39;
+  --chip-border: rgba(224, 123, 57, 0.12);
+
+  --focus-ring: rgba(224, 123, 57, 0.30);
+  --scrollbar-thumb: rgba(224, 123, 57, 0.22);
+  --scrollbar-thumb-hover: rgba(224, 123, 57, 0.40);
+  --mobile-nav-bg: rgba(253, 246, 238, 0.97);
+  --tab-active-bg: rgba(224, 123, 57, 0.08);
+
+  --chat-bubble-user: #F5E8D8;
+  --chat-send-bg: #E07B39;
+  --chat-send-bg-hover: #C8652A;
+
+  --card-tag-bg: rgba(224, 123, 57, 0.10);
+  --card-tag-color: #C8652A;
+  --card-image-placeholder-bg: linear-gradient(135deg, #F5E8D8 0%, #EDD9C4 100%);
+  --card-footer-border: rgba(224, 123, 57, 0.12);
+  --card-shadow: 0 4px 16px rgba(26, 18, 8, 0.07), 0 1px 3px rgba(26, 18, 8, 0.04);
+  --card-shadow-hover: 0 16px 36px rgba(26, 18, 8, 0.12), 0 0 0 1px #E07B39;
+
+  --dialog-overlay-bg: rgba(26, 18, 8, 0.50);
+  --auth-title-gradient: linear-gradient(135deg, #E07B39 0%, #C8652A 100%);
+  --header-title-gradient: linear-gradient(135deg, #E07B39 0%, #C8652A 100%);
+  --body-bg-gradient: linear-gradient(180deg, #FDF6EE 0%, #F5E8D8 100%);
+  --badge-bg: #F5E8D8;
+  --sidebar-active-shadow: 0 4px 14px rgba(224, 123, 57, 0.28);
+  --beta-badge-bg: linear-gradient(135deg, rgba(224, 123, 57, 0.15), rgba(200, 101, 42, 0.12));
+  --related-bg: #F5E8D8;
+  --related-item-bg-hover: #F5E8D8;
+  --toggle-bg: #F5E8D8;
+  --toggle-bg-hover: #EDD9C4;
 }
 
-body::after {
-  /* Violet orb — bottom-left quadrant */
-  z-index: 0;
-  width: clamp(250px, 38vw, 480px);
-  height: clamp(250px, 38vw, 480px);
-  background: radial-gradient(ellipse at center,
-      rgba(124, 92, 252, 0.07) 0%,
-      transparent 68%);
-  bottom: -10%;
-  left: 4%;
-  animation: ambientDrift2 28s ease-in-out infinite alternate;
+/* ═══════════════════════════════════════════
+   Palette: Slate
+   Light #F0F4FF · Dark #0D1117 · Primary unchanged (amber → violet)
+   ═══════════════════════════════════════════ */
+[data-palette="slate"][data-theme="dark"] {
+  --color-bg: #0D1117;
+  --color-base: #161B22;
+  --bg-panel: rgba(255, 255, 255, 0.03);
+  --bg-card: #161B22;
+  --bg-card-hover: #1C2128;
+  --bg-input: #161B22;
+  --bg-sidebar: #0D1117;
+
+  --border: rgba(130, 150, 190, 0.14);
+  --border-hover: rgba(245, 166, 35, 0.55);
+  --border-glow: rgba(124, 92, 252, 0.40);
+
+  --text-main: #E6EDF3;
+  --text-dim: #8B949E;
+  --text-muted: #6E7681;
+
+  --nav-icon: #8B949E;
+  --nav-icon-hover: #E6EDF3;
+  --chip-bg: #161B22;
+  --chip-bg-hover: #1C2128;
+  --chip-text: #8B949E;
+  --chip-text-active: #0D1117;
+  --chip-border: rgba(130, 150, 190, 0.14);
+
+  --focus-ring: rgba(124, 92, 252, 0.40);
+  --mobile-nav-bg: rgba(13, 17, 23, 0.97);
+
+  --chat-bubble-user: #161B22;
+  --chat-bubble-assistant: #161B22;
+  --chat-input-bg: #0D1117;
+
+  --card-tag-bg: rgba(124, 92, 252, 0.15);
+  --card-image-placeholder-bg: linear-gradient(135deg, #161B22 0%, #1C2128 100%);
+  --card-footer-border: rgba(130, 150, 190, 0.12);
+  --body-bg-gradient: linear-gradient(180deg, #0D1117 0%, #161B22 100%);
 }
 
-[data-theme="light"] body::before {
-  background: radial-gradient(ellipse at center,
-      rgba(224, 153, 32, 0.09) 0%, transparent 68%);
+[data-palette="slate"][data-theme="light"] {
+  --color-bg: #F0F4FF;
+  --color-base: #ffffff;
+  --bg-panel: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-hover: #F8FAFF;
+  --bg-input: #ffffff;
+  --bg-sidebar: #E4EAFF;
+
+  --border: rgba(80, 100, 140, 0.12);
+  --border-hover: #6B4EE8;
+  --border-glow: rgba(91, 63, 232, 0.22);
+
+  --text-main: #0D1117;
+  --text-dim: #4A5568;
+  --text-muted: #6B7280;
+
+  --nav-icon: #4A5568;
+  --nav-icon-hover: #0D1117;
+  --nav-bg-hover: #E4EAFF;
+  --chip-bg-hover: #E4EAFF;
+  --chip-border: rgba(80, 100, 140, 0.12);
+  --tab-active-bg: rgba(80, 100, 140, 0.08);
+
+  --scrollbar-thumb: rgba(80, 100, 140, 0.22);
+  --scrollbar-thumb-hover: rgba(91, 63, 232, 0.40);
+  --mobile-nav-bg: rgba(240, 244, 255, 0.97);
+
+  --chat-bubble-user: #E4EAFF;
+  --card-image-placeholder-bg: linear-gradient(135deg, #E4EAFF 0%, #D8E0FF 100%);
+  --card-footer-border: rgba(80, 100, 140, 0.12);
+  --card-shadow: 0 4px 16px rgba(13, 17, 23, 0.07), 0 1px 3px rgba(13, 17, 23, 0.04);
+  --card-shadow-hover: 0 16px 36px rgba(13, 17, 23, 0.12), 0 0 0 1px #6B4EE8;
+
+  --dialog-overlay-bg: rgba(13, 17, 23, 0.50);
+  --body-bg-gradient: linear-gradient(180deg, #F0F4FF 0%, #E4EAFF 100%);
+  --badge-bg: #E4EAFF;
+  --related-bg: #E4EAFF;
+  --related-item-bg-hover: #E4EAFF;
+  --toggle-bg: #E4EAFF;
+  --toggle-bg-hover: #D8E0FF;
 }
 
-[data-theme="light"] body::after {
-  background: radial-gradient(ellipse at center,
-      rgba(107, 78, 232, 0.07) 0%, transparent 68%);
+/* ═══════════════════════════════════════════
+   Palette: Midnight Teal
+   Light #F5FAF9 / #0D1F1C · Dark #0A1614 / #111F1C
+   ═══════════════════════════════════════════ */
+[data-palette="teal"][data-theme="dark"] {
+  --accent-crimson: #2A9D8F;
+  --accent-light-crimson: #3DB8A9;
+  --accent-sky: #1F7A6E;
+
+  --color-bg: #0A1614;
+  --color-base: #0E1A18;
+  --bg-card: #111F1C;
+  --bg-card-hover: #152622;
+  --bg-input: #0E1A18;
+  --bg-sidebar: #0A1614;
+
+  --border: rgba(42, 157, 143, 0.14);
+  --border-hover: rgba(42, 157, 143, 0.55);
+  --border-glow: rgba(42, 157, 143, 0.35);
+
+  --text-main: #E8F5F2;
+  --text-dim: #7A9A94;
+  --text-muted: #5A7872;
+
+  --gradient-accent: linear-gradient(135deg, #2A9D8F 0%, #1F7A6E 100%);
+  --gradient-hover: linear-gradient(135deg, #3DB8A9 0%, #2A9D8F 100%);
+
+  --nav-bg-active: #2A9D8F;
+  --chip-bg: #111F1C;
+  --chip-bg-hover: #152622;
+  --chip-bg-active: #2A9D8F;
+  --chip-text: #7A9A94;
+  --chip-text-active: #0A1614;
+  --chip-border: rgba(42, 157, 143, 0.14);
+
+  --focus-ring: rgba(42, 157, 143, 0.40);
+  --mobile-nav-bg: rgba(10, 22, 20, 0.97);
+  --chat-send-bg: #2A9D8F;
+  --chat-send-bg-hover: #1F7A6E;
+  --body-bg-gradient: linear-gradient(180deg, #0A1614 0%, #0E1A18 100%);
+  --auth-title-gradient: linear-gradient(135deg, #2A9D8F 0%, #1F7A6E 100%);
+  --header-title-gradient: linear-gradient(135deg, #2A9D8F 0%, #1F7A6E 100%);
 }
 
-@keyframes ambientDrift1 {
-  from {
-    transform: translate(0, 0) scale(1);
-  }
+[data-palette="teal"][data-theme="light"] {
+  --accent-crimson: #2A9D8F;
+  --accent-light-crimson: #3DB8A9;
+  --accent-sky: #1F7A6E;
 
-  to {
-    transform: translate(50px, 65px) scale(1.14);
-  }
+  --color-bg: #F5FAF9;
+  --color-base: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-hover: #EFF8F6;
+  --bg-input: #ffffff;
+  --bg-sidebar: #E5F2F0;
+
+  --border: rgba(13, 31, 28, 0.10);
+  --border-hover: #2A9D8F;
+  --text-main: #0D1F1C;
+  --text-dim: #4A6A64;
+  --text-muted: #6A8882;
+
+  --gradient-accent: linear-gradient(135deg, #2A9D8F 0%, #1F7A6E 100%);
+  --nav-bg-active: #2A9D8F;
+  --chip-bg-active: #2A9D8F;
+  --chip-border: rgba(13, 31, 28, 0.10);
+  --tab-active-bg: rgba(42, 157, 143, 0.08);
+  --mobile-nav-bg: rgba(245, 250, 249, 0.97);
+  --body-bg-gradient: linear-gradient(180deg, #F5FAF9 0%, #E5F2F0 100%);
+  --toggle-bg: #E5F2F0;
+  --toggle-bg-hover: #D5E8E4;
 }
 
-@keyframes ambientDrift2 {
-  from {
-    transform: translate(0, 0) scale(1);
-  }
+/* ═══════════════════════════════════════════
+   Palette: Rose Quartz
+   Light #FDF5F7 / #1F0D14 · Dark #170D12 / #211219
+   ═══════════════════════════════════════════ */
+[data-palette="rose"][data-theme="dark"] {
+  --accent-crimson: #E879A0;
+  --accent-light-crimson: #F095B5;
+  --accent-sky: #D4567A;
 
-  to {
-    transform: translate(-40px, -55px) scale(1.10);
-  }
+  --color-bg: #170D12;
+  --color-base: #1C1016;
+  --bg-card: #211219;
+  --bg-card-hover: #281720;
+  --bg-input: #1C1016;
+  --bg-sidebar: #170D12;
+
+  --border: rgba(232, 121, 160, 0.14);
+  --border-hover: rgba(232, 121, 160, 0.55);
+  --text-main: #F5E8ED;
+  --text-dim: #A88898;
+  --text-muted: #806878;
+
+  --gradient-accent: linear-gradient(135deg, #E879A0 0%, #D4567A 100%);
+  --nav-bg-active: #E879A0;
+  --chip-bg: #211219;
+  --chip-bg-hover: #281720;
+  --chip-bg-active: #E879A0;
+  --chip-text-active: #170D12;
+  --chip-border: rgba(232, 121, 160, 0.14);
+  --focus-ring: rgba(232, 121, 160, 0.40);
+  --mobile-nav-bg: rgba(23, 13, 18, 0.97);
+  --chat-send-bg: #E879A0;
+  --body-bg-gradient: linear-gradient(180deg, #170D12 0%, #1C1016 100%);
 }
 
-@media (prefers-reduced-motion: reduce) {
+[data-palette="rose"][data-theme="light"] {
+  --accent-crimson: #E879A0;
+  --accent-sky: #D4567A;
 
-  body::before,
-  body::after {
-    animation: none;
-  }
+  --color-bg: #FDF5F7;
+  --bg-sidebar: #F8E8ED;
+  --text-main: #1F0D14;
+  --text-dim: #6A4A56;
+  --border: rgba(31, 13, 20, 0.10);
+  --border-hover: #E879A0;
+  --gradient-accent: linear-gradient(135deg, #E879A0 0%, #D4567A 100%);
+  --chip-bg-active: #E879A0;
+  --chip-border: rgba(31, 13, 20, 0.10);
+  --tab-active-bg: rgba(232, 121, 160, 0.08);
+  --mobile-nav-bg: rgba(253, 245, 247, 0.97);
+  --body-bg-gradient: linear-gradient(180deg, #FDF5F7 0%, #F8E8ED 100%);
+  --toggle-bg: #F8E8ED;
+  --toggle-bg-hover: #EFD8E0;
+}
+
+/* ═══════════════════════════════════════════
+   Palette: Ink & Citrine
+   Light #F7F7F2 / #14130A · Dark #0C0B08 / #141209
+   ═══════════════════════════════════════════ */
+[data-palette="citrine"][data-theme="dark"] {
+  --accent-crimson: #C9A227;
+  --accent-light-crimson: #DBB63A;
+  --accent-sky: #A8861A;
+
+  --color-bg: #0C0B08;
+  --color-base: #100F0C;
+  --bg-card: #141209;
+  --bg-card-hover: #1A1810;
+  --bg-input: #100F0C;
+  --bg-sidebar: #0C0B08;
+
+  --border: rgba(201, 162, 39, 0.14);
+  --border-hover: rgba(201, 162, 39, 0.55);
+  --text-main: #F5F4EF;
+  --text-dim: #9A9588;
+  --text-muted: #706C62;
+
+  --gradient-accent: linear-gradient(135deg, #C9A227 0%, #A8861A 100%);
+  --nav-bg-active: #C9A227;
+  --chip-bg: #141209;
+  --chip-bg-hover: #1A1810;
+  --chip-bg-active: #C9A227;
+  --chip-text-active: #0C0B08;
+  --chip-border: rgba(201, 162, 39, 0.14);
+  --focus-ring: rgba(201, 162, 39, 0.40);
+  --mobile-nav-bg: rgba(12, 11, 8, 0.97);
+  --chat-send-bg: #C9A227;
+  --body-bg-gradient: linear-gradient(180deg, #0C0B08 0%, #100F0C 100%);
+}
+
+[data-palette="citrine"][data-theme="light"] {
+  --accent-crimson: #C9A227;
+  --accent-sky: #A8861A;
+
+  --color-bg: #F7F7F2;
+  --bg-sidebar: #EEEEE6;
+  --text-main: #14130A;
+  --text-dim: #5A584E;
+  --border: rgba(20, 19, 10, 0.10);
+  --border-hover: #C9A227;
+  --gradient-accent: linear-gradient(135deg, #C9A227 0%, #A8861A 100%);
+  --chip-bg-active: #C9A227;
+  --chip-border: rgba(20, 19, 10, 0.10);
+  --tab-active-bg: rgba(201, 162, 39, 0.08);
+  --mobile-nav-bg: rgba(247, 247, 242, 0.97);
+  --body-bg-gradient: linear-gradient(180deg, #F7F7F2 0%, #EEEEE6 100%);
+  --toggle-bg: #EEEEE6;
+  --toggle-bg-hover: #E2E2D8;
+}
+
+/* ═══════════════════════════════════════════
+   Palette: Electric Violet
+   Light #F6F3FF / #0F0A21 · Dark #0B0818 / #151030 · Primary #7C4DFF
+   ═══════════════════════════════════════════ */
+[data-palette="electric"][data-theme="dark"] {
+  --accent-crimson: #7C4DFF;
+  --accent-light-crimson: #9375FF;
+  --accent-sky: #6B3FE8;
+
+  --color-bg: #0B0818;
+  --color-base: #100C22;
+  --bg-card: #151030;
+  --bg-card-hover: #1A1638;
+  --bg-input: #100C22;
+  --bg-sidebar: #0B0818;
+
+  --border: rgba(124, 77, 255, 0.14);
+  --border-hover: rgba(124, 77, 255, 0.55);
+  --border-glow: rgba(124, 77, 255, 0.45);
+  --text-main: #EDE8FF;
+  --text-dim: #9A90C0;
+  --text-muted: #6E6498;
+
+  --gradient-accent: linear-gradient(135deg, #E09920 0%, #7C4DFF 100%);
+  --gradient-hover: linear-gradient(135deg, #F5A623 0%, #9375FF 100%);
+
+  --nav-bg-active: #7C4DFF;
+  --chip-bg: #151030;
+  --chip-bg-hover: #1A1638;
+  --chip-bg-active: #7C4DFF;
+  --chip-text-active: #ffffff;
+  --chip-border: rgba(124, 77, 255, 0.14);
+  --focus-ring: rgba(124, 77, 255, 0.45);
+  --mobile-nav-bg: rgba(11, 8, 24, 0.97);
+  --chat-send-bg: #7C4DFF;
+  --chat-send-bg-hover: #6B3FE8;
+  --card-tag-color: #B49AFF;
+  --body-bg-gradient: linear-gradient(180deg, #0B0818 0%, #100C22 100%);
+  --auth-title-gradient: linear-gradient(135deg, #E09920 0%, #7C4DFF 100%);
+  --header-title-gradient: linear-gradient(135deg, #E09920 0%, #7C4DFF 100%);
+}
+
+[data-palette="electric"][data-theme="light"] {
+  --accent-crimson: #7C4DFF;
+  --accent-sky: #6B3FE8;
+
+  --color-bg: #F6F3FF;
+  --bg-sidebar: #EDE8FF;
+  --text-main: #0F0A21;
+  --text-dim: #4A4568;
+  --border: rgba(124, 77, 255, 0.12);
+  --border-hover: #7C4DFF;
+  --border-glow: rgba(124, 77, 255, 0.25);
+
+  --gradient-accent: linear-gradient(135deg, #E09920 0%, #7C4DFF 100%);
+  --gradient-hover: linear-gradient(135deg, #C88515 0%, #6B3FE8 100%);
+
+  --nav-bg-active: #7C4DFF;
+  --chip-bg-active: #7C4DFF;
+  --chip-border: rgba(124, 77, 255, 0.12);
+  --focus-ring: rgba(124, 77, 255, 0.35);
+  --tab-active-bg: rgba(124, 77, 255, 0.08);
+  --mobile-nav-bg: rgba(246, 243, 255, 0.97);
+  --chat-send-bg: #7C4DFF;
+  --chat-send-bg-hover: #6B3FE8;
+  --card-tag-color: #6B3FE8;
+  --body-bg-gradient: linear-gradient(180deg, #F6F3FF 0%, #EDE8FF 100%);
+  --toggle-bg: #EDE8FF;
+  --toggle-bg-hover: #DFD9F5;
 }
 
 /* App layout + fan stack + notes canvas (uses @apply — processed via @reference in App.css) */
