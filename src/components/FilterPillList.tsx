@@ -98,7 +98,11 @@ export function FilterPillList({
     >
       <div
         ref={trackRef}
-        className={`flex gap-1.5 px-3 w-max min-w-full filter-pill-track${variant === 'nav' ? ' spectacular-filter-track' : ''}`}
+        className={
+          variant === 'nav'
+            ? 'filter-pill-track spectacular-filter-track'
+            : 'flex gap-1.5 px-3 w-max min-w-full filter-pill-track'
+        }
       >
         {variant === 'nav' && (
           <div ref={thumbRef} className="spectacular-filter-thumb" aria-hidden="true" />

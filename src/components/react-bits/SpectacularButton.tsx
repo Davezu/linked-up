@@ -46,7 +46,7 @@ export const SpectacularButton = forwardRef<HTMLButtonElement, SpectacularButton
         <span ref={innerRef} className="spectacular-btn-inner">
           <span ref={shineRef} className="spectacular-btn-shine" aria-hidden="true" />
           <span ref={sparkRef} className="spectacular-btn-spark" aria-hidden="true" />
-          {children}
+          <span className="spectacular-btn-content">{children}</span>
         </span>
       </button>
     )

@@ -40,15 +40,22 @@ async function main() {
         method: 'POST',
         path: '/auth/register',
     });
-    const { combinedCredential } = register.body;
+    const { accessCode } = register.body;
 
-    // 2. Login
+    // 2. Login with short code
     const login = await call('POST /auth/login', {
         method: 'POST',
         path: '/auth/login',
-        body: { loginCode: combinedCredential },
+        body: { loginCode: accessCode },
     });
     const { token } = login.body;
+
+    // 2b. Dashless short code also works
+    await call('POST /auth/login (dashless code)', {
+        method: 'POST',
+        path: '/auth/login',
+        body: { loginCode: accessCode.replace(/-/g, '') },
+    });
 
     // 3. Create a link
     const created = await call('POST /links (create)', {
@@ -94,7 +101,7 @@ async function main() {
         const res = await call(`login attempt #${i} (wrong code)`, {
             method: 'POST',
             path: '/auth/login',
-            body: { loginCode: 'LO-acc-deadbeefdeadbeef-XXX-XXX-XXX' },
+            body: { loginCode: 'XXX-XXX-XXX' },
         });
         if (res.status === 429) {
             console.log(`✅ Rate limit kicked in on attempt #${i}`);

@@ -14,8 +14,8 @@ export function AuthGate({ onSuccess }: { onSuccess: () => void }) {
     async function handleRegister() {
         setLoading(true); setError(null)
         try {
-            const { combinedCredential } = await registerAccount()
-            setGeneratedCode(combinedCredential)
+            const { accessCode } = await registerAccount()
+            setGeneratedCode(accessCode)
         } catch (e) {
             setError(e instanceof Error ? e.message : 'Failed to create account. Please try again.')
         } finally {
@@ -38,7 +38,6 @@ export function AuthGate({ onSuccess }: { onSuccess: () => void }) {
     }
 
     function handleContinueAfterRegister() {
-        // User has saved their code — log them in immediately using it
         setMode('login')
         setLoginCode(generatedCode ?? '')
         setGeneratedCode(null)
@@ -52,18 +51,18 @@ export function AuthGate({ onSuccess }: { onSuccess: () => void }) {
                 {mode === 'choose' && (
                     <>
                         <p className="text-sm text-[var(--text-dim)] m-0 leading-relaxed">Save links, take notes, ask AI about your library.</p>
-                        <button onClick={() => setMode('register')} className="w-full py-3 px-4 rounded-xl font-semibold text-sm bg-[var(--gradient-accent)] text-[var(--color-bg)] shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer">Create Account</button>
-                        <button onClick={() => setMode('login')} className="w-full py-2.5 px-4 rounded-xl font-medium text-sm border border-[var(--border)] bg-[var(--bg-input)] text-[var(--text-main)] hover:bg-[var(--bg-card-hover)] transition-all cursor-pointer">I already have a code</button>
+                        <button type="button" onClick={() => setMode('register')} className="auth-btn-primary">Create Account</button>
+                        <button type="button" onClick={() => setMode('login')} className="auth-btn-secondary">I already have a code</button>
                     </>
                 )}
 
                 {mode === 'register' && !generatedCode && (
                     <>
                         <p className="text-sm text-[var(--text-dim)] m-0 leading-relaxed">We'll generate a login code for you. Save it somewhere safe — it's the only way to access your account, and we can't recover it if you lose it.</p>
-                        <button onClick={handleRegister} disabled={loading} className="w-full py-3 px-4 rounded-xl font-semibold text-sm bg-[var(--gradient-accent)] text-[var(--color-bg)] shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                        <button type="button" onClick={handleRegister} disabled={loading} className="auth-btn-primary">
                             {loading ? 'Generating…' : 'Generate My Code'}
                         </button>
-                        <button onClick={() => setMode('choose')} className="w-full py-2.5 px-4 rounded-xl font-medium text-sm border border-[var(--border)] bg-[var(--bg-input)] text-[var(--text-main)] hover:bg-[var(--bg-card-hover)] transition-all cursor-pointer">Back</button>
+                        <button type="button" onClick={() => setMode('choose')} className="auth-btn-secondary">Back</button>
                     </>
                 )}
 
@@ -71,7 +70,7 @@ export function AuthGate({ onSuccess }: { onSuccess: () => void }) {
                     <>
                         <p className="text-sm text-[var(--text-main)] m-0"><strong>Save this code now — it won't be shown again:</strong></p>
                         <code className="block p-4 my-1 rounded-xl bg-[var(--bg-input)] border border-[var(--border)] font-mono text-sm tracking-wider break-all select-all text-[var(--accent-crimson)]">{generatedCode}</code>
-                        <button onClick={() => { navigator.clipboard.writeText(generatedCode) }} className="w-full py-2.5 px-4 rounded-xl font-medium text-sm border border-[var(--border)] bg-[var(--bg-input)] text-[var(--text-main)] hover:bg-[var(--bg-card-hover)] transition-all cursor-pointer">
+                        <button type="button" onClick={() => { navigator.clipboard.writeText(generatedCode) }} className="auth-btn-secondary">
                             Copy Code
                         </button>
                         <label className="flex items-center justify-center gap-2 text-xs text-[var(--text-dim)] cursor-pointer">
@@ -83,7 +82,7 @@ export function AuthGate({ onSuccess }: { onSuccess: () => void }) {
                             />
                             I've saved this code somewhere safe
                         </label>
-                        <button onClick={handleContinueAfterRegister} disabled={!confirmedSaved} className="w-full py-3 px-4 rounded-xl font-semibold text-sm bg-[var(--gradient-accent)] text-[var(--color-bg)] shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+                        <button type="button" onClick={handleContinueAfterRegister} disabled={!confirmedSaved} className="auth-btn-primary">
                             Continue
                         </button>
                     </>
@@ -91,23 +90,27 @@ export function AuthGate({ onSuccess }: { onSuccess: () => void }) {
 
                 {mode === 'login' && (
                     <>
-                        <p className="text-sm text-[var(--text-dim)] m-0">Enter your login code:</p>
+                        <p className="text-sm text-[var(--text-dim)] m-0">Enter your 9-character login code:</p>
                         <input
                             type="text"
                             value={loginCode}
-                            onChange={e => { setLoginCode(e.target.value); setError(null) }}
-                            placeholder="e.g. 8TD-SBW-3QK"
+                            onChange={e => { setLoginCode(e.target.value.toUpperCase()); setError(null) }}
+                            onKeyDown={e => { if (e.key === 'Enter') handleLoginSubmit() }}
+                            placeholder="8TD-SBW-3QK"
                             autoFocus
-                            className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--bg-input)] text-[var(--text-main)] text-sm font-mono focus:border-[var(--accent-crimson)] focus:ring-2 focus:ring-[var(--focus-ring)] outline-none transition-all"
+                            autoComplete="off"
+                            spellCheck={false}
+                            className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--bg-input)] text-[var(--text-main)] text-sm font-mono tracking-wider uppercase focus:border-[var(--accent-crimson)] focus:ring-2 focus:ring-[var(--focus-ring)] outline-none transition-all"
                         />
-                        <button onClick={handleLoginSubmit} disabled={loading || !loginCode.trim()} className="w-full py-3 px-4 rounded-xl font-semibold text-sm bg-[var(--gradient-accent)] text-[var(--color-bg)] shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+                        <p className="text-[11px] text-[var(--text-muted)] m-0">Dashes optional — 8TDSBW3QK works too.</p>
+                        <button type="button" onClick={handleLoginSubmit} disabled={loading || !loginCode.trim()} className="auth-btn-primary">
                             {loading ? 'Logging in…' : 'Log In'}
                         </button>
-                        <button onClick={() => setMode('choose')} className="w-full py-2.5 px-4 rounded-xl font-medium text-sm border border-[var(--border)] bg-[var(--bg-input)] text-[var(--text-main)] hover:bg-[var(--bg-card-hover)] transition-all cursor-pointer">Back</button>
+                        <button type="button" onClick={() => setMode('choose')} className="auth-btn-secondary">Back</button>
                     </>
                 )}
 
-                {error && <p className="text-xs text-[var(--color-destructive-text)] bg-red-500/10 p-3 rounded-lg m-0 border border-red-500/20" role="alert">{error}</p>}
+                {error && <p className="text-xs text-[var(--color-destructive-text)] bg-red-500/10 p-3 rounded-lg m-0 border border-red-500/20 auth-error" role="alert">{error}</p>}
             </div>
         </div>
     )

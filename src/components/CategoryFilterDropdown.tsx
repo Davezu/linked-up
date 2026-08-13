@@ -3,10 +3,11 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import { createPortal } from 'react-dom'
 import { STATUS_FILTERS } from '../lib/constants'
 import { animateCategoryMenuClose, animateCategoryMenuOpen } from './react-bits/animations'
+import { SpectacularButton } from './react-bits/SpectacularButton'
 
 const MENU_GAP = 6
 const SCROLLABLE_THRESHOLD = 7
-const ITEM_HEIGHT = 36
+const ITEM_HEIGHT = 28
 
 function countForCategory(
   category: string,
@@ -123,6 +124,11 @@ export function CategoryFilterDropdown({
     }
   }, [open, closeMenu, updatePosition])
 
+  function selectCategory(category: string | null) {
+    onSelect(category ?? 'All')
+    closeMenu()
+  }
+
   if (categories.length === 0) return null
 
   return (
@@ -130,10 +136,9 @@ export function CategoryFilterDropdown({
       className={`category-filter${open ? ' category-filter--open' : ''}${activeCategory ? ' category-filter--active' : ''}`}
       ref={rootRef}
     >
-      <button
+      <SpectacularButton
         ref={triggerRef}
-        type="button"
-        className={`category-filter-trigger filter-pill${activeCategory ? ' active' : ''}`}
+        active={!!activeCategory}
         onClick={toggleOpen}
         aria-haspopup="listbox"
         aria-expanded={open}
@@ -146,7 +151,7 @@ export function CategoryFilterDropdown({
           <span className="filter-pill-count">{countForCategory(activeCategory, links)}</span>
         )}
         <ChevronDown size={12} strokeWidth={2.5} className="category-filter-chevron" aria-hidden="true" />
-      </button>
+      </SpectacularButton>
 
       {open && menuPos && createPortal(
         <div
@@ -158,8 +163,24 @@ export function CategoryFilterDropdown({
             className={`category-filter-menu${scrollable ? ' category-filter-menu--scrollable' : ''}`}
             role="listbox"
             aria-label="Categories"
-            style={scrollable ? { maxHeight: SCROLLABLE_THRESHOLD * ITEM_HEIGHT + 16 } : undefined}
+            style={scrollable ? { maxHeight: (SCROLLABLE_THRESHOLD + 1) * ITEM_HEIGHT + 12 } : undefined}
           >
+            <button
+              type="button"
+              role="option"
+              aria-selected={!activeCategory}
+              className={`category-filter-option category-filter-option--clear${!activeCategory ? ' category-filter-option--active' : ''}`}
+              onClick={() => selectCategory(null)}
+            >
+              <span className="category-filter-option-label">All categories</span>
+              <span className="category-filter-option-meta">
+                <span className="filter-pill-count">{links.length}</span>
+                {!activeCategory && <Check size={12} strokeWidth={2.5} aria-hidden="true" />}
+              </span>
+            </button>
+
+            <div className="category-filter-divider" role="separator" />
+
             {categories.map(cat => {
               const count = countForCategory(cat, links)
               const isActive = activeCategory === cat
@@ -170,15 +191,12 @@ export function CategoryFilterDropdown({
                   role="option"
                   aria-selected={isActive}
                   className={`category-filter-option${isActive ? ' category-filter-option--active' : ''}`}
-                  onClick={() => {
-                    onSelect(cat)
-                    closeMenu()
-                  }}
+                  onClick={() => selectCategory(isActive ? null : cat)}
                 >
                   <span className="category-filter-option-label truncate">{cat}</span>
                   <span className="category-filter-option-meta">
                     <span className="filter-pill-count">{count}</span>
-                    {isActive && <Check size={14} strokeWidth={2.5} aria-hidden="true" />}
+                    {isActive && <Check size={12} strokeWidth={2.5} aria-hidden="true" />}
                   </span>
                 </button>
               )

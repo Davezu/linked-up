@@ -5,7 +5,7 @@ import './App.css'
 import type { LinkRecord, NoteRecord } from './types'
 import { API_BASE, AI_API_BASE, LOAD_FROM_API, STATUS_FILTERS } from './lib/constants'
 import { generateId, delay } from './lib/helpers'
-import { loadLinks, saveLinks, normalizeCategory, loadNotes, saveNotes, DELETED_IDS_KEY, recordDeletedId, getDeletedIds } from './lib/storage'
+import { loadLinks, saveLinks, normalizeCategory, loadNotes, saveNotes, DELETED_IDS_KEY, recordDeletedId, getDeletedIds, clearLocalData } from './lib/storage'
 import { apiMutate, fetchLinksFromApi, buildRecordFromAi } from './lib/api'
 import { fetchNotesFromApi } from './lib/notes-api'
 import { makeMockRecord } from './lib/mock'
@@ -18,7 +18,7 @@ import { LinkFan } from './components/LinkFan'
 import { NotesView } from './components/NotesView'
 import { TopNav } from './components/TopNav'
 
-import { hasToken, authHeaders } from './lib/auth/tokenStorage'
+import { hasToken, authHeaders, clearToken } from './lib/auth/tokenStorage'
 import { AuthGate } from './components/AuthGate'
 import { isColorPalette, type ColorPalette } from './lib/palettes'
 import { runThemeToggleAnimation } from './components/react-bits/themeTransition'
@@ -66,6 +66,13 @@ export default function App() {
     })
   }
 
+  function handleLogout() {
+    clearToken()
+    clearLocalData()
+    setLinks([])
+    setNotes([])
+    setAuthenticated(false)
+  }
 
   // Fetch links from backend on auth — filter out local tombstones
   useEffect(() => {
@@ -351,6 +358,7 @@ export default function App() {
         onToggleTheme={handleToggleTheme}
         palette={palette}
         onPaletteChange={setPalette}
+        onLogout={handleLogout}
         onNewClick={() => { /* wire up your "create new" action here */ }}
         onNotificationsClick={() => { /* wire up notifications here */ }}
         onAssistantClick={() => { /* wire up assistant panel here */ }}

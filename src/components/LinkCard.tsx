@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Trash2, Loader2 } from 'lucide-react'
 import type { LinkRecord } from '../types'
 import { getDomain, getFaviconUrl, getRelated } from '../lib/helpers'
+import { SpectacularButton } from './react-bits/SpectacularButton'
 
 export function LinkCard({
   link, allLinks, onDelete, onStatusChange
@@ -71,7 +72,7 @@ export function LinkCard({
             </div>
           ) : null}
 
-          <div className="flex items-center justify-between mt-auto pt-3 border-t border-[var(--card-footer-border)] flex-shrink-0 card-footer">
+          <div className="flex items-center justify-between mt-auto pt-3 flex-shrink-0 card-footer">
             <div className="text-[11px] font-medium text-[var(--text-dim)] flex items-center gap-1.5 tracking-wide card-domain">
               {favicon && <img src={favicon} alt="" className="w-3.5 h-3.5 rounded card-favicon" />}
               {domain}
@@ -82,22 +83,22 @@ export function LinkCard({
       </a>
 
       {/* Status Actions */}
-      <div className="flex gap-1 p-3 pt-2.5 border-t border-[var(--border)] flex-shrink-0 card-status-actions" role="group" aria-label="Link status" onClick={e => { e.preventDefault(); e.stopPropagation() }}>
+      <div className="flex gap-1 p-3 pt-2.5 flex-shrink-0 card-status-actions" role="group" aria-label="Link status" onClick={e => { e.preventDefault(); e.stopPropagation() }}>
         {(['To Watch', 'Finished', 'Favorite'] as const).map(s => {
           const isActive = link.status === s || (!link.status && s === 'To Watch')
           const label = s === 'To Watch' ? 'Watch' : s === 'Finished' ? 'Done' : 'Fav'
           return (
-            <button
+            <SpectacularButton
               key={s}
-              type="button"
-              className={`flex-1 py-1.5 px-2 rounded-[var(--radius-sm)] border text-[11px] font-medium text-center transition-all cursor-pointer status-btn ${isActive ? 'bg-[var(--chip-bg-active)] text-[var(--chip-text-active)] border-transparent font-semibold shadow-sm active' : 'bg-white/5 border-[var(--border)] text-[var(--text-muted)] hover:bg-[var(--chip-bg-hover)] hover:text-[var(--text-main)] hover:border-[var(--border-hover)]'}`}
+              active={isActive}
+              className="card-status-btn"
               onClick={() => onStatusChange(link.id, s)}
               aria-pressed={isActive}
               title={`Mark as ${s}`}
               disabled={isProcessing}
             >
               {label}
-            </button>
+            </SpectacularButton>
           )
         })}
       </div>

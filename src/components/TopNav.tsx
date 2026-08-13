@@ -1,4 +1,4 @@
-import { Search, Link2, FileText, Sun, Moon, Palette, Check } from 'lucide-react'
+import { Search, Link2, FileText, Sun, Moon, Palette, Check, LogOut } from 'lucide-react'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { PALETTES, type ColorPalette } from '../lib/palettes'
@@ -30,6 +30,7 @@ interface TopNavProps {
   onNotificationsClick?: () => void
   onAssistantClick?: () => void
   onLogoClick?: () => void
+  onLogout?: () => void
   hasUnread?: boolean
   appName?: string
 }
@@ -54,6 +55,7 @@ export function TopNav({
   onNotificationsClick,
   onAssistantClick,
   onLogoClick,
+  onLogout,
   hasUnread = true,
   appName = 'Dashio',
 }: TopNavProps) {
@@ -298,6 +300,18 @@ export function TopNav({
             : <Moon size={16} strokeWidth={2} />
           }
         </button>
+        {onLogout && (
+          <button
+            id="logout-btn"
+            type="button"
+            className="top-nav-icon-btn"
+            onClick={onLogout}
+            aria-label="Log out"
+            title="Log out"
+          >
+            <LogOut size={16} strokeWidth={2} />
+          </button>
+        )}
       </div>
     </nav>
   )

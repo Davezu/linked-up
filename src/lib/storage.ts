@@ -106,3 +106,10 @@ export function loadNotes(): NoteRecord[] {
 export function saveNotes(notes: NoteRecord[]) {
   trySet(NOTES_STORAGE_KEY, JSON.stringify(notes.map(n => ({ ...n, isNew: false }))))
 }
+
+/** Wipes all user data from localStorage. Call on logout so the next user starts clean. */
+export function clearLocalData() {
+  localStorage.removeItem(STORAGE_KEY)
+  localStorage.removeItem(NOTES_STORAGE_KEY)
+  localStorage.removeItem(DELETED_IDS_KEY)
+}

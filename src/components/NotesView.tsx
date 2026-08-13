@@ -408,15 +408,6 @@ export function NotesView({ notes, onNotesChange }: NotesViewProps) {
             transformOrigin: '0 0',
           }}
         >
-          {notes.length === 0 && (
-            <div className="canvas-empty-hint" style={{ position: 'absolute', left: '50%', top: '40%', transform: 'translate(-50%, -50%)' }}>
-              <div style={{ fontSize: '3rem', opacity: 0.25 }}>📌</div>
-              <p style={{ fontSize: '1.1rem', fontFamily: "'Patrick Hand', cursive", fontWeight: 600, color: 'rgba(255,255,255,0.7)', textAlign: 'center' }}>
-                Click "+ New Note" to pin a thought on your board
-              </p>
-            </div>
-          )}
-
           {notes.map((note, idx) => {
             const noteColorObj = NOTE_PALETTE.find(p => p.bg === note.color) || NOTE_PALETTE[idx % NOTE_PALETTE.length]
             const noteColor = noteColorObj.bg
