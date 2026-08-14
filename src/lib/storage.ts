@@ -1,5 +1,5 @@
-import type { LinkRecord, NoteRecord } from '../types'
-import { STORAGE_KEY, NOTES_STORAGE_KEY, LEGACY_CATEGORY_MAP } from './constants'
+import type { LinkRecord, NoteRecord, FolderRecord } from '../types'
+import { STORAGE_KEY, NOTES_STORAGE_KEY, FOLDERS_STORAGE_KEY, LEGACY_CATEGORY_MAP } from './constants'
 
 export function normalizeCategory(category: string): string {
   const mapped = LEGACY_CATEGORY_MAP[category] ?? category
@@ -91,14 +91,15 @@ export function saveLinks(links: LinkRecord[]) {
 export function loadNotes(): NoteRecord[] {
   try {
     const deleted = getDeletedIds()
-    const raw = JSON.parse(localStorage.getItem(NOTES_STORAGE_KEY) ?? '[]') as any[]
+    const raw = JSON.parse(localStorage.getItem(NOTES_STORAGE_KEY) ?? '[]')
+    if (!Array.isArray(raw)) return []
     return raw
-      .filter(n => n && n.id && !deleted.has(n.id))
+      .filter(n => n && typeof n === 'object' && n.id && !deleted.has(n.id))
       .map(n => ({
         ...n,
-        tags: n.tags ?? [],
-        title: n.title ?? '',
-        content: n.content ?? '',
+        tags: Array.isArray(n.tags) ? n.tags : [],
+        title: typeof n.title === 'string' ? n.title : '',
+        content: typeof n.content === 'string' ? n.content : '',
       }))
   } catch { return [] }
 }
@@ -107,9 +108,33 @@ export function saveNotes(notes: NoteRecord[]) {
   trySet(NOTES_STORAGE_KEY, JSON.stringify(notes.map(n => ({ ...n, isNew: false }))))
 }
 
+// ── Canvas Folders local persistence ─────────────────────────────────────
+export function loadFolders(): FolderRecord[] {
+  try {
+    const raw = JSON.parse(localStorage.getItem(FOLDERS_STORAGE_KEY) ?? '[]')
+    if (!Array.isArray(raw)) return []
+    return raw
+      .filter(f => f && typeof f === 'object' && f.id && f.type === 'folder')
+      .map(f => ({
+        ...f,
+        name: typeof f.name === 'string' ? f.name : 'New Folder',
+        noteIds: Array.isArray(f.noteIds) ? f.noteIds : [],
+        width: typeof f.width === 'number' ? f.width : 72,
+        height: typeof f.height === 'number' ? f.height : 54,
+        x: typeof f.x === 'number' ? f.x : 100,
+        y: typeof f.y === 'number' ? f.y : 100,
+      }))
+  } catch { return [] }
+}
+
+export function saveFolders(folders: FolderRecord[]) {
+  trySet(FOLDERS_STORAGE_KEY, JSON.stringify(folders))
+}
+
 /** Wipes all user data from localStorage. Call on logout so the next user starts clean. */
 export function clearLocalData() {
   localStorage.removeItem(STORAGE_KEY)
   localStorage.removeItem(NOTES_STORAGE_KEY)
+  localStorage.removeItem(FOLDERS_STORAGE_KEY)
   localStorage.removeItem(DELETED_IDS_KEY)
 }

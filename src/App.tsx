@@ -6,7 +6,7 @@ import type { LinkRecord, NoteRecord } from './types'
 import { API_BASE, AI_API_BASE, LOAD_FROM_API, STATUS_FILTERS } from './lib/constants'
 import { generateId, delay } from './lib/helpers'
 import { loadLinks, saveLinks, normalizeCategory, loadNotes, saveNotes, DELETED_IDS_KEY, recordDeletedId, getDeletedIds, clearLocalData } from './lib/storage'
-import { apiMutate, fetchLinksFromApi, buildRecordFromAi } from './lib/api'
+import { apiMutate, fetchLinksFromApi, buildRecordFromAi, clearApiUnavailable } from './lib/api'
 import { fetchNotesFromApi } from './lib/notes-api'
 import { makeMockRecord } from './lib/mock'
 
@@ -39,6 +39,7 @@ export default function App() {
   const [deleteTarget, setDeleteTarget] = useState<LinkRecord | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const [authenticated, setAuthenticated] = useState(hasToken())
+  const [activeNoteFolder, setActiveNoteFolder] = useState<string | null>(null)
 
   // Theme state
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -78,10 +79,16 @@ export default function App() {
   useEffect(() => {
     if (!API_BASE || !LOAD_FROM_API || !authenticated) return
 
+    clearApiUnavailable()
+
     const ctrl = new AbortController()
     setLoading(true)
     fetchLinksFromApi(ctrl.signal)
       .then(data => {
+        if (!hasToken()) {
+          setAuthenticated(false)
+          return
+        }
         if (data) {
           const deleted = getDeletedIds()
           setLinks(data.filter(l => l && l.id && !deleted.has(l.id)).map(l => ({ ...l, category: normalizeCategory(l.category) })))
@@ -98,7 +105,13 @@ export default function App() {
 
     const ctrl = new AbortController()
     fetchNotesFromApi(ctrl.signal)
-      .then(data => { if (data) setNotes(data) })
+      .then(data => {
+        if (!hasToken()) {
+          setAuthenticated(false)
+          return
+        }
+        if (data) setNotes(data)
+      })
 
     return () => ctrl.abort()
   }, [authenticated])
@@ -337,7 +350,7 @@ export default function App() {
   const allCategories = Array.from(new Set(links.map(l => l.category))).sort()
 
   if (!authenticated) {
-    return <AuthGate onSuccess={() => setAuthenticated(true)} />
+    return <AuthGate onSuccess={() => { clearApiUnavailable(); setAuthenticated(true) }} />
   }
   return (
     <div className="app-shell">
@@ -358,6 +371,9 @@ export default function App() {
         onToggleTheme={handleToggleTheme}
         palette={palette}
         onPaletteChange={setPalette}
+        notes={notes}
+        activeFolder={activeNoteFolder}
+        onSelectFolder={setActiveNoteFolder}
         onLogout={handleLogout}
         onNewClick={() => { /* wire up your "create new" action here */ }}
         onNotificationsClick={() => { /* wire up notifications here */ }}
@@ -372,7 +388,12 @@ export default function App() {
           {activeView === 'chat' ? (
             <ChatView links={links} />
           ) : activeView === 'notes' ? (
-            <NotesView notes={notes} onNotesChange={setNotes} />
+            <NotesView
+              notes={notes}
+              onNotesChange={setNotes}
+              activeFolder={activeNoteFolder}
+              onSelectFolder={setActiveNoteFolder}
+            />
           ) : (
             <>
               {/* URL Input zone */}

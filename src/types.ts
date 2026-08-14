@@ -27,6 +27,20 @@ export interface NoteRecord {
   x?: number
   /** Canvas Y position (persisted in localStorage only) */
   y?: number
+  /** Folder name or ID */
+  folder?: string
+}
+
+export interface FolderRecord {
+  id: string
+  type: 'folder'
+  x: number
+  y: number
+  width: number
+  height: number
+  name: string
+  noteIds: string[]
+  color?: string
 }
 
 export interface ChatMessage {

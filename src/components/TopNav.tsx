@@ -1,10 +1,12 @@
-import { Search, Link2, FileText, Sun, Moon, Palette, Check, LogOut } from 'lucide-react'
+import { Search, Link2, FileText, Sun, Moon, Palette, Check, LogOut, Folder as FolderIcon } from 'lucide-react'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { PALETTES, type ColorPalette } from '../lib/palettes'
 import { animatePaletteMenuOpen } from './react-bits/animations'
 import { FilterPillList } from './FilterPillList'
 import { CategoryFilterDropdown } from './CategoryFilterDropdown'
+import { Folder } from './react-bits/Folder'
+import type { NoteRecord } from '../types'
 
 const PALETTE_MENU_GAP = 6
 
@@ -26,6 +28,9 @@ interface TopNavProps {
   onToggleTheme: (originEl: HTMLElement | null) => void
   palette: ColorPalette
   onPaletteChange: (palette: ColorPalette) => void
+  notes?: NoteRecord[]
+  activeFolder?: string | null
+  onSelectFolder?: (folder: string | null) => void
   onNewClick?: () => void
   onNotificationsClick?: () => void
   onAssistantClick?: () => void
@@ -41,7 +46,7 @@ export function TopNav({
   searchQuery,
   onSearchChange,
   notesCount,
-  linksCount,
+  linksCount: _linksCount,
   activeFilter = 'All',
   onFilterChange,
   statusFilters = [],
@@ -51,20 +56,75 @@ export function TopNav({
   onToggleTheme,
   palette,
   onPaletteChange,
-  onNewClick,
-  onNotificationsClick,
-  onAssistantClick,
+  notes = [],
+  activeFolder = null,
+  onSelectFolder,
+  onNewClick: _onNewClick,
+  onNotificationsClick: _onNotificationsClick,
+  onAssistantClick: _onAssistantClick,
   onLogoClick,
   onLogout,
-  hasUnread = true,
-  appName = 'Dashio',
+  hasUnread: _hasUnread = true,
+  appName: _appName = 'Dashio',
 }: TopNavProps) {
   const [paletteOpen, setPaletteOpen] = useState(false)
+  const [folderOpen, setFolderOpen] = useState(false)
   const [menuPos, setMenuPos] = useState<{ top: number; right: number } | null>(null)
+  const [folderPos, setFolderPos] = useState<{ top: number; right: number } | null>(null)
+
   const paletteRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
+  const folderRef = useRef<HTMLDivElement>(null)
+  const folderTriggerRef = useRef<HTMLButtonElement>(null)
+  const folderMenuRef = useRef<HTMLDivElement>(null)
   const themeBtnRef = useRef<HTMLButtonElement>(null)
+
+  // Compute folder stats from notes
+  const defaultFolderNames = ['Personal', 'Work', 'Ideas', 'Project']
+  const existingFolders = Array.from(new Set(notes.map(n => n.folder).filter(Boolean))) as string[]
+  const allFoldersList = Array.from(new Set([...defaultFolderNames, ...existingFolders]))
+
+  function toggleFolderMenu() {
+    setFolderOpen(open => {
+      const next = !open
+      if (next && folderTriggerRef.current) {
+        const rect = folderTriggerRef.current.getBoundingClientRect()
+        setFolderPos({
+          top: rect.bottom + PALETTE_MENU_GAP,
+          right: window.innerWidth - rect.right,
+        })
+      } else if (!next) {
+        setFolderPos(null)
+      }
+      return next
+    })
+  }
+
+  useEffect(() => {
+    if (!folderOpen) return
+    function updatePosition() {
+      if (!folderTriggerRef.current) return
+      const rect = folderTriggerRef.current.getBoundingClientRect()
+      setFolderPos({
+        top: rect.bottom + PALETTE_MENU_GAP,
+        right: window.innerWidth - rect.right,
+      })
+    }
+    updatePosition()
+    window.addEventListener('resize', updatePosition)
+    function onPointerDown(e: MouseEvent) {
+      const target = e.target as Node
+      if (folderRef.current?.contains(target)) return
+      if (folderMenuRef.current?.contains(target)) return
+      setFolderOpen(false)
+    }
+    document.addEventListener('mousedown', onPointerDown)
+    return () => {
+      window.removeEventListener('resize', updatePosition)
+      document.removeEventListener('mousedown', onPointerDown)
+    }
+  }, [folderOpen])
 
   function togglePalette() {
     setPaletteOpen(open => {
@@ -96,7 +156,7 @@ export function TopNav({
       const rect = trigger.getBoundingClientRect()
       setMenuPos({
         top: rect.bottom + PALETTE_MENU_GAP,
-        right: window.innerWidth - rect.right,
+        right: Math.max(12, window.innerWidth - rect.right - 10),
       })
     }
 
@@ -231,6 +291,8 @@ export function TopNav({
         </div>
       )}
       <div className="flex items-center gap-2 shrink-0 ml-auto">
+
+
         <div
           className={`palette-picker${paletteOpen ? ' palette-picker--open' : ''}`}
           ref={paletteRef}
@@ -259,6 +321,7 @@ export function TopNav({
               className="palette-picker-popover"
               style={{ top: menuPos.top, right: menuPos.right }}
             >
+              <div className="palette-picker-menu-arrow" />
               <div
                 className="palette-picker-menu"
                 role="listbox"

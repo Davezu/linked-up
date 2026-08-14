@@ -10,6 +10,7 @@ node_modules/
 # Build & Bundle Artifacts
 handler.js
 function.zip
+lambda-deploy.zip
 .lambda-staging/
 .check_zip/
 dist/
@@ -25,3 +26,4 @@ yarn-debug.log*
 Thumbs.db
 .vscode/
 .idea/
+
