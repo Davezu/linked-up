@@ -1,5 +1,5 @@
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
-import { Plus, Trash2, Tag, X, Search, ZoomIn, ZoomOut, Save, Edit3, FolderOpen, FolderPlus, ChevronDown } from 'lucide-react'
+import { Plus, Trash2, Tag, X, Search, ZoomIn, ZoomOut, Save, Edit3, FolderPlus } from 'lucide-react'
 import type { NoteRecord, FolderRecord } from '../types'
 import { generateId } from '../lib/helpers'
 import { createNoteApi, updateNoteApi, deleteNoteApi } from '../lib/notes-api'
@@ -124,6 +124,8 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
   const [isSaving, setIsSaving] = useState(false)
   const [dropAnimId, setDropAnimId] = useState<string | null>(null)
   const [draggingNoteId, setDraggingNoteId] = useState<string | null>(null)
+  const [shrinkingNoteId, setShrinkingNoteId] = useState<string | null>(null)
+  const [absorbingFolderId, setAbsorbingFolderId] = useState<string | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const canvasRef = useRef<HTMLDivElement>(null)
 
@@ -142,7 +144,7 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
   const [draggingFolderId, setDraggingFolderId] = useState<string | null>(null)
   const [hoveredFolderId, setHoveredFolderId] = useState<string | null>(null)
   const hoveredFolderIdRef = useRef<string | null>(null)
-  const [addNoteDropdown, setAddNoteDropdown] = useState(false)
+  const [_addNoteDropdown, setAddNoteDropdown] = useState(false)
   const renameInputRef = useRef<HTMLInputElement>(null)
 
   const safeNotes = Array.isArray(notes) ? notes.filter(n => n && n.id) : []
@@ -156,9 +158,21 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
   // Notes displayed on the main canvas board:
   // If activeFolder (from top nav filter) is set, filter by that.
   // Otherwise, display notes that are NOT inside a canvas folder!
-  const canvasDisplayNotes = activeFolder
-    ? safeNotes.filter(n => n.folder === activeFolder)
-    : safeNotes.filter(n => !allCanvasFolderNoteIds.has(n.id))
+  // Also always include a note currently being dragged or shrinking
+  // so the user can see it during the drag and absorption animation.
+  const canvasDisplayNotes = (() => {
+    const activeAnimId = draggingNoteId || shrinkingNoteId
+    const activeAnimNote = activeAnimId
+      ? safeNotes.find(n => n.id === activeAnimId) ?? null
+      : null
+    const base = activeFolder
+      ? safeNotes.filter(n => n.folder === activeFolder)
+      : safeNotes.filter(n => !allCanvasFolderNoteIds.has(n.id))
+    if (activeAnimNote && !base.some(n => n.id === activeAnimNote.id)) {
+      return [...base, activeAnimNote]
+    }
+    return base
+  })()
   const folderDragRef = useRef<{
     folderId: string
     startX: number
@@ -177,6 +191,7 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
     startY: number
     origX: number
     origY: number
+    sourceFolderId: string | null // folder this note came from (if any)
   } | null>(null)
 
   // Pan-canvas state (drag on empty space)
@@ -338,7 +353,9 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
 
         const HIT_PAD = 35
         const hit = folders.find(f => {
-          if (f.noteIds.includes(noteId)) return false
+          // Allow hovering over any folder (including the note's own source folder
+          // so the note can be dragged back in — but we still skip if already inside
+          // the SAME folder and hasn't moved outside yet; we detect exit on pointerUp)
           const mouseHit = (
             mouseCanvasX >= f.x - HIT_PAD &&
             mouseCanvasX <= f.x + f.width + HIT_PAD &&
@@ -351,6 +368,11 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
             noteCenterY >= f.y - HIT_PAD &&
             noteCenterY <= f.y + f.height + HIT_PAD
           )
+          // Exclude the note's OWN source folder from drop-target highlighting so
+          // dragging within the same folder doesn't trigger the "move into" pulse.
+          const sourceFolderId = dragRef.current?.sourceFolderId
+          if (f.id === sourceFolderId) return false
+          if (f.noteIds.includes(noteId) && f.id !== sourceFolderId) return false
           return mouseHit || centerHit
         })
 
@@ -385,7 +407,7 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
     }
 
     if (dragRef.current) {
-      const { noteId, startX, startY } = dragRef.current
+      const { noteId, startX, startY, sourceFolderId } = dragRef.current
       dragRef.current = null
       setDraggingNoteId(null)
 
@@ -393,10 +415,36 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
       hoveredFolderIdRef.current = null
       setHoveredFolderId(null)
 
-      // Drop into hovered folder
-      if (targetFolderId) {
-        addNoteToFolder(targetFolderId, noteId)
-        return // don't open the note editor on a drop
+      const movedFar = Math.hypot(e.clientX - startX, e.clientY - startY) > 10
+
+      // Drop into a different hovered folder -> animate shrink into folder!
+      if (targetFolderId && targetFolderId !== sourceFolderId) {
+        const targetF = folders.find(f => f.id === targetFolderId)
+        if (targetF) {
+          const shrinkX = targetF.x + targetF.width / 2 - CARD_W / 2
+          const shrinkY = targetF.y + targetF.height / 2 - CARD_H / 2
+          // Move note coordinates to target folder center for smooth shrink transition
+          onNotesChange(prev => prev.map(n => n.id === noteId ? { ...n, x: shrinkX, y: shrinkY } : n))
+        }
+        setShrinkingNoteId(noteId)
+        setAbsorbingFolderId(targetFolderId)
+        setTimeout(() => {
+          addNoteToFolder(targetFolderId, noteId)
+          setShrinkingNoteId(null)
+          setAbsorbingFolderId(null)
+        }, 350)
+        return
+      }
+
+      // Note was dragged OUT of its source folder onto empty canvas -> gentle paper drop bounce!
+      if (sourceFolderId && movedFar && !targetFolderId) {
+        const releasedNote = notes.find(n => n.id === noteId)
+        removeNoteFromFolder(sourceFolderId, noteId, releasedNote?.x, releasedNote?.y)
+        setDropAnimId(noteId)
+        setTimeout(() => {
+          setDropAnimId(null)
+        }, 350)
+        return
       }
 
       const dx = Math.abs(e.clientX - startX)
@@ -425,8 +473,13 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
     if (e.button !== 0) return
     if ((e.target as HTMLElement).closest('.postit-hover-actions')) return
     e.stopPropagation()
-    const el = e.currentTarget as HTMLElement
-    el.setPointerCapture(e.pointerId)
+
+    // Capture pointer on canvas element so handleCanvasPointerMove fires continuously
+    const canvasEl = canvasRef.current
+    if (canvasEl) canvasEl.setPointerCapture(e.pointerId)
+
+    // Find which canvas folder this note currently belongs to (if any)
+    const sourceFolderId = folders.find(f => f.noteIds.includes(note.id))?.id ?? null
 
     dragRef.current = {
       noteId: note.id,
@@ -434,8 +487,9 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
       startY: e.clientY,
       origX: note.x ?? 0,
       origY: note.y ?? 0,
+      sourceFolderId,
     }
-    setDraggingNoteId(null)
+    setDraggingNoteId(note.id)
   }
 
   // Folder drag
@@ -479,7 +533,7 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
   }
 
   function commitRename(folderId: string) {
-    const trimmed = renameValue.trim()
+    const trimmed = renameValue.trim().slice(0, 20)
     if (!trimmed) { setRenamingFolderId(null); return }
     setFolders(prev => prev.map(f => f.id === folderId ? { ...f, name: trimmed } : f))
     setRenamingFolderId(null)
@@ -506,60 +560,23 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
       return { ...f, noteIds: f.noteIds.filter(id => id !== noteId) }
     }))
 
-    // Also sync note.folder field
     onNotesChange(prev => prev.map(n =>
       n.id === noteId ? { ...n, folder: targetFolder.name } : n
     ))
   }
 
-  function removeNoteFromFolder(folderId: string, noteId: string) {
+  function removeNoteFromFolder(folderId: string, noteId: string, customX?: number, customY?: number) {
     const folder = folders.find(f => f.id === folderId)
     setFolders(prev => prev.map(f =>
       f.id === folderId ? { ...f, noteIds: f.noteIds.filter(id => id !== noteId) } : f
     ))
 
-    // Place note back onto canvas near the folder
     onNotesChange(prev => prev.map(n => {
       if (n.id !== noteId) return n
-      const newX = folder ? folder.x + 110 : (n.x ?? 100)
-      const newY = folder ? folder.y + 10 : (n.y ?? 100)
-      return { ...n, folder: undefined, x: newX, y: newY }
+      const finalX = typeof customX === 'number' ? customX : (n.x ?? (folder ? folder.x + 130 : 100))
+      const finalY = typeof customY === 'number' ? customY : (n.y ?? (folder ? folder.y + 20 : 100))
+      return { ...n, folder: undefined, x: finalX, y: finalY }
     }))
-  }
-
-  function createNoteInFolder(folderId: string) {
-    const folder = folders.find(f => f.id === folderId)
-    if (!folder) return
-
-    const tempId = generateId()
-    const now = new Date().toISOString()
-    const centerX = (-panX + (canvasRef.current?.clientWidth ?? 800) / 2) / zoom
-    const centerY = (-panY + (canvasRef.current?.clientHeight ?? 600) / 2) / zoom
-    const jitterX = (Math.random() - 0.5) * 100
-    const jitterY = (Math.random() - 0.5) * 100
-    const randomColor = NOTE_PALETTE[Math.floor(Math.random() * NOTE_PALETTE.length)].bg
-
-    const newNote: NoteRecord = {
-      id: tempId,
-      title: '',
-      content: '',
-      tags: [],
-      color: randomColor,
-      created_at: now,
-      updated_at: now,
-      isNew: true,
-      x: centerX - CARD_W / 2 + jitterX,
-      y: centerY - CARD_H / 2 + jitterY,
-      folder: folder.name,
-    }
-    onNotesChange(prev => [newNote, ...prev])
-    setFolders(prev => prev.map(f =>
-      f.id === folderId ? { ...f, noteIds: [...f.noteIds, tempId] } : f
-    ))
-    openNote(newNote)
-    setDropAnimId(tempId)
-    window.setTimeout(() => setDropAnimId(null), 900)
-    setTimeout(() => textareaRef.current?.focus(), 50)
   }
 
   // Note CRUD
@@ -646,6 +663,24 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
         setSaveError(result.error)
         setIsSaving(false)
         return
+      }
+    }
+
+    // Sync folder noteIds when draftFolder changes
+    if (!draftFolder) {
+      setFolders(prev => prev.map(f => ({
+        ...f,
+        noteIds: f.noteIds.filter(nid => nid !== id!)
+      })))
+    } else {
+      const targetFolder = folders.find(f => f.name === draftFolder)
+      if (targetFolder) {
+        setFolders(prev => prev.map(f => ({
+          ...f,
+          noteIds: f.id === targetFolder.id
+            ? (f.noteIds.includes(id!) ? f.noteIds : [...f.noteIds, id!])
+            : f.noteIds.filter(nid => nid !== id!)
+        })))
       }
     }
 
@@ -754,17 +789,6 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
   const zoomPercent = Math.round(zoom * 100)
   const isNearLimit = draftContent.length >= MAX_CONTENT_LENGTH * 0.9
 
-  // Compute which folder is currently open
-  const openFolder = openFolderId ? folders.find(f => f.id === openFolderId) ?? null : null
-  // Notes inside the open folder
-  const openFolderNotes = openFolder
-    ? openFolder.noteIds.map(id => notes.find(n => n.id === id)).filter(Boolean) as NoteRecord[]
-    : []
-  // Notes that can be added to the open folder
-  const notesNotInFolder = openFolder
-    ? notes.filter(n => !openFolder.noteIds.includes(n.id) && !n.isNew)
-    : []
-
   return (
     <div className="excalidraw-canvas-wrap">
       {/* The canvas */}
@@ -794,16 +818,19 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
             const noteCount = fNoteIds.length
 
             const fNotes = fNoteIds.map(id => safeNotes.find(n => n.id === id)).filter(Boolean) as NoteRecord[]
-            const folderPreviewItems = fNotes.slice(0, 3).map(n => (
+            const visibleFNotes = fNotes.filter(n => n.id !== draggingNoteId && n.id !== shrinkingNoteId)
+            const folderPreviewItems = visibleFNotes.slice(0, 3).map(n => (
               <div key={n.id} style={{ fontSize: 7, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%', textAlign: 'center', fontWeight: 700, color: '#333' }}>
                 📝 {n.title || deriveTitle(n.content) || 'Note'}
               </div>
             ))
 
+            const isAbsorbing = absorbingFolderId === folder.id
+
             return (
               <div
                 key={folder.id}
-                className={`canvas-folder-item${isSelected ? ' canvas-folder-item--selected' : ''}${isDragging ? ' canvas-folder-item--dragging' : ''}${isDropTarget ? ' canvas-folder-item--drop-target' : ''}`}
+                className={`canvas-folder-item${isSelected ? ' canvas-folder-item--selected' : ''}${isOpen ? ' canvas-folder-item--open' : ''}${isDragging ? ' canvas-folder-item--dragging' : ''}${isDropTarget ? ' canvas-folder-item--drop-target' : ''}${isAbsorbing ? ' canvas-folder-item--absorb' : ''}`}
                 style={{
                   left: folder.x,
                   top: folder.y,
@@ -831,8 +858,33 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
                   isOpen={isOpen}
                   onOpenChange={open => setOpenFolderId(open ? folder.id : null)}
                   onItemClick={index => {
-                    const targetNote = fNotes[index]
+                    const targetNote = visibleFNotes[index]
                     if (targetNote) openNote(targetNote)
+                  }}
+                  onItemPointerDown={(index, e) => {
+                    const targetNote = visibleFNotes[index]
+                    if (!targetNote) return
+                    // Start a canvas-level drag so the note can be pulled out
+                    const canvasEl = canvasRef.current
+                    if (canvasEl) canvasEl.setPointerCapture(e.pointerId)
+                    let initX = folder.x + 20
+                    let initY = folder.y - 40
+                    if (canvasEl) {
+                      const rect = canvasEl.getBoundingClientRect()
+                      initX = (e.clientX - rect.left - panX) / zoom - 40
+                      initY = (e.clientY - rect.top - panY) / zoom - 30
+                    }
+                    dragRef.current = {
+                      noteId: targetNote.id,
+                      startX: e.clientX,
+                      startY: e.clientY,
+                      origX: initX,
+                      origY: initY,
+                      sourceFolderId: folder.id,
+                    }
+                    // Immediately mark as dragging so it renders on canvas right away
+                    setDraggingNoteId(targetNote.id)
+                    onNotesChange(prev => prev.map(n => n.id === targetNote.id ? { ...n, x: initX, y: initY } : n))
                   }}
                 />
 
@@ -850,7 +902,7 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
                       if (e.key === 'Escape') setRenamingFolderId(null)
                     }}
                     onClick={e => e.stopPropagation()}
-                    maxLength={40}
+                    maxLength={20}
                   />
                 ) : (
                   <div
@@ -862,7 +914,7 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
                   </div>
                 )}
 
-                {/* Speech bubble / Cloud callout action toolbar (Edit | Colors | Delete) */}
+                {/* Speech bubble / Cloud callout action toolbar (Edit | Colors | Notes List | Delete) */}
                 {isOpen && (
                   <div
                     className="folder-cloud-callout"
@@ -920,6 +972,38 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
 
             const bg = noteGradient || noteColor
             const isDragging = draggingNoteId === note.id
+            const isShrinking = shrinkingNoteId === note.id
+            const isHoveringFolder = hoveredFolderId !== null && isDragging
+
+            // Progressive Live Scale: smoothstep easing function (0.35 at folder center -> 1.0 at proximity boundary)
+            let liveScale = 1.0
+            let magnetRot = 0
+            if (isDragging) {
+              const noteCenterX = posX + CARD_W / 2
+              const noteCenterY = posY + CARD_H / 2
+              let minDist = Infinity
+
+              for (const f of folders) {
+                const fW = (typeof f.width === 'number' && f.width > 0) ? f.width : FOLDER_W
+                const fH = (typeof f.height === 'number' && f.height > 0) ? f.height : FOLDER_H
+                const fCenterX = (f.x ?? 0) + fW / 2
+                const fCenterY = (f.y ?? 0) + fH / 2
+                const dist = Math.hypot(noteCenterX - fCenterX, noteCenterY - fCenterY)
+                if (!isNaN(dist) && dist < minDist) minDist = dist
+              }
+
+              const PROXIMITY_RADIUS = 220
+              if (minDist < PROXIMITY_RADIUS) {
+                const t = Math.max(0, Math.min(1, minDist / PROXIMITY_RADIUS))
+                const smoothProgress = t * t * (3 - 2 * t) // smoothstep curve
+                liveScale = 0.35 + (1.0 - 0.35) * smoothProgress
+                magnetRot = (1.0 - smoothProgress) * 7
+              }
+            }
+
+            const shadowBlur = Math.round(10 + liveScale * 36)
+            const shadowOffsetY = Math.round(4 + liveScale * 16)
+            const liveShadowOpacity = (0.2 + liveScale * 0.25).toFixed(2)
 
             return (
               <div
@@ -927,7 +1011,7 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
                 ref={el => {
                   if (el && note.id === dropAnimId) animateNoteDrop(el)
                 }}
-                className={`postit-note${isDragging ? ' postit-note--dragging' : ''}${isHighlighted ? ' postit-note--highlight' : ''}`}
+                className={`postit-note${isDragging ? ' postit-note--dragging' : ''}${isHoveringFolder ? ' postit-note--hovering-folder' : ''}${isShrinking ? ' postit-note--shrink-into-folder' : ''}${isHighlighted ? ' postit-note--highlight' : ''}`}
                 style={{
                   left: posX,
                   top: posY,
@@ -935,8 +1019,16 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
                   height: CARD_H,
                   minHeight: CARD_H,
                   background: bg,
-                  transform: `rotate(${rotation}deg)`,
+                  transform: isDragging
+                    ? `translateY(-10px) scale(${liveScale}) rotate(${rotation + magnetRot}deg)`
+                    : isShrinking
+                    ? `scale(0.35) rotate(${rotation + 10}deg)`
+                    : `rotate(${rotation}deg)`,
+                  boxShadow: isDragging
+                    ? `0 ${shadowOffsetY}px ${shadowBlur}px -4px rgba(0,0,0,${liveShadowOpacity}), 0 0 0 2px rgba(255,255,255,0.3)`
+                    : undefined,
                   ['--note-rot' as string]: `${rotation}deg`,
+                  transition: isDragging ? 'transform 0.1s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.1s ease' : undefined,
                 }}
                 onPointerDown={e => handleNotePointerDown(e, note)}
                 role="button"
@@ -1100,18 +1192,19 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
                   onChange={e => setDraftTitle(e.target.value)}
                   spellCheck={false}
                 />
-                <div className="flex items-center gap-1 bg-black/10 dark:bg-white/10 px-2 py-1 rounded-lg text-xs font-semibold">
-                  <FolderIcon size={12} className="text-[#5227FF]" />
-                  <select
-                    value={draftFolder}
-                    onChange={e => setDraftFolder(e.target.value)}
-                    className="bg-transparent border-none text-xs outline-none cursor-pointer font-bold text-[var(--text-main)]"
-                  >
-                    {DEFAULT_FOLDERS.map(f => (
-                      <option key={f} value={f} className="bg-[var(--bg-card)] text-[var(--text-main)]">{f}</option>
-                    ))}
-                  </select>
-                </div>
+                {(() => {
+                  const containingFolder = folders.find(f => f.noteIds.includes(editingId!))
+                  if (!containingFolder) return null
+                  return (
+                    <div
+                      className="note-modal-folder-badge"
+                      title={`Canvas folder: ${containingFolder.name}`}
+                    >
+                      <FolderIcon size={12} className="text-[#a78bfa] shrink-0" />
+                      <span className="note-modal-folder-name">{containingFolder.name}</span>
+                    </div>
+                  )
+                })()}
               </div>
             </div>
 

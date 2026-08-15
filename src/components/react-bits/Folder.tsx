@@ -12,6 +12,7 @@ export interface FolderProps {
   onOpenChange?: (open: boolean) => void;
   onClick?: () => void;
   onItemClick?: (index: number, e: React.MouseEvent) => void;
+  onItemPointerDown?: (index: number, e: React.PointerEvent) => void;
 }
 
 const darkenColor = (hex: string, percent: number): string => {
@@ -44,6 +45,7 @@ export const Folder: React.FC<FolderProps> = ({
   onOpenChange,
   onClick,
   onItemClick,
+  onItemPointerDown,
 }) => {
   const maxItems = 3;
   const papers = items.slice(0, maxItems);
@@ -176,7 +178,13 @@ export const Folder: React.FC<FolderProps> = ({
               }}
               onPointerDown={e => {
                 if (open && item) {
-                  e.stopPropagation();
+                  // Allow parent to start a drag-out gesture
+                  if (onItemPointerDown) {
+                    onItemPointerDown(i, e);
+                    // Don't stopPropagation here so the canvas pointer capture fires
+                  } else {
+                    e.stopPropagation();
+                  }
                 }
               }}
               onClick={e => {
