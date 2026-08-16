@@ -7,8 +7,10 @@ export interface FolderProps {
   items?: React.ReactNode[];
   className?: string;
   name?: string;
-  count?: number;
+  count?: number | string;
   isOpen?: boolean;
+  isDropTarget?: boolean;
+  isDropFull?: boolean;
   onOpenChange?: (open: boolean) => void;
   onClick?: () => void;
   onItemClick?: (index: number, e: React.MouseEvent) => void;
@@ -42,6 +44,8 @@ export const Folder: React.FC<FolderProps> = ({
   name,
   count,
   isOpen: externalOpen,
+  isDropTarget = false,
+  isDropFull = false,
   onOpenChange,
   onClick,
   onItemClick,
@@ -165,6 +169,21 @@ export const Folder: React.FC<FolderProps> = ({
         aria-expanded={open}
         aria-label={name ? `Folder ${name}` : (open ? 'Close folder' : 'Open folder')}
       >
+        {isDropTarget && (
+          <svg
+            className={`folder-dashed-outline${isDropFull ? ' folder-dashed-outline--full' : ''}`}
+            viewBox="0 0 84 74"
+            aria-hidden="true"
+          >
+            <path
+              d="M 6 4 H 28 A 4 4 0 0 1 32 8 L 36 12 H 78 A 6 6 0 0 1 84 18 V 66 A 6 6 0 0 1 78 72 H 6 A 6 6 0 0 1 0 66 V 10 A 6 6 0 0 1 6 4 Z"
+              fill="none"
+              stroke={isDropFull ? '#ef4444' : '#a78bfa'}
+              strokeWidth="2.5"
+              strokeDasharray="6 4"
+            />
+          </svg>
+        )}
         <div className="folder__back">
           {papers.map((item, i) => (
             <div

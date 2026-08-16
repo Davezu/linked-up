@@ -20,6 +20,7 @@ export const MAX_CONTENT_LENGTH = 1000
 export const MAX_TITLE_LENGTH = 80
 export const NOTE_LINE_HEIGHT = 28
 export const NOTE_MIN_LINES = 8
+export const MAX_NOTES_PER_FOLDER = 3
 
 export const NOTE_PALETTE = [
   { id: 'yellow', bg: '#fff59d', gradient: 'linear-gradient(175deg, #fff9c4 0%, #fff176 100%)', label: 'Canary Yellow' },
@@ -121,6 +122,7 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
   const [searchQuery, setSearchQuery] = useState('')
   const [highlightId, setHighlightId] = useState<string | null>(null)
   const [saveError, setSaveError] = useState<string | null>(null)
+  const [toastMessage, setToastMessage] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const [dropAnimId, setDropAnimId] = useState<string | null>(null)
   const [draggingNoteId, setDraggingNoteId] = useState<string | null>(null)
@@ -183,6 +185,13 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
 
   // Persist folders whenever they change
   useEffect(() => { saveFolders(folders) }, [folders])
+
+  // Auto-dismiss toast notifications after 3.5 seconds
+  useEffect(() => {
+    if (!toastMessage) return
+    const timer = setTimeout(() => setToastMessage(null), 3500)
+    return () => clearTimeout(timer)
+  }, [toastMessage])
 
   // Drag-note state
   const dragRef = useRef<{
@@ -421,6 +430,10 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
       if (targetFolderId && targetFolderId !== sourceFolderId) {
         const targetF = folders.find(f => f.id === targetFolderId)
         if (targetF) {
+          if (targetF.noteIds.length >= MAX_NOTES_PER_FOLDER) {
+            setToastMessage(`Folder "${targetF.name}" is full (maximum ${MAX_NOTES_PER_FOLDER} notes per folder).`)
+            return
+          }
           const shrinkX = targetF.x + targetF.width / 2 - CARD_W / 2
           const shrinkY = targetF.y + targetF.height / 2 - CARD_H / 2
           // Move note coordinates to target folder center for smooth shrink transition
@@ -553,6 +566,11 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
     const targetFolder = folders.find(f => f.id === folderId)
     if (!targetFolder) return
 
+    if (!targetFolder.noteIds.includes(noteId) && targetFolder.noteIds.length >= MAX_NOTES_PER_FOLDER) {
+      setToastMessage(`Folder "${targetFolder.name}" is full (maximum ${MAX_NOTES_PER_FOLDER} notes per folder).`)
+      return
+    }
+
     setFolders(prev => prev.map(f => {
       if (f.id === folderId) {
         return f.noteIds.includes(noteId) ? f : { ...f, noteIds: [...f.noteIds, noteId] }
@@ -675,6 +693,11 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
     } else {
       const targetFolder = folders.find(f => f.name === draftFolder)
       if (targetFolder) {
+        if (!targetFolder.noteIds.includes(id!) && targetFolder.noteIds.length >= MAX_NOTES_PER_FOLDER) {
+          setSaveError(`Folder "${targetFolder.name}" is full (maximum ${MAX_NOTES_PER_FOLDER} notes per folder).`)
+          setIsSaving(false)
+          return
+        }
         setFolders(prev => prev.map(f => ({
           ...f,
           noteIds: f.id === targetFolder.id
@@ -816,6 +839,8 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
             const folderColor = folder.color || pickFolderColor(folder.id)
             const fNoteIds = Array.isArray(folder.noteIds) ? folder.noteIds : []
             const noteCount = fNoteIds.length
+            const isFull = noteCount >= MAX_NOTES_PER_FOLDER
+            const isDropFull = isDropTarget && isFull
 
             const fNotes = fNoteIds.map(id => safeNotes.find(n => n.id === id)).filter(Boolean) as NoteRecord[]
             const visibleFNotes = fNotes.filter(n => n.id !== draggingNoteId && n.id !== shrinkingNoteId)
@@ -830,7 +855,7 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
             return (
               <div
                 key={folder.id}
-                className={`canvas-folder-item${isSelected ? ' canvas-folder-item--selected' : ''}${isOpen ? ' canvas-folder-item--open' : ''}${isDragging ? ' canvas-folder-item--dragging' : ''}${isDropTarget ? ' canvas-folder-item--drop-target' : ''}${isAbsorbing ? ' canvas-folder-item--absorb' : ''}`}
+                className={`canvas-folder-item${isSelected ? ' canvas-folder-item--selected' : ''}${isOpen ? ' canvas-folder-item--open' : ''}${isDragging ? ' canvas-folder-item--dragging' : ''}${isDropTarget && !isFull ? ' canvas-folder-item--drop-target' : ''}${isDropFull ? ' canvas-folder-item--drop-full' : ''}${isFull ? ' canvas-folder-item--full' : ''}${isAbsorbing ? ' canvas-folder-item--absorb' : ''}`}
                 style={{
                   left: folder.x,
                   top: folder.y,
@@ -841,7 +866,7 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
                 onDoubleClick={e => handleFolderDoubleClick(e, folder)}
                 role="button"
                 tabIndex={0}
-                aria-label={`Folder: ${folder.name}. Double-click to open.`}
+                aria-label={`Folder: ${folder.name}. ${noteCount}/${MAX_NOTES_PER_FOLDER} notes. Double-click to open.`}
                 onKeyDown={e => {
                   if (e.key === 'Enter' || e.key === ' ') handleFolderDoubleClick(e as any, folder)
                   if (e.key === 'Delete' || e.key === 'Backspace') {
@@ -853,9 +878,11 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
                   color={folderColor}
                   size={1}
                   name={folder.name}
-                  count={noteCount > 0 ? noteCount : undefined}
+                  count={`${noteCount}/${MAX_NOTES_PER_FOLDER}`}
                   items={folderPreviewItems}
                   isOpen={isOpen}
+                  isDropTarget={isDropTarget}
+                  isDropFull={isDropFull}
                   onOpenChange={open => setOpenFolderId(open ? folder.id : null)}
                   onItemClick={index => {
                     const targetNote = visibleFNotes[index]
@@ -1147,6 +1174,21 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
           <ZoomIn size={14} />
         </button>
       </div>
+
+      {/* Toast notification banner */}
+      {toastMessage && (
+        <div className="canvas-toast-banner" role="alert">
+          <span className="canvas-toast-icon">⚠️</span>
+          <span>{toastMessage}</span>
+          <button
+            className="canvas-toast-close"
+            onClick={() => setToastMessage(null)}
+            aria-label="Dismiss message"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* Folder tool hint banner */}
       {activeTool === 'folder' && (

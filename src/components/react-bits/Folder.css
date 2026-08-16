@@ -38,7 +38,7 @@
 
 .folder.open .paper:hover {
   z-index: 30 !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), 0 0 0 2px #5227FF;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
 }
 
 .folder.open .folder__front {
@@ -109,4 +109,26 @@
   font-weight: 600;
   color: var(--text-main, #fff);
   white-space: nowrap;
+}
+
+/* SVG Folder Silhouette Dashed Outline */
+.folder-dashed-outline {
+  position: absolute;
+  top: -12px;
+  left: -6px;
+  width: 84px;
+  height: 74px;
+  pointer-events: none;
+  z-index: 10;
+  overflow: visible;
+  animation: folder-dash-march 1.2s linear infinite;
+}
+
+@keyframes folder-dash-march {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -20;
+  }
 }
