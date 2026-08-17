@@ -117,14 +117,7 @@ export const Folder: React.FC<FolderProps> = ({
 
   const getPaperTransform = (i: number, total: number, isOpen: boolean, isPaperHovered: boolean, isFolderHovered: boolean) => {
     if (!isOpen) {
-      if (!isFolderHovered) return 'translate(-50%, 0%)';
-      if (total === 1) return 'translate(-50%, -20%)';
-      if (total === 2) {
-        const ty = i === 0 ? -30 : -16;
-        return `translate(-50%, ${ty}%)`;
-      }
-      const ty = i === 0 ? -38 : i === 1 ? -24 : -12;
-      return `translate(-50%, ${ty}%)`;
+      return 'translate(-50%, 0%)';
     }
 
     const ox = paperOffsets[i]?.x || 0;

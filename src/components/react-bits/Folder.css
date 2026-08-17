@@ -21,15 +21,15 @@
 }
 
 .folder:not(.open):hover {
-  transform: translateY(-4px);
+  transform: none;
 }
 
 .folder:not(.open):hover .folder__front {
-  transform: skew(12deg) scaleY(0.75);
+  transform: none;
 }
 
 .folder.open {
-  transform: translateY(-4px);
+  transform: none;
 }
 
 .folder.open .paper {

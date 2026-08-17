@@ -53,10 +53,14 @@
 :root,
 [data-theme="light"] {
   --tab-active-bg: rgba(0, 0, 0, 0.06);
+  --canvas-bg: #f8fafc;
+  --canvas-grid-line: rgba(0, 0, 0, 0.05);
 }
 
 [data-theme="dark"] {
   --color-bg: #0E0C1A;
+  --canvas-bg: #0E0C1A;
+  --canvas-grid-line: rgba(255, 255, 255, 0.05);
   /* Deep Velvet */
   --color-base: #12101F;
 

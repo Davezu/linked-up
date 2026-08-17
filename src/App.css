@@ -275,6 +275,11 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
+[data-theme="light"] .tab-switcher-thumb--accent {
+  background: color-mix(in srgb, var(--accent-crimson) 38%, #ffffff);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
 .tab-switcher-thumb--neutral {
   background: rgba(255, 255, 255, 0.08);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
@@ -350,6 +355,11 @@
 .tab-switch-badge--active {
   background: color-mix(in srgb, var(--accent-crimson) 20%, transparent);
   color: var(--accent-crimson);
+}
+
+[data-theme="light"] .tab-switch-badge--active {
+  background: color-mix(in srgb, var(--accent-crimson) 45%, #ffffff);
+  color: color-mix(in srgb, var(--accent-crimson) 95%, #000000);
 }
 
 /* Header */
@@ -3085,9 +3095,11 @@
   inset: 0;
   overflow: hidden;
   cursor: grab;
-  background-color: var(--canvas-bg);
-  background-image: radial-gradient(circle, var(--canvas-dot) 1.5px, transparent 1.5px);
-  background-size: 20px 20px;
+  background-color: var(--canvas-bg, #0E0C1A);
+  background-image:
+    linear-gradient(to right, var(--canvas-grid-line, rgba(255, 255, 255, 0.05)) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--canvas-grid-line, rgba(255, 255, 255, 0.05)) 1px, transparent 1px);
+  background-size: 28px 28px;
 }
 
 .excalidraw-canvas:active {
@@ -3244,8 +3256,7 @@
   color: var(--text-main);
 }
 
-/* Individual Post-it Note Card*/
-/* ── Individual Post-it Note Card (Enhanced 3D Tactile Paper) ── */
+/* Individual Post-it Note Card (Enhanced 3D Tactile Paper) */
 .postit-note {
   position: absolute;
   border: none;
@@ -3263,7 +3274,7 @@
   overflow: visible;
 }
 
-/* ── Premium drag state: hardware-accelerated smooth paper lift & tilt ── */
+/* Premium drag state: hardware-accelerated smooth paper lift & tilt */
 .postit-note--dragging {
   cursor: grabbing !important;
   z-index: 100 !important;
@@ -3277,7 +3288,7 @@
   will-change: transform, left, top;
 }
 
-/* ── Note state when hovering directly over a drop target folder ── */
+/* Note state when hovering directly over a drop target folder */
 .postit-note--hovering-folder {
   box-shadow:
     0 4px 12px rgba(0, 0, 0, 0.15),
@@ -3288,7 +3299,7 @@
   transition: box-shadow 0.18s ease, filter 0.18s ease !important;
 }
 
-/* ── Note Shrink-into-folder Animation (dropping note inside) ── */
+/* Note Shrink-into-folder Animation (dropping note inside) */
 .postit-note--shrink-into-folder {
   z-index: 120 !important;
   animation: note-shrink-into-folder 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
@@ -3303,6 +3314,7 @@
     opacity: 1;
     filter: brightness(1.08);
   }
+
   100% {
     transform: scale(0.01) rotate(20deg);
     opacity: 0;
@@ -3310,7 +3322,7 @@
   }
 }
 
-/* ── Note Expand-out-of-folder Animation (pulling note outside) ── */
+/* Note Expand-out-of-folder Animation (pulling note outside) */
 .postit-note--expand-out-of-folder {
   z-index: 110 !important;
   animation: note-expand-out-of-folder 0.42s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards !important;
@@ -3323,15 +3335,18 @@
     opacity: 0.15;
     filter: brightness(1.2);
   }
+
   65% {
     transform: scale(1.1) rotate(4deg);
     opacity: 1;
     filter: brightness(1.04);
   }
+
   85% {
     transform: scale(0.97) rotate(-1.5deg);
     opacity: 1;
   }
+
   100% {
     transform: scale(1) rotate(var(--note-rot, 0deg));
     opacity: 1;
@@ -3339,16 +3354,29 @@
   }
 }
 
-/* ── Folder Swallow / Pulse bounce when receiving a note ── */
+/* Folder Swallow / Pulse bounce when receiving a note */
 .canvas-folder-item--absorb {
   animation: folder-absorb-pulse 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
 }
 
 @keyframes folder-absorb-pulse {
-  0%   { transform: scale(1); }
-  40%  { transform: scale(1.26) rotate(-3deg); filter: brightness(1.22); }
-  75%  { transform: scale(0.93) rotate(2deg); }
-  100% { transform: scale(1); filter: brightness(1); }
+  0% {
+    transform: scale(1);
+  }
+
+  40% {
+    transform: scale(1.26) rotate(-3deg);
+    filter: brightness(1.22);
+  }
+
+  75% {
+    transform: scale(0.93) rotate(2deg);
+  }
+
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
 }
 
 
@@ -3545,7 +3573,7 @@
   pointer-events: none;
 }
 
-/* ── Note Click / Editor Modal (Matching Image 2) ── */
+/* Note Click / Editor Modal (Matching Image 2) */
 .note-modal-overlay {
   position: fixed;
   inset: 0;
@@ -3653,14 +3681,14 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  background: #181528;
-  color: #f1edff;
-  border: 1.5px solid rgba(167, 139, 250, 0.45);
+  background: var(--folder-color, #5227FF);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
   padding: 3px 10px;
   border-radius: 9999px;
   font-size: 11px;
   font-weight: 700;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
   max-width: 160px;
   flex-shrink: 0;
   pointer-events: none;
@@ -4080,19 +4108,19 @@
   backdrop-filter: blur(4px);
 }
 
-/* ── Speech-Bubble Cloud Callout Toolbar ── */
+/* Speech-Bubble Cloud Callout Toolbar */
 .folder-cloud-callout {
   position: absolute;
   left: calc(100% + 14px);
   top: 33px;
   transform: translateY(-50%);
   display: flex;
-  align-items: center;
+  align-items: stretch;
   background: var(--bg-card, #16132A);
   color: var(--text-main, #EAE5FF);
   border: 1px solid var(--border, rgba(124, 92, 252, 0.25));
-  border-radius: 18px;
-  padding: 6px 12px;
+  border-radius: 9999px;
+  padding: 3px;
   box-shadow:
     0 10px 30px -5px rgba(0, 0, 0, 0.35),
     0 4px 12px -2px rgba(0, 0, 0, 0.2);
@@ -4130,16 +4158,30 @@
 .folder-cloud-btn {
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 6px 12px;
+  gap: 6px;
+  padding: 6px 14px;
   border: none;
   background: transparent;
   color: var(--text-main, #EAE5FF);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  border-radius: 10px;
+  border-radius: 0;
   transition: all 0.15s ease;
+}
+
+.folder-cloud-btn:first-of-type {
+  border-top-left-radius: 9999px;
+  border-bottom-left-radius: 9999px;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.folder-cloud-btn--delete {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-top-right-radius: 9999px;
+  border-bottom-right-radius: 9999px;
 }
 
 .folder-cloud-btn:hover {
@@ -4174,14 +4216,20 @@
   color: #5227FF;
 }
 
+[data-theme="light"] .folder-cloud-btn--delete:hover {
+  background: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
+}
+
 .folder-cloud-colors {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 0 8px;
+  padding: 0 10px;
   border-left: 1px solid var(--border, rgba(0, 0, 0, 0.08));
   border-right: 1px solid var(--border, rgba(0, 0, 0, 0.08));
-  margin: 0 4px;
+  margin: 0;
+  align-self: stretch;
 }
 
 .folder-color-dot {
@@ -4202,8 +4250,7 @@
   transform: scale(1.18);
 }
 
-/* ── Folder Tool Button (toolbar) ─────────────────────────────── */
-/* ── Folder Tool Button (toolbar) ─────────────────────────────── */
+/* Folder Tool Button (toolbar) */
 .canvas-folder-tool-btn {
   display: flex;
   align-items: center;
@@ -4280,7 +4327,7 @@
   border: 1px solid var(--border);
 }
 
-/* ── Folder hint banner (bottom-center) ────────────────────────── */
+/* Folder hint banner (bottom-center) */
 .canvas-folder-hint {
   position: absolute;
   bottom: 56px;
@@ -4335,33 +4382,20 @@
 
 
 
-/* ── Folder drop target (note hovering over it) ─────────────────── */
+/* Folder drop target (note hovering over it) */
 .canvas-folder-item--drop-target {
   z-index: 80 !important;
-  animation: folder-hover-magnet 0.5s ease-in-out infinite alternate !important;
-  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  transform: scale(1.06) !important;
+  filter: drop-shadow(0 6px 20px rgba(167, 139, 250, 0.6)) !important;
+  transition: transform 0.2s ease, filter 0.2s ease !important;
 }
 
-@keyframes folder-hover-magnet {
-  0% {
-    transform: scale(1.15) rotate(-2.5deg);
-  }
-  100% {
-    transform: scale(1.24) rotate(2.5deg);
-  }
-}
-
-/* ── Full folder state & hover drop warning ───────────────────────── */
+/* Full folder state & hover drop warning */
 .canvas-folder-item--drop-full {
   z-index: 80 !important;
   transform: scale(1.05) !important;
   filter: drop-shadow(0 8px 24px rgba(239, 68, 68, 0.5)) !important;
-  animation: folder-full-shake 0.3s ease-in-out infinite alternate !important;
-}
-
-@keyframes folder-full-shake {
-  0% { transform: scale(1.04) rotate(-1.5deg); }
-  100% { transform: scale(1.06) rotate(1.5deg); }
+  transition: transform 0.2s ease, filter 0.2s ease !important;
 }
 
 .canvas-folder-item--drop-full::after {
@@ -4382,7 +4416,7 @@
   z-index: 100;
 }
 
-/* ── Toast Notification Banner ───────────────────────────────────── */
+/* Toast Notification Banner */
 .canvas-toast-banner {
   position: fixed;
   top: 72px;
@@ -4409,6 +4443,7 @@
     opacity: 0;
     transform: translate(-50%, -16px) scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: translate(-50%, 0) scale(1);

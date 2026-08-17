@@ -17,7 +17,7 @@ interface NotesViewProps {
 }
 
 export const MAX_CONTENT_LENGTH = 1000
-export const MAX_TITLE_LENGTH = 80
+export const MAX_TITLE_LENGTH = 45
 export const NOTE_LINE_HEIGHT = 28
 export const NOTE_MIN_LINES = 8
 export const MAX_NOTES_PER_FOLDER = 3
@@ -57,7 +57,7 @@ function formatDate(iso: string) {
 
 function deriveTitle(content?: string): string {
   if (!content || typeof content !== 'string') return 'Untitled'
-  return content.split('\n').find(l => l.trim())?.slice(0, 60) ?? 'Untitled'
+  return content.split('\n').find(l => l.trim())?.slice(0, 45) ?? 'Untitled'
 }
 
 function noteRotation(id: string) {
@@ -1237,12 +1237,14 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
                 {(() => {
                   const containingFolder = folders.find(f => f.noteIds.includes(editingId!))
                   if (!containingFolder) return null
+                  const fColor = containingFolder.color || pickFolderColor(containingFolder.id)
                   return (
                     <div
                       className="note-modal-folder-badge"
+                      style={{ backgroundColor: fColor }}
                       title={`Canvas folder: ${containingFolder.name}`}
                     >
-                      <FolderIcon size={12} className="text-[#a78bfa] shrink-0" />
+                      <FolderIcon size={12} className="text-white shrink-0" />
                       <span className="note-modal-folder-name">{containingFolder.name}</span>
                     </div>
                   )
