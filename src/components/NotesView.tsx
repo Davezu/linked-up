@@ -1,5 +1,5 @@
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
-import { Plus, Trash2, Tag, X, Search, ZoomIn, ZoomOut, Save, Edit3, FolderPlus } from 'lucide-react'
+import { Plus, Trash2, Tag, X, Search, Save, Edit3, FolderPlus, Minus, Undo2, Redo2, Pipette, ChevronDown, FileText } from 'lucide-react'
 import type { NoteRecord, FolderRecord } from '../types'
 import { generateId } from '../lib/helpers'
 import { createNoteApi, updateNoteApi, deleteNoteApi } from '../lib/notes-api'
@@ -33,8 +33,8 @@ export const NOTE_PALETTE = [
 
 export const DEFAULT_FOLDERS = ['Personal', 'Work', 'Ideas', 'Project']
 
-// Folder colors for visual variety
-const FOLDER_COLORS = ['#5227FF', '#e85d04', '#2d6a4f', '#9b2226', '#0077b6', '#7b2d8b']
+// 5 default preset folder colors (6th is custom)
+const FOLDER_COLORS = ['#5227FF', '#e85d04', '#2d6a4f', '#9b2226', '#0077b6']
 function pickFolderColor(id: string) {
   const idx = id.charCodeAt(id.length - 1) % FOLDER_COLORS.length
   return FOLDER_COLORS[idx]
@@ -145,9 +145,72 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
   const [renameValue, setRenameValue] = useState('')
   const [draggingFolderId, setDraggingFolderId] = useState<string | null>(null)
   const [hoveredFolderId, setHoveredFolderId] = useState<string | null>(null)
+  const [customHexFolderId, setCustomHexFolderId] = useState<string | null>(null)
+  const [notesMenuOpen, setNotesMenuOpen] = useState(false)
+  const [foldersMenuOpen, setFoldersMenuOpen] = useState(false)
+  const [flashNoteId, setFlashNoteId] = useState<string | null>(null)
   const hoveredFolderIdRef = useRef<string | null>(null)
   const [_addNoteDropdown, setAddNoteDropdown] = useState(false)
   const renameInputRef = useRef<HTMLInputElement>(null)
+
+  // Close float count popovers when clicking outside or pressing Escape
+  useEffect(() => {
+    if (!notesMenuOpen && !foldersMenuOpen) return
+    function onPointerDown() {
+      setNotesMenuOpen(false)
+      setFoldersMenuOpen(false)
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        setNotesMenuOpen(false)
+        setFoldersMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', onPointerDown)
+    window.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown)
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [notesMenuOpen, foldersMenuOpen])
+
+  // Pan + flash-highlight the canvas to center on a specific note
+  function panToNote(note: NoteRecord) {
+    setHighlightId(note.id)
+    setFlashNoteId(note.id)
+    window.setTimeout(() => setFlashNoteId(null), 1500)
+
+    const parentFolder = safeFolders.find(f => Array.isArray(f.noteIds) && f.noteIds.includes(note.id))
+    if (parentFolder) {
+      setOpenFolderId(parentFolder.id)
+      panToFolder(parentFolder)
+    } else {
+      const container = canvasRef.current
+      if (!container) return
+      const cW = container.clientWidth
+      const cH = container.clientHeight
+      const noteX = note.x ?? 100
+      const noteY = note.y ?? 100
+      const targetPanX = cW / 2 - (noteX + CARD_W / 2) * zoom
+      const targetPanY = cH / 2 - (noteY + CARD_H / 2) * zoom
+      setPanX(targetPanX)
+      setPanY(targetPanY)
+    }
+  }
+
+  // Pan canvas to center on a folder
+  function panToFolder(folder: import('../types').FolderRecord) {
+    const container = canvasRef.current
+    if (!container) return
+    const cW = container.clientWidth
+    const cH = container.clientHeight
+    const fX = folder.x ?? 100
+    const fY = folder.y ?? 100
+    const fW = folder.width ?? 160
+    const fH = folder.height ?? 120
+    setPanX(cW / 2 - (fX + fW / 2) * zoom)
+    setPanY(cH / 2 - (fY + fH / 2) * zoom)
+  }
 
   const safeNotes = Array.isArray(notes) ? notes.filter(n => n && n.id) : []
   const safeFolders = Array.isArray(folders) ? folders.filter(f => f && f.id) : []
@@ -776,21 +839,18 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
 
   function handleSearch(query: string) {
     setSearchQuery(query)
-    if (!query.trim()) { setHighlightId(null); return }
+    if (!query.trim()) {
+      setHighlightId(null)
+      return
+    }
     const q = query.toLowerCase()
-    const found = notes.find(n =>
-      n.title.toLowerCase().includes(q) ||
-      n.content.toLowerCase().includes(q) ||
-      n.tags.some(t => t.toLowerCase().includes(q))
+    const found = safeNotes.find(n =>
+      (n.title && n.title.toLowerCase().includes(q)) ||
+      (n.content && n.content.toLowerCase().includes(q)) ||
+      (Array.isArray(n.tags) && n.tags.some(t => t.toLowerCase().includes(q)))
     )
     if (found) {
-      setHighlightId(found.id)
-      if (found.x != null && found.y != null) {
-        const cw = canvasRef.current?.clientWidth ?? 800
-        const ch = canvasRef.current?.clientHeight ?? 600
-        setPanX(-(found.x * zoom) + cw / 2)
-        setPanY(-(found.y * zoom) + ch / 2)
-      }
+      panToNote(found)
     } else {
       setHighlightId(null)
     }
@@ -959,16 +1019,66 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
                       <span>edit</span>
                     </button>
 
-                    <div className="folder-cloud-colors">
+                    <div className="folder-cloud-colors" onClick={e => e.stopPropagation()} onPointerDown={e => e.stopPropagation()}>
                       {FOLDER_COLORS.map(c => (
                         <button
                           key={c}
                           className={`folder-color-dot${folderColor === c ? ' folder-color-dot--active' : ''}`}
                           style={{ backgroundColor: c }}
-                          onClick={e => { e.stopPropagation(); setFolderColor(folder.id, c) }}
+                          onClick={e => {
+                            e.stopPropagation()
+                            setFolderColor(folder.id, c)
+                            if (customHexFolderId === folder.id) setCustomHexFolderId(null)
+                          }}
                           title="Change folder color"
                         />
                       ))}
+
+                      <div className="folder-color-sep" />
+
+                      <div className="folder-color-custom-wrap">
+                        <button
+                          className={`folder-color-dot folder-color-dot--custom${!FOLDER_COLORS.includes(folderColor) ? ' folder-color-dot--active' : ''}`}
+                          style={{ backgroundColor: !FOLDER_COLORS.includes(folderColor) ? folderColor : '#3b3b4f' }}
+                          onClick={e => {
+                            e.stopPropagation()
+                            setCustomHexFolderId(prev => prev === folder.id ? null : folder.id)
+                          }}
+                          title="Custom color hex"
+                        >
+                          <Pipette size={9} strokeWidth={2.5} />
+                        </button>
+
+                        {customHexFolderId === folder.id && (
+                          <div className="hex-code-popover" onClick={e => e.stopPropagation()} onPointerDown={e => e.stopPropagation()}>
+                            <span className="hex-code-title">Hex code</span>
+                            <div className="hex-code-input-wrap">
+                              <span className="hex-code-prefix">#</span>
+                              <input
+                                type="text"
+                                className="hex-code-input"
+                                value={folderColor.replace('#', '')}
+                                onChange={e => {
+                                  const val = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6)
+                                  setFolderColor(folder.id, `#${val}`)
+                                }}
+                                placeholder="ffffff"
+                                maxLength={6}
+                              />
+                              <div className="hex-code-divider" />
+                              <label className="hex-code-picker-btn" title="Pick color">
+                                <Pipette size={13} />
+                                <input
+                                  type="color"
+                                  value={folderColor.startsWith('#') && folderColor.length === 7 ? folderColor : '#5227FF'}
+                                  onChange={e => setFolderColor(folder.id, e.target.value)}
+                                  className="sr-only"
+                                />
+                              </label>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     <button
@@ -993,7 +1103,7 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
             const noteGradient = noteColorObj.gradient
             const rotation = noteRotation(note.id)
             const displayTitle = note.title || deriveTitle(note.content) || 'Untitled'
-            const isHighlighted = highlightId === note.id
+            const isHighlighted = highlightId === note.id || flashNoteId === note.id
             const posX = note.x ?? 100 + (idx % 4) * (CARD_W + 24)
             const posY = note.y ?? 100 + Math.floor(idx / 4) * (CARD_H + 24)
 
@@ -1038,7 +1148,7 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
                 ref={el => {
                   if (el && note.id === dropAnimId) animateNoteDrop(el)
                 }}
-                className={`postit-note${isDragging ? ' postit-note--dragging' : ''}${isHoveringFolder ? ' postit-note--hovering-folder' : ''}${isShrinking ? ' postit-note--shrink-into-folder' : ''}${isHighlighted ? ' postit-note--highlight' : ''}`}
+                className={`postit-note${isDragging ? ' postit-note--dragging' : ''}${isHoveringFolder ? ' postit-note--hovering-folder' : ''}${isShrinking ? ' postit-note--shrink-into-folder' : ''}${isHighlighted ? ' postit-note--highlight postit-note--flash' : ''}`}
                 style={{
                   left: posX,
                   top: posY,
@@ -1147,13 +1257,185 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
       </div>
 
       {/* Floating note count & active folder filter (top-left) */}
-      <div className="canvas-float-count flex items-center gap-2">
-        <span>📌 {canvasDisplayNotes.length} {canvasDisplayNotes.length === 1 ? 'note' : 'notes'}</span>
-        {folders.length > 0 && (
-          <span className="canvas-folder-count">
-            🗂️ {folders.length} {folders.length === 1 ? 'folder' : 'folders'}
-          </span>
+      <div className="canvas-float-count relative flex items-center gap-1.5">
+        {/* Notes Pill Button */}
+        <div className="relative">
+          <button
+            className={`canvas-count-pill-btn${notesMenuOpen ? ' canvas-count-pill-btn--active' : ''}`}
+            onClick={e => {
+              e.stopPropagation()
+              setNotesMenuOpen(prev => !prev)
+              setFoldersMenuOpen(false)
+            }}
+            title="View all canvas notes"
+          >
+            <span>📌</span>
+            <span>{canvasDisplayNotes.length} {canvasDisplayNotes.length === 1 ? 'note' : 'notes'}</span>
+            <ChevronDown size={12} className={`transition-transform duration-150 ${notesMenuOpen ? 'rotate-180' : ''}`} />
+          </button>
+
+          {/* Notes List Dropdown Popover */}
+          {notesMenuOpen && (
+            <div
+              className="canvas-count-popover"
+              onClick={e => e.stopPropagation()}
+              onMouseDown={e => e.stopPropagation()}
+              onPointerDown={e => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="canvas-count-popover-header">
+                <div className="flex items-center gap-2">
+                  <FileText size={14} className="text-amber-500 shrink-0" />
+                  <span className="text-xs font-bold text-[var(--text-main)] tracking-tight">Canvas Notes</span>
+                  <span className="tabular-nums text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-full px-2 py-0.5">
+                    {safeNotes.length}
+                  </span>
+                </div>
+              </div>
+
+              {/* List */}
+              <div className="canvas-count-popover-list p-1.5 space-y-1">
+                {(() => {
+                  const list = searchQuery.trim()
+                    ? safeNotes.filter(n =>
+                        (n.title && n.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                        (n.content && n.content.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                        (Array.isArray(n.tags) && n.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase())))
+                      )
+                    : safeNotes
+                  if (list.length === 0) {
+                    return (
+                      <div className="flex flex-col items-center justify-center gap-1 py-6 text-[var(--text-dim)] opacity-60">
+                        <Search size={18} />
+                        <span className="text-xs font-medium">No notes found</span>
+                      </div>
+                    )
+                  }
+                  return list.map(note => {
+                    const colorItem = NOTE_PALETTE.find(p => p.id === note.color) || NOTE_PALETTE[0]
+                    const folder = safeFolders.find(f => Array.isArray(f.noteIds) && f.noteIds.includes(note.id))
+                    return (
+                      <button
+                        key={note.id}
+                        type="button"
+                        className="w-full flex items-center justify-between gap-2.5 text-left px-3 py-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 active:scale-[0.98] transition-all group"
+                        onMouseDown={e => {
+                          e.stopPropagation()
+                          setNotesMenuOpen(false)
+                          panToNote(note)
+                        }}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                          <span
+                            className="w-3.5 h-3.5 rounded-md shrink-0 border border-black/15 shadow-2xs"
+                            style={{ background: colorItem.gradient || colorItem.bg }}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs font-semibold text-[var(--text-main)] truncate">
+                              {note.title || deriveTitle(note.content) || 'Untitled'}
+                            </div>
+                            <div className="text-[10px] text-[var(--text-dim)] truncate opacity-70">
+                              {note.content ? note.content.slice(0, 50) : 'Empty note…'}
+                            </div>
+                          </div>
+                        </div>
+
+                        {folder ? (
+                          <span
+                            className="shrink-0 text-[10px] px-2 py-0.5 rounded-md font-semibold text-white shadow-2xs truncate max-w-[100px] ml-2"
+                            style={{ backgroundColor: folder.color || '#5227FF' }}
+                            title={folder.name}
+                          >
+                            {folder.name}
+                          </span>
+                        ) : (
+                          <span className="shrink-0 text-[10px] text-[var(--text-dim)] font-medium opacity-60 ml-2">
+                            {formatDate(note.updated_at)}
+                          </span>
+                        )}
+                      </button>
+                    )
+                  })
+                })()}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Folders Pill Button */}
+        {safeFolders.length > 0 && (
+          <div className="relative">
+            <button
+              className={`canvas-count-pill-btn canvas-folder-count${foldersMenuOpen ? ' canvas-count-pill-btn--active' : ''}`}
+              onClick={e => {
+                e.stopPropagation()
+                setFoldersMenuOpen(prev => !prev)
+                setNotesMenuOpen(false)
+              }}
+              title="View all canvas folders and their notes"
+            >
+              <span>🗂️</span>
+              <span>{safeFolders.length} {safeFolders.length === 1 ? 'folder' : 'folders'}</span>
+              <ChevronDown size={12} className={`transition-transform duration-200 ${foldersMenuOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {/* Folders Dropdown matching Image 2 sketch */}
+            {foldersMenuOpen && (
+              <div
+                className="canvas-count-popover"
+                onClick={e => e.stopPropagation()}
+                onMouseDown={e => e.stopPropagation()}
+                onPointerDown={e => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div className="canvas-count-popover-header">
+                  <div className="flex items-center gap-2">
+                    <FolderIcon size={14} className="text-amber-500 shrink-0" />
+                    <span className="text-xs font-bold text-[var(--text-main)] tracking-tight">Canvas Folders</span>
+                    <span className="tabular-nums text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-full px-2 py-0.5">
+                      {safeFolders.length}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Folder list */}
+                <div className="canvas-count-popover-list space-y-0.5">
+                  {safeFolders.map(folder => {
+                    const folderNotes = safeNotes.filter(n => folder.noteIds.includes(n.id))
+                    return (
+                      <button
+                        key={folder.id}
+                        type="button"
+                        className="w-full flex items-center justify-between gap-2.5 px-3 py-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 active:scale-[0.98] transition-all group text-left cursor-pointer"
+                        onMouseDown={e => {
+                          e.stopPropagation()
+                          setFoldersMenuOpen(false)
+                          panToFolder(folder)
+                        }}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                          <FolderIcon
+                            size={16}
+                            className="shrink-0 transition-transform group-hover:scale-110"
+                            style={{ color: folder.color || '#5227FF', fill: `${folder.color || '#5227FF'}25` }}
+                          />
+                          <span className="text-xs font-semibold text-[var(--text-main)] truncate">
+                            {folder.name}
+                          </span>
+                        </div>
+
+                        <span className="text-[10px] font-medium text-[var(--text-dim)] opacity-60 shrink-0">
+                          {folderNotes.length} {folderNotes.length === 1 ? 'note' : 'notes'}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
         )}
+
         {activeFolder && (
           <span className="flex items-center gap-1 bg-[#5227FF] text-white px-2 py-0.5 rounded-full text-xs font-semibold">
             <FolderIcon size={11} /> {activeFolder}
@@ -1164,15 +1446,25 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
 
       {/* Floating zoom controls (bottom-left) */}
       <div className="canvas-float-zoom">
-        <button className="canvas-zoom-btn" onClick={handleZoomOut} aria-label="Zoom out" title="Zoom out">
-          <ZoomOut size={14} />
-        </button>
-        <button className="canvas-zoom-label" onClick={handleResetView} title="Reset view">
-          {zoomPercent}%
-        </button>
-        <button className="canvas-zoom-btn" onClick={handleZoomIn} aria-label="Zoom in" title="Zoom in">
-          <ZoomIn size={14} />
-        </button>
+        <div className="canvas-zoom-group">
+          <button className="canvas-zoom-btn" onClick={handleZoomOut} aria-label="Zoom out" title="Zoom out">
+            <Minus size={13} strokeWidth={2.5} />
+          </button>
+          <button className="canvas-zoom-label" onClick={handleResetView} title="Reset view">
+            {zoomPercent}%
+          </button>
+          <button className="canvas-zoom-btn" onClick={handleZoomIn} aria-label="Zoom in" title="Zoom in">
+            <Plus size={13} strokeWidth={2.5} />
+          </button>
+        </div>
+        <div className="canvas-zoom-group">
+          <button className="canvas-zoom-btn" onClick={handleResetView} aria-label="Reset pan" title="Reset pan">
+            <Undo2 size={13} strokeWidth={2} />
+          </button>
+          <button className="canvas-zoom-btn canvas-zoom-btn--last" onClick={() => { /* future redo */ }} aria-label="Reset view" title="Fit to screen">
+            <Redo2 size={13} strokeWidth={2} />
+          </button>
+        </div>
       </div>
 
       {/* Toast notification banner */}

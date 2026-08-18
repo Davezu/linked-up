@@ -52,13 +52,14 @@ async function classifyWithGroq(
   }
 
   const body = {
-    model: 'llama-3.3-70b-versatile',
+    model: 'openai/gpt-oss-20b',
     messages: [
+      { role: 'system', content: 'You are an AI knowledge organizer. You must respond in valid JSON format.' },
       { role: 'user', content: CLASSIFICATION_PROMPT(title, description, url) }
     ],
     response_format: { type: "json_object" },
     temperature: 0.2,
-    max_tokens: 150,
+    max_tokens: 1000,
   };
 
   const res = await fetchWithTimeout('https://api.groq.com/openai/v1/chat/completions', {

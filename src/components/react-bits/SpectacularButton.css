@@ -116,8 +116,8 @@
 }
 
 [data-theme="light"] .spectacular-btn--active .filter-pill-count {
-  background: rgba(255, 255, 255, 0.28);
-  color: #ffffff;
+  background: color-mix(in srgb, var(--chip-text-active) 18%, transparent);
+  color: var(--chip-text-active);
 }
 
 .spectacular-btn-spark {

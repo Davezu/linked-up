@@ -4,8 +4,6 @@ export const PALETTE_IDS = [
   'slate',
   'teal',
   'rose',
-  'citrine',
-  'electric',
 ] as const
 
 export type ColorPalette = (typeof PALETTE_IDS)[number]
@@ -22,8 +20,6 @@ export const PALETTES: PaletteMeta[] = [
   { id: 'slate', label: 'Slate', swatch: '#6B4EE8' },
   { id: 'teal', label: 'Midnight Teal', swatch: '#2A9D8F' },
   { id: 'rose', label: 'Rose Quartz', swatch: '#E879A0' },
-  { id: 'citrine', label: 'Ink & Citrine', swatch: '#C9A227' },
-  { id: 'electric', label: 'Electric Violet', swatch: '#7C4DFF' },
 ]
 
 export function isColorPalette(value: string): value is ColorPalette {

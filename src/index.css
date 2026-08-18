@@ -170,8 +170,8 @@
   --toggle-bg-hover: rgba(255, 255, 255, 0.13);
 
   /* Edgeless nav surfaces */
-  --nav-solid-bg: var(--chip-bg);
-  --nav-solid-bg-hover: var(--chip-bg-hover);
+  --nav-solid-bg: rgba(255, 255, 255, 0.08);
+  --nav-solid-bg-hover: rgba(255, 255, 255, 0.16);
   --nav-bar-bg: var(--bg-card);
 }
 
@@ -290,8 +290,8 @@
   --toggle-bg-hover: #DFD9F5;
 
   /* Edgeless nav surfaces */
-  --nav-solid-bg: var(--chip-bg);
-  --nav-solid-bg-hover: var(--chip-bg-hover);
+  --nav-solid-bg: rgba(0, 0, 0, 0.05);
+  --nav-solid-bg-hover: rgba(0, 0, 0, 0.1);
   --nav-bar-bg: var(--bg-sidebar);
 }
 

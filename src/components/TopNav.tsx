@@ -1,4 +1,4 @@
-import { Search, Link2, FileText, Sun, Moon, Palette, Check, LogOut } from 'lucide-react'
+import { Search, Link2, FileText, Sun, Moon, Palette, Check, LogOut, Pipette } from 'lucide-react'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { PALETTES, type ColorPalette } from '../lib/palettes'
@@ -69,10 +69,160 @@ export function TopNav({
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [menuPos, setMenuPos] = useState<{ top: number; right: number } | null>(null)
 
+  const [customAccentHex, setCustomAccentHex] = useState<string>(() => {
+    return localStorage.getItem('lo-custom-accent') || '#7C5CFC'
+  })
+  const [customHexInput, setCustomHexInput] = useState<string>(() => {
+    return (localStorage.getItem('lo-custom-accent') || '#7C5CFC').replace('#', '')
+  })
+  const [isCustomAccentActive, setIsCustomAccentActive] = useState<boolean>(() => {
+    return localStorage.getItem('lo-palette-is-custom') === 'true'
+  })
+
+  useEffect(() => {
+    if (isCustomAccentActive && customAccentHex) {
+      applyCustomAccent(customAccentHex)
+    }
+  }, [theme, isCustomAccentActive, customAccentHex])
+
+  function hexLuminance(hex: string): number {
+    const clean = hex.replace('#', '')
+    const r = parseInt(clean.slice(0, 2), 16) / 255
+    const g = parseInt(clean.slice(2, 4), 16) / 255
+    const b = parseInt(clean.slice(4, 6), 16) / 255
+    const toLinear = (c: number) => c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
+    return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b)
+  }
+
+  function applyCustomAccent(hex: string) {
+    const cleanHex = hex.startsWith('#') ? hex : `#${hex}`
+    setCustomAccentHex(cleanHex)
+    setCustomHexInput(cleanHex.replace('#', ''))
+    setIsCustomAccentActive(true)
+    localStorage.setItem('lo-custom-accent', cleanHex)
+    localStorage.setItem('lo-palette-is-custom', 'true')
+
+    // Determine contrast text color based on luminance
+    const luminance = hexLuminance(cleanHex)
+    const isLight = luminance > 0.35
+    const contrastText = isLight ? '#0e0c1a' : '#ffffff'
+
+    const root = document.documentElement
+    root.style.setProperty('--accent-crimson', cleanHex)
+    root.style.setProperty('--accent-light-crimson', cleanHex)
+    root.style.setProperty('--accent-sky', cleanHex)
+    root.style.setProperty('--chip-bg-active', cleanHex)
+    root.style.setProperty('--chip-text-active', contrastText)
+    root.style.setProperty('--nav-bg-active', cleanHex)
+    root.style.setProperty('--chat-send-bg', cleanHex)
+    root.style.setProperty('--chat-send-bg-hover', cleanHex)
+    root.style.setProperty('--gradient-accent', `linear-gradient(135deg, ${cleanHex} 0%, ${cleanHex} 100%)`)
+    root.style.setProperty('--gradient-hover', `linear-gradient(135deg, ${cleanHex} 0%, ${cleanHex} 100%)`)
+    root.style.setProperty('--auth-title-gradient', `linear-gradient(135deg, ${cleanHex} 0%, ${cleanHex} 100%)`)
+    root.style.setProperty('--header-title-gradient', `linear-gradient(135deg, ${cleanHex} 0%, ${cleanHex} 100%)`)
+    root.style.setProperty('--border-hover', cleanHex)
+    root.style.setProperty('--border-glow', `${cleanHex}66`)
+    root.style.setProperty('--focus-ring', `${cleanHex}66`)
+    root.style.setProperty('--scrollbar-thumb-hover', `${cleanHex}88`)
+    root.style.setProperty('--card-tag-color', cleanHex)
+    root.style.setProperty('--card-tag-bg', `${cleanHex}22`)
+    root.style.setProperty('--sidebar-active-shadow', `0 4px 16px ${cleanHex}48`)
+    root.style.setProperty('--beta-badge-bg', `${cleanHex}26`)
+
+    // Harmonize background surfaces with accent tint
+    if (theme === 'light') {
+      root.style.setProperty('--color-bg', `color-mix(in srgb, ${cleanHex} 6%, #ffffff)`)
+      root.style.setProperty('--bg-sidebar', `color-mix(in srgb, ${cleanHex} 12%, #ffffff)`)
+      root.style.setProperty('--bg-card-hover', `color-mix(in srgb, ${cleanHex} 10%, #ffffff)`)
+      root.style.setProperty('--nav-bg-hover', `color-mix(in srgb, ${cleanHex} 12%, #ffffff)`)
+      root.style.setProperty('--chip-bg-hover', `color-mix(in srgb, ${cleanHex} 14%, #ffffff)`)
+      root.style.setProperty('--nav-solid-bg', `color-mix(in srgb, ${cleanHex} 10%, rgba(0, 0, 0, 0.05))`)
+      root.style.setProperty('--nav-solid-bg-hover', `color-mix(in srgb, ${cleanHex} 20%, rgba(0, 0, 0, 0.1))`)
+      root.style.setProperty('--border', `color-mix(in srgb, ${cleanHex} 18%, transparent)`)
+      root.style.setProperty('--mobile-nav-bg', `color-mix(in srgb, ${cleanHex} 6%, #ffffff)`)
+      root.style.setProperty('--tab-active-bg', `color-mix(in srgb, ${cleanHex} 10%, #ffffff)`)
+    } else {
+      root.style.setProperty('--color-bg', `color-mix(in srgb, ${cleanHex} 10%, #0e0c1a)`)
+      root.style.setProperty('--color-base', `color-mix(in srgb, ${cleanHex} 12%, #0e0c1a)`)
+      root.style.setProperty('--bg-card', `color-mix(in srgb, ${cleanHex} 14%, #12101f)`)
+      root.style.setProperty('--bg-card-hover', `color-mix(in srgb, ${cleanHex} 18%, #12101f)`)
+      root.style.setProperty('--bg-sidebar', `color-mix(in srgb, ${cleanHex} 12%, #0e0c1a)`)
+      root.style.setProperty('--border', `color-mix(in srgb, ${cleanHex} 20%, transparent)`)
+      root.style.setProperty('--mobile-nav-bg', `color-mix(in srgb, ${cleanHex} 10%, #0e0c1a)`)
+      root.style.setProperty('--nav-solid-bg', `color-mix(in srgb, ${cleanHex} 15%, rgba(255, 255, 255, 0.07))`)
+      root.style.setProperty('--nav-solid-bg-hover', `color-mix(in srgb, ${cleanHex} 30%, rgba(255, 255, 255, 0.16))`)
+    }
+  }
+
+  function selectPresetPalette(id: ColorPalette) {
+    setIsCustomAccentActive(false)
+    localStorage.setItem('lo-palette-is-custom', 'false')
+
+    const root = document.documentElement
+    const props = [
+      '--accent-crimson',
+      '--accent-light-crimson',
+      '--accent-sky',
+      '--chip-bg-active',
+      '--chip-text-active',
+      '--nav-bg-active',
+      '--chat-send-bg',
+      '--chat-send-bg-hover',
+      '--gradient-accent',
+      '--gradient-hover',
+      '--auth-title-gradient',
+      '--header-title-gradient',
+      '--border-hover',
+      '--border-glow',
+      '--focus-ring',
+      '--scrollbar-thumb-hover',
+      '--card-tag-color',
+      '--card-tag-bg',
+      '--sidebar-active-shadow',
+      '--beta-badge-bg',
+      '--color-bg',
+      '--color-base',
+      '--bg-card',
+      '--bg-card-hover',
+      '--bg-sidebar',
+      '--border',
+      '--nav-bg-hover',
+      '--chip-bg-hover',
+      '--nav-solid-bg',
+      '--nav-solid-bg-hover',
+      '--mobile-nav-bg',
+      '--tab-active-bg',
+    ]
+    props.forEach(p => root.style.removeProperty(p))
+
+    onPaletteChange(id)
+    setPaletteOpen(false)
+  }
+
   const paletteRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
   const themeBtnRef = useRef<HTMLButtonElement>(null)
+  const searchInputRef = useRef<HTMLInputElement>(null)
+
+  // ⌘K / Ctrl+K → focus search
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        if (activeView !== 'library') return
+        const input = searchInputRef.current
+        if (!input) return
+        input.focus()
+        input.select()
+      }
+      if (e.key === 'Escape' && document.activeElement === searchInputRef.current) {
+        searchInputRef.current?.blur()
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [activeView])
 
   function togglePalette() {
     setPaletteOpen(open => {
@@ -227,7 +377,9 @@ export function TopNav({
           <div className="search-bar-wrap w-[240px] lg:w-[300px]">
             <Search size={14} strokeWidth={2} className="search-bar-icon" aria-hidden="true" />
             <input
+              ref={searchInputRef}
               type="search"
+              id="search-links-input"
               className="search-bar-input"
               placeholder="Search links..."
               value={searchQuery}
@@ -259,7 +411,7 @@ export function TopNav({
             <Palette size={16} strokeWidth={2} />
             <span
               className="palette-picker-swatch"
-              style={{ background: activePalette.swatch }}
+              style={{ background: isCustomAccentActive ? customAccentHex : activePalette.swatch }}
               aria-hidden="true"
             />
           </button>
@@ -280,18 +432,51 @@ export function TopNav({
                   key={item.id}
                   type="button"
                   role="option"
-                  aria-selected={palette === item.id}
-                  className={`palette-picker-option${palette === item.id ? ' palette-picker-option--active' : ''}`}
-                  onClick={() => {
-                    onPaletteChange(item.id)
-                    setPaletteOpen(false)
-                  }}
+                  aria-selected={!isCustomAccentActive && palette === item.id}
+                  className={`palette-picker-option${!isCustomAccentActive && palette === item.id ? ' palette-picker-option--active' : ''}`}
+                  onClick={() => selectPresetPalette(item.id)}
                 >
                   <span className="palette-picker-option-swatch" style={{ background: item.swatch }} aria-hidden="true" />
                   <span className="palette-picker-option-label">{item.label}</span>
-                  {palette === item.id && <Check size={14} strokeWidth={2.5} aria-hidden="true" />}
+                  {!isCustomAccentActive && palette === item.id && <Check size={14} strokeWidth={2.5} aria-hidden="true" />}
                 </button>
               ))}
+
+              <div className="palette-picker-divider" />
+
+              <div className="palette-picker-custom-wrap">
+                <div className="flex items-center justify-between mb-1.5 px-1">
+                  <span className="hex-code-title">Hex code</span>
+                  {isCustomAccentActive && <Check size={13} className="text-[#7C5CFC] stroke-[2.5]" />}
+                </div>
+                <div className="hex-code-input-wrap">
+                  <span className="hex-code-prefix">#</span>
+                  <input
+                    type="text"
+                    className="hex-code-input"
+                    value={customHexInput}
+                    onChange={e => {
+                      const val = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6)
+                      setCustomHexInput(val)
+                      if (val.length === 6) {
+                        applyCustomAccent(`#${val}`)
+                      }
+                    }}
+                    placeholder="7c5cfc"
+                    maxLength={6}
+                  />
+                  <div className="hex-code-divider" />
+                  <label className="hex-code-picker-btn" title="Pick custom color">
+                    <Pipette size={13} />
+                    <input
+                      type="color"
+                      value={customAccentHex.startsWith('#') && customAccentHex.length === 7 ? customAccentHex : '#7C5CFC'}
+                      onChange={e => applyCustomAccent(e.target.value)}
+                      className="sr-only"
+                    />
+                  </label>
+                </div>
+              </div>
               </div>
             </div>,
             document.body,

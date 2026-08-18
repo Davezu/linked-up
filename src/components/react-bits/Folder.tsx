@@ -115,7 +115,7 @@ export const Folder: React.FC<FolderProps> = ({
   const folderClassName = `folder ${open ? 'open' : ''}`.trim();
   const scaleStyle = { transform: `scale(${size})` };
 
-  const getPaperTransform = (i: number, total: number, isOpen: boolean, isPaperHovered: boolean, isFolderHovered: boolean) => {
+  const getPaperTransform = (i: number, total: number, isOpen: boolean, isPaperHovered: boolean, _isFolderHovered: boolean) => {
     if (!isOpen) {
       return 'translate(-50%, 0%)';
     }
