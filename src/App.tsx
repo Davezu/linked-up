@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Sparkles, AlertCircle, Info } from 'lucide-react'
+import { Sparkles, AlertCircle, Info, ArrowRight } from 'lucide-react'
 import './App.css'
 
 import type { LinkRecord, NoteRecord } from './types'
@@ -418,14 +418,14 @@ export default function App() {
                   />
                   <button
                     id="save-link-btn"
-                    className="text-[var(--color-bg)] font-semibold text-xs px-4.5 rounded-lg flex items-center gap-1.5 min-h-[30px] transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed save-btn"
+                    className="save-btn"
                     onClick={handleSave}
                     disabled={isProcessing || !url.trim()}
                     aria-label="Save link"
                   >
                     {isProcessing
                       ? <><div className="save-btn-spinner" /><span>Processing…</span></>
-                      : <><span>Save Link</span><span style={{ fontSize: 16 }}>→</span></>
+                      : <><span className="save-btn-label">Save Link</span><ArrowRight className="save-btn-icon" size={14} strokeWidth={2.5} aria-hidden="true" /></>
                     }
                   </button>
                 </div>

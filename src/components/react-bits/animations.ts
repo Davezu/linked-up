@@ -121,6 +121,74 @@ export function animateCategoryMenuClose(
   })
 }
 
+/** Stagger-reveal canvas notes / folders popover (top-left pills) */
+export function animateCanvasCountPopoverOpen(
+  menuEl: HTMLElement,
+  triggerEl: HTMLElement | null,
+) {
+  if (prefersReducedMotion()) return
+
+  const items = menuEl.querySelectorAll<HTMLElement>('.canvas-count-popover-row')
+
+  gsap.fromTo(
+    menuEl,
+    { opacity: 0, scale: 0.96, y: -6, transformOrigin: 'top left' },
+    { opacity: 1, scale: 1, y: 0, duration: 0.28, ease: 'power3.out' },
+  )
+
+  gsap.fromTo(
+    items,
+    { opacity: 0, x: -12, scale: 0.97 },
+    {
+      opacity: 1,
+      x: 0,
+      scale: 1,
+      duration: 0.34,
+      stagger: 0.045,
+      ease: 'power3.out',
+      delay: 0.03,
+    },
+  )
+
+  if (triggerEl) {
+    gsap.fromTo(
+      triggerEl,
+      { scale: 1 },
+      { scale: 0.94, duration: 0.1, yoyo: true, repeat: 1, ease: 'power2.inOut' },
+    )
+  }
+}
+
+export function animateCanvasCountPopoverClose(
+  menuEl: HTMLElement,
+  onComplete?: () => void,
+) {
+  if (prefersReducedMotion()) {
+    onComplete?.()
+    return
+  }
+
+  const items = menuEl.querySelectorAll<HTMLElement>('.canvas-count-popover-row')
+
+  gsap.to(items, {
+    opacity: 0,
+    x: -8,
+    duration: 0.12,
+    stagger: { each: 0.02, from: 'end' },
+    ease: 'power2.in',
+  })
+
+  gsap.to(menuEl, {
+    opacity: 0,
+    scale: 0.94,
+    y: -4,
+    duration: 0.18,
+    ease: 'power2.in',
+    delay: 0.04,
+    onComplete,
+  })
+}
+
 /** Sticker landing animation for a new note */
 export function animateNoteDrop(el: HTMLElement) {
   if (prefersReducedMotion()) return

@@ -124,8 +124,10 @@ export function TopNav({
     root.style.setProperty('--border-glow', `${cleanHex}66`)
     root.style.setProperty('--focus-ring', `${cleanHex}66`)
     root.style.setProperty('--scrollbar-thumb-hover', `${cleanHex}88`)
-    root.style.setProperty('--card-tag-color', cleanHex)
-    root.style.setProperty('--card-tag-bg', `${cleanHex}22`)
+    root.style.setProperty('--card-tag-bg', theme === 'light'
+      ? `${cleanHex}22`
+      : `color-mix(in srgb, ${cleanHex} 14%, transparent)`)
+    root.style.setProperty('--card-tag-color', theme === 'light' ? cleanHex : 'var(--text-main)')
     root.style.setProperty('--sidebar-active-shadow', `0 4px 16px ${cleanHex}48`)
     root.style.setProperty('--beta-badge-bg', `${cleanHex}26`)
 
@@ -149,8 +151,11 @@ export function TopNav({
       root.style.setProperty('--bg-sidebar', `color-mix(in srgb, ${cleanHex} 12%, #0e0c1a)`)
       root.style.setProperty('--border', `color-mix(in srgb, ${cleanHex} 20%, transparent)`)
       root.style.setProperty('--mobile-nav-bg', `color-mix(in srgb, ${cleanHex} 10%, #0e0c1a)`)
-      root.style.setProperty('--nav-solid-bg', `color-mix(in srgb, ${cleanHex} 15%, rgba(255, 255, 255, 0.07))`)
-      root.style.setProperty('--nav-solid-bg-hover', `color-mix(in srgb, ${cleanHex} 30%, rgba(255, 255, 255, 0.16))`)
+      root.style.setProperty('--nav-solid-bg', `color-mix(in srgb, ${cleanHex} 6%, rgba(255, 255, 255, 0.07))`)
+      root.style.setProperty('--nav-solid-bg-hover', `color-mix(in srgb, ${cleanHex} 12%, rgba(255, 255, 255, 0.16))`)
+      root.style.setProperty('--chip-bg-hover', `color-mix(in srgb, ${cleanHex} 14%, var(--chip-bg))`)
+      root.style.setProperty('--chip-text-hover', 'var(--text-main)')
+      root.style.setProperty('--chip-border-hover', `color-mix(in srgb, ${cleanHex} 24%, transparent)`)
     }
   }
 
@@ -188,6 +193,8 @@ export function TopNav({
       '--border',
       '--nav-bg-hover',
       '--chip-bg-hover',
+      '--chip-text-hover',
+      '--chip-border-hover',
       '--nav-solid-bg',
       '--nav-solid-bg-hover',
       '--mobile-nav-bg',

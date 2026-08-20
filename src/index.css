@@ -107,11 +107,13 @@
 
   /* Chips / filters */
   --chip-bg: #16132A;
-  --chip-bg-hover: #1C1934;
+  --chip-bg-hover: color-mix(in srgb, var(--accent-crimson) 14%, var(--chip-bg));
   --chip-bg-active: #F5A623;
   --chip-text: #8A85A8;
+  --chip-text-hover: var(--text-main);
   --chip-text-active: #0E0C1A;
   --chip-border: rgba(124, 92, 252, 0.12);
+  --chip-border-hover: color-mix(in srgb, var(--accent-crimson) 38%, transparent);
   --chip-border-active: transparent;
 
   /* Focus */
@@ -132,8 +134,8 @@
   --chat-send-bg-hover: #D9901A;
 
   /* Card extras */
-  --card-tag-bg: rgba(124, 92, 252, 0.15);
-  --card-tag-color: #A48EFF;
+  --card-tag-bg: color-mix(in srgb, var(--accent-crimson) 14%, transparent);
+  --card-tag-color: var(--text-main);
   --card-delete-bg: rgba(0, 0, 0, 0.7);
   --card-image-placeholder-bg: linear-gradient(135deg, #16132A 0%, #1C1934 100%);
   --card-footer-border: rgba(124, 92, 252, 0.10);
@@ -376,11 +378,13 @@ a {
   --nav-icon: #A89888;
   --nav-bg-active: #E07B39;
   --chip-bg: #1E1610;
-  --chip-bg-hover: #261C14;
+  --chip-bg-hover: color-mix(in srgb, var(--accent-crimson) 14%, var(--chip-bg));
   --chip-bg-active: #E07B39;
   --chip-text: #A89888;
+  --chip-text-hover: var(--text-main);
   --chip-text-active: #120D08;
   --chip-border: rgba(224, 123, 57, 0.14);
+  --chip-border-hover: color-mix(in srgb, var(--accent-crimson) 38%, transparent);
 
   --focus-ring: rgba(224, 123, 57, 0.40);
   --scrollbar-thumb-hover: rgba(224, 123, 57, 0.55);
@@ -392,8 +396,8 @@ a {
   --chat-send-bg: #E07B39;
   --chat-send-bg-hover: #C8652A;
 
-  --card-tag-bg: rgba(224, 123, 57, 0.15);
-  --card-tag-color: #F09050;
+  --card-tag-bg: color-mix(in srgb, var(--accent-crimson) 14%, transparent);
+  --card-tag-color: var(--text-main);
   --card-image-placeholder-bg: linear-gradient(135deg, #1E1610 0%, #261C14 100%);
   --card-footer-border: rgba(224, 123, 57, 0.12);
   --card-shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.75), 0 0 28px rgba(224, 123, 57, 0.18);
@@ -493,10 +497,12 @@ a {
   --nav-icon: #8B949E;
   --nav-icon-hover: #E6EDF3;
   --chip-bg: #161B22;
-  --chip-bg-hover: #1C2128;
+  --chip-bg-hover: color-mix(in srgb, var(--accent-crimson) 14%, var(--chip-bg));
   --chip-text: #8B949E;
+  --chip-text-hover: var(--text-main);
   --chip-text-active: #0D1117;
   --chip-border: rgba(130, 150, 190, 0.14);
+  --chip-border-hover: color-mix(in srgb, var(--accent-crimson) 38%, transparent);
 
   --focus-ring: rgba(124, 92, 252, 0.40);
   --mobile-nav-bg: rgba(13, 17, 23, 0.97);
@@ -505,7 +511,8 @@ a {
   --chat-bubble-assistant: #161B22;
   --chat-input-bg: #0D1117;
 
-  --card-tag-bg: rgba(124, 92, 252, 0.15);
+  --card-tag-bg: color-mix(in srgb, var(--accent-crimson) 14%, transparent);
+  --card-tag-color: var(--text-main);
   --card-image-placeholder-bg: linear-gradient(135deg, #161B22 0%, #1C2128 100%);
   --card-footer-border: rgba(130, 150, 190, 0.12);
   --body-bg-gradient: linear-gradient(180deg, #0D1117 0%, #161B22 100%);
@@ -583,11 +590,13 @@ a {
 
   --nav-bg-active: #2A9D8F;
   --chip-bg: #111F1C;
-  --chip-bg-hover: #152622;
+  --chip-bg-hover: color-mix(in srgb, var(--accent-crimson) 14%, var(--chip-bg));
   --chip-bg-active: #2A9D8F;
   --chip-text: #7A9A94;
+  --chip-text-hover: var(--text-main);
   --chip-text-active: #0A1614;
   --chip-border: rgba(42, 157, 143, 0.14);
+  --chip-border-hover: color-mix(in srgb, var(--accent-crimson) 38%, transparent);
 
   --focus-ring: rgba(42, 157, 143, 0.40);
   --mobile-nav-bg: rgba(10, 22, 20, 0.97);
@@ -596,6 +605,9 @@ a {
   --body-bg-gradient: linear-gradient(180deg, #0A1614 0%, #0E1A18 100%);
   --auth-title-gradient: linear-gradient(135deg, #2A9D8F 0%, #1F7A6E 100%);
   --header-title-gradient: linear-gradient(135deg, #2A9D8F 0%, #1F7A6E 100%);
+  /* Neutral surfaces — avoid green tint on input/nav bars */
+  --nav-solid-bg: rgba(255, 255, 255, 0.06);
+  --nav-solid-bg-hover: rgba(255, 255, 255, 0.10);
 }
 
 [data-palette="teal"][data-theme="light"] {
@@ -652,10 +664,12 @@ a {
   --gradient-accent: linear-gradient(135deg, #E879A0 0%, #D4567A 100%);
   --nav-bg-active: #E879A0;
   --chip-bg: #211219;
-  --chip-bg-hover: #281720;
+  --chip-bg-hover: color-mix(in srgb, var(--accent-crimson) 14%, var(--chip-bg));
   --chip-bg-active: #E879A0;
+  --chip-text-hover: var(--text-main);
   --chip-text-active: #170D12;
   --chip-border: rgba(232, 121, 160, 0.14);
+  --chip-border-hover: color-mix(in srgb, var(--accent-crimson) 38%, transparent);
   --focus-ring: rgba(232, 121, 160, 0.40);
   --mobile-nav-bg: rgba(23, 13, 18, 0.97);
   --chat-send-bg: #E879A0;
@@ -707,10 +721,12 @@ a {
   --gradient-accent: linear-gradient(135deg, #C9A227 0%, #A8861A 100%);
   --nav-bg-active: #C9A227;
   --chip-bg: #141209;
-  --chip-bg-hover: #1A1810;
+  --chip-bg-hover: color-mix(in srgb, var(--accent-crimson) 14%, var(--chip-bg));
   --chip-bg-active: #C9A227;
+  --chip-text-hover: var(--text-main);
   --chip-text-active: #0C0B08;
   --chip-border: rgba(201, 162, 39, 0.14);
+  --chip-border-hover: color-mix(in srgb, var(--accent-crimson) 38%, transparent);
   --focus-ring: rgba(201, 162, 39, 0.40);
   --mobile-nav-bg: rgba(12, 11, 8, 0.97);
   --chat-send-bg: #C9A227;
@@ -765,15 +781,17 @@ a {
 
   --nav-bg-active: #7C4DFF;
   --chip-bg: #151030;
-  --chip-bg-hover: #1A1638;
+  --chip-bg-hover: color-mix(in srgb, var(--accent-crimson) 14%, var(--chip-bg));
   --chip-bg-active: #7C4DFF;
-  --chip-text-active: #ffffff;
+  --chip-text-hover: var(--text-main);
+  --chip-text-active: #0F0A21;
   --chip-border: rgba(124, 77, 255, 0.14);
+  --chip-border-hover: color-mix(in srgb, var(--accent-crimson) 38%, transparent);
   --focus-ring: rgba(124, 77, 255, 0.45);
   --mobile-nav-bg: rgba(11, 8, 24, 0.97);
   --chat-send-bg: #7C4DFF;
   --chat-send-bg-hover: #6B3FE8;
-  --card-tag-color: #B49AFF;
+  --card-tag-color: var(--text-main);
   --body-bg-gradient: linear-gradient(180deg, #0B0818 0%, #100C22 100%);
   --auth-title-gradient: linear-gradient(135deg, #E09920 0%, #7C4DFF 100%);
   --header-title-gradient: linear-gradient(135deg, #E09920 0%, #7C4DFF 100%);

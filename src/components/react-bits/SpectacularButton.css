@@ -37,21 +37,42 @@
 }
 
 .spectacular-btn:hover:not(.spectacular-btn--active) .spectacular-btn-inner {
-  color: var(--text-main);
+  color: var(--chip-text-hover, var(--text-main));
   background: var(--chip-bg-hover);
-  border-color: color-mix(in srgb, var(--chip-border) 55%, var(--text-main));
+  border-color: var(--chip-border-hover, color-mix(in srgb, var(--chip-border) 70%, var(--text-main)));
 }
 
 .spectacular-btn--active .spectacular-btn-inner {
   color: var(--chip-text-active);
   background: var(--chip-bg-active);
-  border-color: color-mix(in srgb, var(--chip-bg-active) 55%, var(--chip-text-active));
+  border-color: transparent;
   font-weight: 600;
+  box-shadow: none;
 }
 
 .spectacular-btn--active:hover .spectacular-btn-inner {
   color: var(--chip-text-active);
-  background: color-mix(in srgb, var(--chip-bg-active) 88%, var(--text-main));
+  background: var(--accent-light-crimson, var(--chip-bg-active));
+  border-color: transparent;
+}
+
+[data-theme="dark"] .spectacular-btn:hover:not(.spectacular-btn--active) .spectacular-btn-inner {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+}
+
+[data-theme="dark"] .spectacular-btn:hover:not(.spectacular-btn--active) .filter-pill-count {
+  background: color-mix(in srgb, var(--accent-crimson) 18%, transparent);
+  color: var(--chip-text-hover, var(--text-main));
+}
+
+[data-theme="dark"] .spectacular-btn--active .filter-pill-count {
+  background: color-mix(in srgb, var(--chip-text-active) 14%, transparent);
+  color: var(--chip-text-active);
+}
+
+[data-theme="dark"] .spectacular-filter-thumb {
+  background: color-mix(in srgb, var(--chip-bg-active) 24%, transparent);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--chip-bg-active) 16%, transparent);
 }
 
 .spectacular-btn-shine {
@@ -95,19 +116,19 @@
 [data-theme="light"] .spectacular-btn--active .spectacular-btn-inner {
   background: var(--chip-bg-active);
   color: var(--chip-text-active);
-  border-color: color-mix(in srgb, var(--chip-bg-active) 82%, #ffffff);
-  box-shadow: 0 0 0 1px rgba(107, 78, 232, 0.35);
+  border-color: transparent;
+  box-shadow: none;
 }
 
 [data-theme="light"] .spectacular-btn--active:hover .spectacular-btn-inner {
-  background: color-mix(in srgb, var(--chip-bg-active) 92%, #ffffff);
+  background: var(--accent-light-crimson, var(--chip-bg-active));
   color: var(--chip-text-active);
-  box-shadow: 0 0 0 1px rgba(107, 78, 232, 0.45);
+  box-shadow: none;
 }
 
 [data-theme="light"] .spectacular-filter-thumb {
   background: color-mix(in srgb, var(--chip-bg-active) 26%, transparent);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--chip-bg-active) 38%, transparent);
+  box-shadow: none;
 }
 
 [data-theme="light"] .spectacular-btn:not(.spectacular-btn--active) .filter-pill-count {

@@ -1,10 +1,11 @@
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
-import { Plus, Trash2, Tag, X, Search, Save, Edit3, FolderPlus, Minus, Undo2, Redo2, Pipette, ChevronDown, FileText } from 'lucide-react'
+import { createPortal } from 'react-dom'
+import { Plus, Trash2, Tag, X, Search, Save, Edit3, FolderPlus, Minus, Undo2, Redo2, Pipette, ChevronDown, FileText, Pin } from 'lucide-react'
 import type { NoteRecord, FolderRecord } from '../types'
 import { generateId } from '../lib/helpers'
 import { createNoteApi, updateNoteApi, deleteNoteApi } from '../lib/notes-api'
 import { recordDeletedId, removeDeletedId, loadFolders, saveFolders } from '../lib/storage'
-import { animateNoteDrop } from './react-bits/animations'
+import { animateNoteDrop, animateCanvasCountPopoverClose, animateCanvasCountPopoverOpen } from './react-bits/animations'
 import { Folder as ReactBitsFolder } from './react-bits/Folder'
 
 import { Folder as FolderIcon } from 'lucide-react'
@@ -146,24 +147,124 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
   const [draggingFolderId, setDraggingFolderId] = useState<string | null>(null)
   const [hoveredFolderId, setHoveredFolderId] = useState<string | null>(null)
   const [customHexFolderId, setCustomHexFolderId] = useState<string | null>(null)
+  const customHexTriggerRef = useRef<HTMLButtonElement>(null)
+  const hexPopoverRef = useRef<HTMLDivElement>(null)
+  const [hexPopoverPos, setHexPopoverPos] = useState<{ top: number; left: number } | null>(null)
   const [notesMenuOpen, setNotesMenuOpen] = useState(false)
   const [foldersMenuOpen, setFoldersMenuOpen] = useState(false)
   const [flashNoteId, setFlashNoteId] = useState<string | null>(null)
   const hoveredFolderIdRef = useRef<string | null>(null)
   const [_addNoteDropdown, setAddNoteDropdown] = useState(false)
   const renameInputRef = useRef<HTMLInputElement>(null)
+  const notesMenuRef = useRef<HTMLDivElement>(null)
+  const foldersMenuRef = useRef<HTMLDivElement>(null)
+  const notesTriggerRef = useRef<HTMLButtonElement>(null)
+  const foldersTriggerRef = useRef<HTMLButtonElement>(null)
+  const notesClosingRef = useRef(false)
+  const foldersClosingRef = useRef(false)
+
+  const updateHexPopoverPosition = useCallback(() => {
+    const trigger = customHexTriggerRef.current
+    if (!trigger || !customHexFolderId) {
+      setHexPopoverPos(null)
+      return
+    }
+    const rect = trigger.getBoundingClientRect()
+    setHexPopoverPos({
+      top: rect.top,
+      left: rect.left + rect.width / 2,
+    })
+  }, [customHexFolderId])
+
+  useLayoutEffect(() => {
+    if (!customHexFolderId) {
+      setHexPopoverPos(null)
+      return
+    }
+    updateHexPopoverPosition()
+    window.addEventListener('resize', updateHexPopoverPosition)
+    window.addEventListener('scroll', updateHexPopoverPosition, true)
+    return () => {
+      window.removeEventListener('resize', updateHexPopoverPosition)
+      window.removeEventListener('scroll', updateHexPopoverPosition, true)
+    }
+  }, [customHexFolderId, zoom, panX, panY, openFolderId, folders, updateHexPopoverPosition])
+
+  useEffect(() => {
+    if (!customHexFolderId) return
+    if (openFolderId !== customHexFolderId) {
+      setCustomHexFolderId(null)
+    }
+  }, [openFolderId, customHexFolderId])
+
+  useEffect(() => {
+    if (!customHexFolderId) return
+    function onPointerDown(e: MouseEvent) {
+      const target = e.target as Node
+      if (customHexTriggerRef.current?.contains(target)) return
+      if (hexPopoverRef.current?.contains(target)) return
+      setCustomHexFolderId(null)
+    }
+    document.addEventListener('mousedown', onPointerDown)
+    return () => document.removeEventListener('mousedown', onPointerDown)
+  }, [customHexFolderId])
+
+  const closeNotesMenu = useCallback((instant = false) => {
+    if (notesClosingRef.current) return
+    const menu = notesMenuRef.current
+    if (instant || !menu || !notesMenuOpen) {
+      notesClosingRef.current = false
+      setNotesMenuOpen(false)
+      return
+    }
+    notesClosingRef.current = true
+    animateCanvasCountPopoverClose(menu, () => {
+      notesClosingRef.current = false
+      setNotesMenuOpen(false)
+    })
+  }, [notesMenuOpen])
+
+  const closeFoldersMenu = useCallback((instant = false) => {
+    if (foldersClosingRef.current) return
+    const menu = foldersMenuRef.current
+    if (instant || !menu || !foldersMenuOpen) {
+      foldersClosingRef.current = false
+      setFoldersMenuOpen(false)
+      return
+    }
+    foldersClosingRef.current = true
+    animateCanvasCountPopoverClose(menu, () => {
+      foldersClosingRef.current = false
+      setFoldersMenuOpen(false)
+    })
+  }, [foldersMenuOpen])
+
+  useLayoutEffect(() => {
+    if (!notesMenuOpen || !notesMenuRef.current) return
+    animateCanvasCountPopoverOpen(notesMenuRef.current, notesTriggerRef.current)
+  }, [notesMenuOpen])
+
+  useLayoutEffect(() => {
+    if (!foldersMenuOpen || !foldersMenuRef.current) return
+    animateCanvasCountPopoverOpen(foldersMenuRef.current, foldersTriggerRef.current)
+  }, [foldersMenuOpen])
 
   // Close float count popovers when clicking outside or pressing Escape
   useEffect(() => {
     if (!notesMenuOpen && !foldersMenuOpen) return
-    function onPointerDown() {
-      setNotesMenuOpen(false)
-      setFoldersMenuOpen(false)
+    function onPointerDown(e: MouseEvent) {
+      const target = e.target as Node
+      if (notesTriggerRef.current?.contains(target)) return
+      if (foldersTriggerRef.current?.contains(target)) return
+      if (notesMenuRef.current?.contains(target)) return
+      if (foldersMenuRef.current?.contains(target)) return
+      if (notesMenuOpen) closeNotesMenu()
+      if (foldersMenuOpen) closeFoldersMenu()
     }
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape') {
-        setNotesMenuOpen(false)
-        setFoldersMenuOpen(false)
+        if (notesMenuOpen) closeNotesMenu()
+        if (foldersMenuOpen) closeFoldersMenu()
       }
     }
     document.addEventListener('mousedown', onPointerDown)
@@ -172,7 +273,7 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
       document.removeEventListener('mousedown', onPointerDown)
       window.removeEventListener('keydown', onKey)
     }
-  }, [notesMenuOpen, foldersMenuOpen])
+  }, [notesMenuOpen, foldersMenuOpen, closeNotesMenu, closeFoldersMenu])
 
   // Pan + flash-highlight the canvas to center on a specific note
   function panToNote(note: NoteRecord) {
@@ -210,6 +311,22 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
     const fH = folder.height ?? 120
     setPanX(cW / 2 - (fX + fW / 2) * zoom)
     setPanY(cH / 2 - (fY + fH / 2) * zoom)
+  }
+
+  function showNoteOnCanvas(note: NoteRecord) {
+    closeNotesMenu(true)
+    closeFoldersMenu(true)
+    setActiveTool('select')
+    requestAnimationFrame(() => panToNote(note))
+  }
+
+  function showFolderOnCanvas(folder: FolderRecord) {
+    closeFoldersMenu(true)
+    closeNotesMenu(true)
+    setActiveTool('select')
+    setSelectedFolderId(folder.id)
+    setOpenFolderId(folder.id)
+    requestAnimationFrame(() => panToFolder(folder))
   }
 
   const safeNotes = Array.isArray(notes) ? notes.filter(n => n && n.id) : []
@@ -871,6 +988,10 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
   const tags = parseTags(draftTags)
   const zoomPercent = Math.round(zoom * 100)
   const isNearLimit = draftContent.length >= MAX_CONTENT_LENGTH * 0.9
+  const activeHexFolder = customHexFolderId
+    ? safeFolders.find(f => f.id === customHexFolderId) ?? null
+    : null
+  const activeHexColor = activeHexFolder?.color || '#5227FF'
 
   return (
     <div className="excalidraw-canvas-wrap">
@@ -1038,6 +1159,7 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
 
                       <div className="folder-color-custom-wrap">
                         <button
+                          ref={customHexFolderId === folder.id ? customHexTriggerRef : undefined}
                           className={`folder-color-dot folder-color-dot--custom${!FOLDER_COLORS.includes(folderColor) ? ' folder-color-dot--active' : ''}`}
                           style={{ backgroundColor: !FOLDER_COLORS.includes(folderColor) ? folderColor : '#3b3b4f' }}
                           onClick={e => {
@@ -1048,36 +1170,6 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
                         >
                           <Pipette size={9} strokeWidth={2.5} />
                         </button>
-
-                        {customHexFolderId === folder.id && (
-                          <div className="hex-code-popover" onClick={e => e.stopPropagation()} onPointerDown={e => e.stopPropagation()}>
-                            <span className="hex-code-title">Hex code</span>
-                            <div className="hex-code-input-wrap">
-                              <span className="hex-code-prefix">#</span>
-                              <input
-                                type="text"
-                                className="hex-code-input"
-                                value={folderColor.replace('#', '')}
-                                onChange={e => {
-                                  const val = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6)
-                                  setFolderColor(folder.id, `#${val}`)
-                                }}
-                                placeholder="ffffff"
-                                maxLength={6}
-                              />
-                              <div className="hex-code-divider" />
-                              <label className="hex-code-picker-btn" title="Pick color">
-                                <Pipette size={13} />
-                                <input
-                                  type="color"
-                                  value={folderColor.startsWith('#') && folderColor.length === 7 ? folderColor : '#5227FF'}
-                                  onChange={e => setFolderColor(folder.id, e.target.value)}
-                                  className="sr-only"
-                                />
-                              </label>
-                            </div>
-                          </div>
-                        )}
                       </div>
                     </div>
 
@@ -1257,44 +1349,54 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
       </div>
 
       {/* Floating note count & active folder filter (top-left) */}
-      <div className="canvas-float-count relative flex items-center gap-1.5">
+      <div className="canvas-float-count">
+        <div className="canvas-count-pill-group">
         {/* Notes Pill Button */}
         <div className="relative">
           <button
+            type="button"
+            ref={notesTriggerRef}
             className={`canvas-count-pill-btn${notesMenuOpen ? ' canvas-count-pill-btn--active' : ''}`}
             onClick={e => {
               e.stopPropagation()
-              setNotesMenuOpen(prev => !prev)
-              setFoldersMenuOpen(false)
+              if (notesMenuOpen) {
+                closeNotesMenu()
+              } else {
+                closeFoldersMenu(true)
+                setNotesMenuOpen(true)
+              }
             }}
             title="View all canvas notes"
+            aria-expanded={notesMenuOpen}
+            aria-haspopup="listbox"
           >
-            <span>📌</span>
-            <span>{canvasDisplayNotes.length} {canvasDisplayNotes.length === 1 ? 'note' : 'notes'}</span>
-            <ChevronDown size={12} className={`transition-transform duration-150 ${notesMenuOpen ? 'rotate-180' : ''}`} />
+            <Pin size={13} strokeWidth={2.2} className="canvas-count-pill-icon" aria-hidden="true" />
+            <span className="canvas-count-pill-label">
+              {canvasDisplayNotes.length} {canvasDisplayNotes.length === 1 ? 'note' : 'notes'}
+            </span>
+            <ChevronDown size={13} strokeWidth={2.2} className={`canvas-count-pill-chevron${notesMenuOpen ? ' canvas-count-pill-chevron--open' : ''}`} aria-hidden="true" />
           </button>
 
-          {/* Notes List Dropdown Popover */}
+          {/* Notes list dropdown */}
           {notesMenuOpen && (
             <div
-              className="canvas-count-popover"
+              ref={notesMenuRef}
+              className="canvas-count-popover canvas-notes-popover"
               onClick={e => e.stopPropagation()}
               onMouseDown={e => e.stopPropagation()}
               onPointerDown={e => e.stopPropagation()}
             >
-              {/* Header */}
+              <div className="canvas-count-popover-arrow" aria-hidden="true" />
+              <div className="canvas-count-popover-panel">
               <div className="canvas-count-popover-header">
-                <div className="flex items-center gap-2">
-                  <FileText size={14} className="text-amber-500 shrink-0" />
-                  <span className="text-xs font-bold text-[var(--text-main)] tracking-tight">Canvas Notes</span>
-                  <span className="tabular-nums text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-full px-2 py-0.5">
-                    {safeNotes.length}
-                  </span>
+                <div className="canvas-notes-popover-title">
+                  <FileText size={14} className="canvas-notes-popover-title-icon" aria-hidden="true" />
+                  <span className="canvas-notes-popover-title-text">Canvas Notes</span>
+                  <span className="canvas-notes-popover-badge">{safeNotes.length}</span>
                 </div>
               </div>
 
-              {/* List */}
-              <div className="canvas-count-popover-list p-1.5 space-y-1">
+              <div className="canvas-count-popover-list canvas-notes-popover-list">
                 {(() => {
                   const list = searchQuery.trim()
                     ? safeNotes.filter(n =>
@@ -1305,58 +1407,51 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
                     : safeNotes
                   if (list.length === 0) {
                     return (
-                      <div className="flex flex-col items-center justify-center gap-1 py-6 text-[var(--text-dim)] opacity-60">
-                        <Search size={18} />
-                        <span className="text-xs font-medium">No notes found</span>
+                      <div className="canvas-notes-popover-empty">
+                        <Search size={18} aria-hidden="true" />
+                        <span>No notes found</span>
                       </div>
                     )
                   }
                   return list.map(note => {
                     const colorItem = NOTE_PALETTE.find(p => p.id === note.color) || NOTE_PALETTE[0]
                     const folder = safeFolders.find(f => Array.isArray(f.noteIds) && f.noteIds.includes(note.id))
+                    const preview = note.content ? note.content.slice(0, 48).trim() : 'Empty note…'
+                    const meta = folder
+                      ? `In ${folder.name}`
+                      : formatDate(note.updated_at)
                     return (
-                      <button
-                        key={note.id}
-                        type="button"
-                        className="w-full flex items-center justify-between gap-2.5 text-left px-3 py-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 active:scale-[0.98] transition-all group"
-                        onMouseDown={e => {
-                          e.stopPropagation()
-                          setNotesMenuOpen(false)
-                          panToNote(note)
-                        }}
-                      >
-                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      <div key={note.id} className="canvas-count-popover-row canvas-notes-popover-row">
+                        <div className="canvas-notes-popover-row-main">
                           <span
-                            className="w-3.5 h-3.5 rounded-md shrink-0 border border-black/15 shadow-2xs"
+                            className="canvas-notes-popover-color"
                             style={{ background: colorItem.gradient || colorItem.bg }}
+                            aria-hidden="true"
                           />
-                          <div className="flex-1 min-w-0">
-                            <div className="text-xs font-semibold text-[var(--text-main)] truncate">
+                          <div className="canvas-notes-popover-row-text">
+                            <span className="canvas-notes-popover-name">
                               {note.title || deriveTitle(note.content) || 'Untitled'}
-                            </div>
-                            <div className="text-[10px] text-[var(--text-dim)] truncate opacity-70">
-                              {note.content ? note.content.slice(0, 50) : 'Empty note…'}
-                            </div>
+                            </span>
+                            <span className="canvas-notes-popover-meta">
+                              {meta}{preview !== 'Empty note…' ? ` · ${preview}` : ''}
+                            </span>
                           </div>
                         </div>
-
-                        {folder ? (
-                          <span
-                            className="shrink-0 text-[10px] px-2 py-0.5 rounded-md font-semibold text-white shadow-2xs truncate max-w-[100px] ml-2"
-                            style={{ backgroundColor: folder.color || '#5227FF' }}
-                            title={folder.name}
-                          >
-                            {folder.name}
-                          </span>
-                        ) : (
-                          <span className="shrink-0 text-[10px] text-[var(--text-dim)] font-medium opacity-60 ml-2">
-                            {formatDate(note.updated_at)}
-                          </span>
-                        )}
-                      </button>
+                        <button
+                          type="button"
+                          className="canvas-popover-show-btn"
+                          onClick={e => {
+                            e.stopPropagation()
+                            showNoteOnCanvas(note)
+                          }}
+                        >
+                          Show
+                        </button>
+                      </div>
                     )
                   })
                 })()}
+              </div>
               </div>
             </div>
           )}
@@ -1366,75 +1461,89 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
         {safeFolders.length > 0 && (
           <div className="relative">
             <button
-              className={`canvas-count-pill-btn canvas-folder-count${foldersMenuOpen ? ' canvas-count-pill-btn--active' : ''}`}
+              type="button"
+              ref={foldersTriggerRef}
+              className={`canvas-count-pill-btn${foldersMenuOpen ? ' canvas-count-pill-btn--active' : ''}`}
               onClick={e => {
                 e.stopPropagation()
-                setFoldersMenuOpen(prev => !prev)
-                setNotesMenuOpen(false)
+                if (foldersMenuOpen) {
+                  closeFoldersMenu()
+                } else {
+                  closeNotesMenu(true)
+                  setFoldersMenuOpen(true)
+                }
               }}
               title="View all canvas folders and their notes"
+              aria-expanded={foldersMenuOpen}
+              aria-haspopup="listbox"
             >
-              <span>🗂️</span>
-              <span>{safeFolders.length} {safeFolders.length === 1 ? 'folder' : 'folders'}</span>
-              <ChevronDown size={12} className={`transition-transform duration-200 ${foldersMenuOpen ? 'rotate-180' : ''}`} />
+              <FolderIcon size={13} strokeWidth={2.2} className="canvas-count-pill-icon" aria-hidden="true" />
+              <span className="canvas-count-pill-label">
+                {safeFolders.length} {safeFolders.length === 1 ? 'folder' : 'folders'}
+              </span>
+              <ChevronDown size={13} strokeWidth={2.2} className={`canvas-count-pill-chevron${foldersMenuOpen ? ' canvas-count-pill-chevron--open' : ''}`} aria-hidden="true" />
             </button>
 
-            {/* Folders Dropdown matching Image 2 sketch */}
+            {/* Folders dropdown */}
             {foldersMenuOpen && (
               <div
-                className="canvas-count-popover"
+                ref={foldersMenuRef}
+                className="canvas-count-popover canvas-folder-popover"
                 onClick={e => e.stopPropagation()}
                 onMouseDown={e => e.stopPropagation()}
                 onPointerDown={e => e.stopPropagation()}
               >
-                {/* Header */}
+                <div className="canvas-count-popover-arrow" aria-hidden="true" />
+                <div className="canvas-count-popover-panel">
                 <div className="canvas-count-popover-header">
-                  <div className="flex items-center gap-2">
-                    <FolderIcon size={14} className="text-amber-500 shrink-0" />
-                    <span className="text-xs font-bold text-[var(--text-main)] tracking-tight">Canvas Folders</span>
-                    <span className="tabular-nums text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-full px-2 py-0.5">
-                      {safeFolders.length}
-                    </span>
+                  <div className="canvas-folder-popover-title">
+                    <FolderIcon size={14} className="canvas-folder-popover-title-icon" aria-hidden="true" />
+                    <span className="canvas-folder-popover-title-text">Canvas Folders</span>
+                    <span className="canvas-folder-popover-badge">{safeFolders.length}</span>
                   </div>
                 </div>
 
-                {/* Folder list */}
-                <div className="canvas-count-popover-list space-y-0.5">
+                <div className="canvas-count-popover-list canvas-folder-popover-list">
                   {safeFolders.map(folder => {
                     const folderNotes = safeNotes.filter(n => folder.noteIds.includes(n.id))
+                    const folderColor = folder.color || '#5227FF'
                     return (
-                      <button
-                        key={folder.id}
-                        type="button"
-                        className="w-full flex items-center justify-between gap-2.5 px-3 py-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 active:scale-[0.98] transition-all group text-left cursor-pointer"
-                        onMouseDown={e => {
-                          e.stopPropagation()
-                          setFoldersMenuOpen(false)
-                          panToFolder(folder)
-                        }}
-                      >
-                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      <div key={folder.id} className="canvas-count-popover-row canvas-folder-popover-row">
+                        <div className="canvas-folder-popover-row-main">
                           <FolderIcon
                             size={16}
-                            className="shrink-0 transition-transform group-hover:scale-110"
-                            style={{ color: folder.color || '#5227FF', fill: `${folder.color || '#5227FF'}25` }}
+                            className="canvas-folder-popover-row-icon"
+                            style={{ color: folderColor, fill: `${folderColor}22` }}
+                            aria-hidden="true"
                           />
-                          <span className="text-xs font-semibold text-[var(--text-main)] truncate">
-                            {folder.name}
-                          </span>
+                          <div className="canvas-folder-popover-row-text">
+                            <span className="canvas-folder-popover-name">{folder.name}</span>
+                            <span className="canvas-folder-popover-meta">
+                              {folderNotes.length} {folderNotes.length === 1 ? 'note' : 'notes'}
+                            </span>
+                          </div>
                         </div>
-
-                        <span className="text-[10px] font-medium text-[var(--text-dim)] opacity-60 shrink-0">
-                          {folderNotes.length} {folderNotes.length === 1 ? 'note' : 'notes'}
-                        </span>
-                      </button>
+                        <button
+                          type="button"
+                          className="canvas-popover-show-btn"
+                          onClick={e => {
+                            e.stopPropagation()
+                            showFolderOnCanvas(folder)
+                          }}
+                        >
+                          Show
+                        </button>
+                      </div>
                     )
                   })}
                 </div>
               </div>
+              </div>
             )}
           </div>
         )}
+
+        </div>
 
         {activeFolder && (
           <span className="flex items-center gap-1 bg-[#5227FF] text-white px-2 py-0.5 rounded-full text-xs font-semibold">
@@ -1652,6 +1761,44 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
             </div>
           </div>
         </div>
+      )}
+
+      {customHexFolderId && hexPopoverPos && activeHexFolder && createPortal(
+        <div
+          ref={hexPopoverRef}
+          className="hex-code-popover hex-code-popover--fixed"
+          style={{ top: hexPopoverPos.top, left: hexPopoverPos.left }}
+          onClick={e => e.stopPropagation()}
+          onPointerDown={e => e.stopPropagation()}
+        >
+          <span className="hex-code-popover-arrow" aria-hidden="true" />
+          <span className="hex-code-title">Hex code</span>
+          <div className="hex-code-input-wrap">
+            <span className="hex-code-prefix">#</span>
+            <input
+              type="text"
+              className="hex-code-input"
+              value={activeHexColor.replace('#', '')}
+              onChange={e => {
+                const val = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6)
+                setFolderColor(activeHexFolder.id, `#${val}`)
+              }}
+              placeholder="ffffff"
+              maxLength={6}
+            />
+            <div className="hex-code-divider" />
+            <label className="hex-code-picker-btn" title="Pick color">
+              <Pipette size={13} />
+              <input
+                type="color"
+                value={activeHexColor.startsWith('#') && activeHexColor.length === 7 ? activeHexColor : '#5227FF'}
+                onChange={e => setFolderColor(activeHexFolder.id, e.target.value)}
+                className="sr-only"
+              />
+            </label>
+          </div>
+        </div>,
+        document.body,
       )}
     </div>
   )

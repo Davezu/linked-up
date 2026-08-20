@@ -143,7 +143,7 @@ export function FilterPillList({
             role="tab"
             aria-selected={isActive}
             tabIndex={isActive ? 0 : -1}
-            className={`flex-shrink-0 px-3.5 py-2.5 rounded-[var(--radius-sm)] border text-[13px] font-medium whitespace-nowrap cursor-pointer transition-all duration-150 filter-pill ${isActive ? 'bg-[var(--chip-bg-active)] text-[var(--chip-text-active)] border-transparent font-semibold shadow-md active' : 'bg-[var(--chip-bg)] text-[var(--chip-text)] border-[var(--chip-border)] hover:bg-[var(--chip-bg-hover)] hover:text-[var(--chip-text-active)]'}`}
+            className={`flex-shrink-0 px-3.5 py-2.5 rounded-[var(--radius-sm)] border text-[13px] font-medium whitespace-nowrap cursor-pointer transition-all duration-150 filter-pill ${isActive ? 'bg-[var(--chip-bg-active)] text-[var(--chip-text-active)] border-transparent font-semibold active' : 'bg-[var(--chip-bg)] text-[var(--chip-text)] border-[var(--chip-border)] hover:bg-[var(--chip-bg-hover)] hover:text-[var(--chip-text-hover)]'}`}
             onClick={() => onSelect(filter)}
           >
             {filter}
