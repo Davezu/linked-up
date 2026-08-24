@@ -122,23 +122,23 @@ export const Folder: React.FC<FolderProps> = ({
 
     const ox = paperOffsets[i]?.x || 0;
     const oy = paperOffsets[i]?.y || 0;
-    const scale = isPaperHovered ? 'scale(1.12)' : 'scale(1)';
+    const scale = isPaperHovered ? 'scale(1.15)' : 'scale(1)';
 
     if (total === 1) {
-      const ty = isPaperHovered ? -105 : -95;
+      const ty = isPaperHovered ? -145 : -130;
       return `translate(calc(-50% + ${ox}px), calc(${ty}% + ${oy}px)) rotateZ(0deg) ${scale}`;
     }
     if (total === 2) {
-      const tx = i === 0 ? '-90%' : '-10%';
-      const ty = isPaperHovered ? -90 : -80;
+      const tx = i === 0 ? '-95%' : '-5%';
+      const ty = isPaperHovered ? -145 : -130;
       const rot = i === 0 ? '-10deg' : '10deg';
       return `translate(calc(${tx} + ${ox}px), calc(${ty}% + ${oy}px)) rotateZ(${rot}) ${scale}`;
     }
 
-    // 3 cards: Left (-120%), Center (-50%), Right (20%)
-    const tx = i === 0 ? '-120%' : i === 1 ? '-50%' : '20%';
-    const baseTy = i === 1 ? -105 : -75;
-    const ty = baseTy + (isPaperHovered ? -10 : 0);
+    // 3 cards: Left (-125%), Center (-50%), Right (25%)
+    const tx = i === 0 ? '-125%' : i === 1 ? '-50%' : '25%';
+    const baseTy = i === 1 ? -145 : -125;
+    const ty = baseTy + (isPaperHovered ? -15 : 0);
     const rot = i === 0 ? '-12deg' : i === 1 ? '0deg' : '12deg';
     return `translate(calc(${tx} + ${ox}px), calc(${ty}% + ${oy}px)) rotateZ(${rot}) ${scale}`;
   };

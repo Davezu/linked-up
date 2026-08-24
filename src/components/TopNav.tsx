@@ -319,7 +319,7 @@ export function TopNav({
 
         <div className="top-nav-divider hidden sm:block" aria-hidden="true" />
 
-        <div className="tab-switcher">
+        <div className="tab-switcher hidden sm:grid">
           <div
             className={`tab-switcher-thumb${activeView === 'notes' ? ' tab-switcher-thumb--notes tab-switcher-thumb--accent' : ' tab-switcher-thumb--links tab-switcher-thumb--neutral'}`}
             aria-hidden="true"
@@ -357,7 +357,7 @@ export function TopNav({
 
       {/* Filters — links view only, after tab switcher */}
       {activeView === 'library' && onFilterChange && (statusFilters.length > 0 || categories.length > 0) && (
-        <div className="top-nav-filters">
+        <div className="top-nav-filters hidden md:flex">
           {statusFilters.length > 0 && (
             <FilterPillList
               filters={[...statusFilters]}

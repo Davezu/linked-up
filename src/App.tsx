@@ -17,6 +17,8 @@ import { LinkCard } from './components/LinkCard'
 import { LinkFan } from './components/LinkFan'
 import { NotesView } from './components/NotesView'
 import { TopNav } from './components/TopNav'
+import { CategoryFilterDropdown } from './components/CategoryFilterDropdown'
+import { FilterPillList } from './components/FilterPillList'
 
 import { hasToken, authHeaders, clearToken } from './lib/auth/tokenStorage'
 import { AuthGate } from './components/AuthGate'
@@ -350,7 +352,11 @@ export default function App() {
   const allCategories = Array.from(new Set(links.map(l => l.category))).sort()
 
   if (!authenticated) {
-    return <AuthGate onSuccess={() => { clearApiUnavailable(); setAuthenticated(true) }} />
+    return <AuthGate
+      theme={theme}
+      onToggleTheme={handleToggleTheme}
+      onSuccess={() => { clearApiUnavailable(); setAuthenticated(true) }}
+    />
   }
   return (
     <div className="app-shell">
@@ -384,7 +390,7 @@ export default function App() {
       <div className="app-body">
 
         {/* Main content */}
-        <div className={`app-content${activeView === 'notes' ? ' app-content--canvas' : ''}`}>
+        <div className={`app-content${activeView === 'notes' || activeView === 'chat' ? ' app-content--full' : ''}`}>
           {activeView === 'chat' ? (
             <ChatView links={links} />
           ) : activeView === 'notes' ? (
@@ -393,6 +399,8 @@ export default function App() {
               onNotesChange={setNotes}
               activeFolder={activeNoteFolder}
               onSelectFolder={setActiveNoteFolder}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
             />
           ) : (
             <>
@@ -486,7 +494,7 @@ export default function App() {
                       <span className="category-name">{activeFilter}</span>
                       <span className="category-badge">{filteredLinks.length}</span>
                     </div>
-                    <div className="grid grid-cols-3 gap-4 w-full vertical-cards-stack">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full vertical-cards-stack">
                       {filteredLinks.map(link => (
                         <LinkCard
                           key={link.id}
@@ -499,7 +507,7 @@ export default function App() {
                     </div>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-3 gap-6 content-start categories-grid">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 content-start categories-grid">
                     {grouped.map(group => (
                       <section key={group.name} className="flex flex-col gap-0.5 category-group" aria-label={group.name}>
                         <div className="category-header">

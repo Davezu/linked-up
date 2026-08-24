@@ -2,6 +2,12 @@ import { Sparkles, Library, NotebookPen } from 'lucide-react'
 
 type AppView = 'library' | 'notes' | 'chat'
 
+const TABS: { id: AppView; label: string; icon: typeof Library }[] = [
+  { id: 'library', label: 'Library', icon: Library },
+  { id: 'notes', label: 'Notes', icon: NotebookPen },
+  { id: 'chat', label: 'Ask AI', icon: Sparkles },
+]
+
 export function MobileBottomNav({
   activeView,
   onViewChange,
@@ -9,41 +15,48 @@ export function MobileBottomNav({
   activeView: AppView
   onViewChange: (view: AppView) => void
 }) {
+  const activeIndex = TABS.findIndex((t) => t.id === activeView)
+
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-30 w-full grid grid-cols-3 items-stretch bg-[var(--mobile-nav-bg)] border-t border-[var(--border)] backdrop-blur-lg mobile-bottom-nav" aria-label="Main navigation">
-      <button
-        type="button"
-        className={`flex flex-col items-center justify-center gap-1 w-full min-h-[56px] p-2 text-xs font-medium border-none cursor-pointer transition-all nav-tab ${activeView === 'library' ? 'text-[var(--nav-icon-active)] bg-[var(--nav-bg-active)] active' : 'text-[var(--nav-icon)] hover:text-[var(--nav-icon-hover)] hover:bg-[var(--nav-bg-hover)]'}`}
-        onClick={() => onViewChange('library')}
-        aria-current={activeView === 'library' ? 'page' : undefined}
-      >
-        <span className="flex items-center justify-center w-6 h-6 flex-shrink-0 nav-tab-icon" aria-hidden="true">
-          <Library size={22} strokeWidth={1.75} />
-        </span>
-        <span className="block leading-tight whitespace-nowrap nav-tab-label-text">Library</span>
-      </button>
-      <button
-        type="button"
-        className={`flex flex-col items-center justify-center gap-1 w-full min-h-[56px] p-2 text-xs font-medium border-none cursor-pointer transition-all nav-tab ${activeView === 'notes' ? 'text-[var(--nav-icon-active)] bg-[var(--nav-bg-active)] active' : 'text-[var(--nav-icon)] hover:text-[var(--nav-icon-hover)] hover:bg-[var(--nav-bg-hover)]'}`}
-        onClick={() => onViewChange('notes')}
-        aria-current={activeView === 'notes' ? 'page' : undefined}
-      >
-        <span className="flex items-center justify-center w-6 h-6 flex-shrink-0 nav-tab-icon" aria-hidden="true">
-          <NotebookPen size={22} strokeWidth={1.75} />
-        </span>
-        <span className="block leading-tight whitespace-nowrap nav-tab-label-text">Notes</span>
-      </button>
-      <button
-        type="button"
-        className={`flex flex-col items-center justify-center gap-1 w-full min-h-[56px] p-2 text-xs font-medium border-none cursor-pointer transition-all nav-tab ${activeView === 'chat' ? 'text-[var(--nav-icon-active)] bg-[var(--nav-bg-active)] active' : 'text-[var(--nav-icon)] hover:text-[var(--nav-icon-hover)] hover:bg-[var(--nav-bg-hover)]'}`}
-        onClick={() => onViewChange('chat')}
-        aria-current={activeView === 'chat' ? 'page' : undefined}
-      >
-        <span className="flex items-center justify-center w-6 h-6 flex-shrink-0 nav-tab-icon" aria-hidden="true">
-          <Sparkles size={22} strokeWidth={1.75} />
-        </span>
-        <span className="block leading-tight whitespace-nowrap nav-tab-label-text">Ask AI</span>
-      </button>
+    <nav className="mobile-bottom-nav" aria-label="Main navigation">
+      {/* Smooth iOS-style sliding active indicator pill */}
+      <div
+        className="mobile-nav-slider"
+        style={{
+          position: 'absolute',
+          top: 5,
+          bottom: 5,
+          left: 6,
+          width: 'calc(33.3333% - 12px)',
+          transform: `translateX(calc(${activeIndex * 100}% + ${activeIndex * 12}px))`,
+          transition: 'transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)',
+          background: 'color-mix(in srgb, var(--text-main) 12%, var(--mobile-nav-bg))',
+          border: '1px solid color-mix(in srgb, var(--text-main) 12%, transparent)',
+          borderRadius: 12,
+          pointerEvents: 'none',
+          zIndex: 1,
+        }}
+      />
+
+      {TABS.map((tab) => {
+        const Icon = tab.icon
+        const isActive = activeView === tab.id
+        return (
+          <button
+            key={tab.id}
+            type="button"
+            className={`nav-tab ${isActive ? 'active' : ''}`}
+            style={{ position: 'relative', zIndex: 2 }}
+            onClick={() => onViewChange(tab.id)}
+            aria-current={isActive ? 'page' : undefined}
+          >
+            <span className="nav-tab-icon" aria-hidden="true">
+              <Icon size={20} strokeWidth={1.8} />
+            </span>
+            <span className="nav-tab-label-text">{tab.label}</span>
+          </button>
+        )
+      })}
     </nav>
   )
 }

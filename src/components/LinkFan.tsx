@@ -49,13 +49,13 @@ export function LinkFan({
 
   return (
     <div className="link-fan-wrap">
-      <div className="link-fan">
-        {items.length > 1 && (
-          <button className="link-fan-nav link-fan-nav--left" onClick={handlePrev} aria-label="Previous link">
-            <ChevronLeft size={24} strokeWidth={2} aria-hidden="true" />
-          </button>
-        )}
+      {items.length > 1 && (
+        <button className="link-fan-nav link-fan-nav--left" onClick={handlePrev} aria-label="Previous link">
+          <ChevronLeft size={24} strokeWidth={2} aria-hidden="true" />
+        </button>
+      )}
 
+      <div className="link-fan">
         {items.map((link, i) => {
           const posClass = getPosClass(i)
           return (
@@ -73,13 +73,13 @@ export function LinkFan({
             </div>
           )
         })}
-
-        {items.length > 1 && (
-          <button className="link-fan-nav link-fan-nav--right" onClick={handleNext} aria-label="Next link">
-            <ChevronRight size={24} strokeWidth={2} aria-hidden="true" />
-          </button>
-        )}
       </div>
+
+      {items.length > 1 && (
+        <button className="link-fan-nav link-fan-nav--right" onClick={handleNext} aria-label="Next link">
+          <ChevronRight size={24} strokeWidth={2} aria-hidden="true" />
+        </button>
+      )}
 
       {items.length > 1 && (
         <div className="link-dots">

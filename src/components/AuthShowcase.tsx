@@ -1,0 +1,63 @@
+import { Bookmark, FileText, Sparkles } from 'lucide-react'
+import CardSwap, { Card } from './react-bits/CardSwap'
+
+const SHOWCASE_CARDS = [
+  {
+    title: 'Save Links',
+    icon: Bookmark,
+    media: { type: 'image' as const, src: '/resources/img1.png', alt: 'Saved links library preview' },
+  },
+  {
+    title: 'Take Notes',
+    icon: FileText,
+    media: { type: 'image' as const, src: '/resources/img2.png', alt: 'Notes canvas preview' },
+  },
+  {
+    title: 'Ask AI',
+    icon: Sparkles,
+    media: { type: 'video' as const, src: '/resources/vid1.mp4', alt: 'AI chat preview' },
+  },
+]
+
+export function AuthShowcase() {
+  return (
+    <aside className="auth-showcase" aria-hidden="true">
+      <div className="auth-showcase-stage">
+        <CardSwap
+          className="card-swap-container--auth"
+          width={800}
+          height={530}
+          cardDistance={90}
+          verticalDistance={100}
+          delay={4500}
+          pauseOnHover
+          skewAmount={6}
+        >
+          {SHOWCASE_CARDS.map(({ title, icon: Icon, media }) => (
+            <Card key={title} className="auth-swap-card">
+              <div className="auth-swap-card-header">
+                <Icon size={20} strokeWidth={2.2} aria-hidden="true" />
+                <span>{title}</span>
+              </div>
+              <div className="auth-swap-card-media">
+                {media.type === 'image' ? (
+                  <img src={media.src} alt={media.alt} loading="lazy" draggable={false} />
+                ) : (
+                  <video
+                    src={media.src}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    preload="metadata"
+                    aria-label={media.alt}
+                  />
+                )}
+              </div>
+            </Card>
+          ))}
+        </CardSwap>
+      </div>
+    </aside>
+  )
+}

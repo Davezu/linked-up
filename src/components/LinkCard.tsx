@@ -30,25 +30,25 @@ export function LinkCard({
         href={isProcessing ? undefined : link.url}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex flex-col text-inherit flex-1 min-h-0 card-link-area"
+        className="flex flex-col text-inherit card-link-area"
         aria-label={isProcessing ? 'Processing link…' : `Open ${link.title || link.url}`}
         onClick={isProcessing ? (e) => e.preventDefault() : undefined}
         style={isProcessing ? { cursor: 'default' } : undefined}
       >
         {isProcessing ? (
-          <div className="w-full h-36 bg-[var(--card-image-placeholder-bg)] flex items-center justify-center card-image-placeholder card-skeleton-image" aria-hidden="true">
+          <div className="w-full h-48 sm:h-52 bg-[var(--card-image-placeholder-bg)] flex items-center justify-center card-image-placeholder card-skeleton-image" aria-hidden="true">
             <Loader2 size={28} className="animate-spin text-[var(--text-muted)] skeleton-spinner" aria-hidden="true" />
           </div>
         ) : link.image ? (
-          <img src={link.image} alt="" className="w-full h-36 object-cover card-image" loading="lazy" decoding="async" onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
+          <img src={link.image} alt="" className="w-full h-48 sm:h-52 object-cover card-image" loading="lazy" decoding="async" onError={e => { (e.target as HTMLImageElement).style.display = 'none' }} />
         ) : (
-          <div className="w-full h-36 bg-[var(--card-image-placeholder-bg)] flex items-center justify-center card-image-placeholder" aria-hidden="true">
+          <div className="w-full h-48 sm:h-52 bg-[var(--card-image-placeholder-bg)] flex items-center justify-center card-image-placeholder" aria-hidden="true">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 32, height: 32, opacity: 0.3 }}>
               <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />
             </svg>
           </div>
         )}
-        <div className="p-4 flex flex-col gap-2.5 flex-1 min-h-0 card-body">
+        <div className="p-4 flex flex-col gap-2.5 card-body">
           <div className={`font-semibold text-sm text-[var(--text-main)] line-clamp-2 leading-snug card-title ${isProcessing ? 'skeleton-text' : ''}`}>{link.title || link.url}</div>
           {isProcessing ? (
             <div className="text-xs text-[var(--text-dim)] line-clamp-3 leading-relaxed card-summary skeleton-text">{link.description}</div>
@@ -72,7 +72,7 @@ export function LinkCard({
             </div>
           ) : null}
 
-          <div className="flex items-center justify-between mt-auto pt-3 flex-shrink-0 card-footer">
+          <div className="flex items-center justify-between flex-shrink-0 card-footer">
             <div className="text-[11px] font-medium text-[var(--text-dim)] flex items-center gap-1.5 tracking-wide card-domain">
               {favicon && <img src={favicon} alt="" className="w-3.5 h-3.5 rounded card-favicon" />}
               {domain}
@@ -103,26 +103,7 @@ export function LinkCard({
         })}
       </div>
 
-      {/* Related content toggle */}
-      {!isProcessing && related.length > 0 && (
-        <button
-          className="w-full text-left p-2 px-4 text-[11px] font-semibold text-[var(--text-muted)] border-t border-[var(--border)] uppercase tracking-wider hover:text-[var(--text-dim)] transition-colors related-toggle"
-          onClick={e => { e.preventDefault(); e.stopPropagation(); setShowRelated(v => !v) }}
-        >
-          {showRelated ? 'Hide related' : `${related.length} related`}
-        </button>
-      )}
 
-      {showRelated && related.length > 0 && (
-        <div className="p-3 border-t border-[var(--border)] bg-[var(--related-bg)] flex flex-col gap-1.5 related-list" onClick={e => e.stopPropagation()}>
-          {related.map(r => (
-            <a key={r.id} href={r.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-2 rounded-lg bg-[var(--related-item-bg)] hover:bg-[var(--related-item-bg-hover)] text-xs text-[var(--text-main)] transition-colors related-item">
-              <span className="font-semibold text-[10px] text-[var(--accent-crimson)] uppercase related-cat">{r.category}</span>
-              <span className="truncate flex-1 font-medium related-title">{r.title}</span>
-            </a>
-          ))}
-        </div>
-      )}
 
       {!isProcessing && (
         <button

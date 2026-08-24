@@ -114,25 +114,7 @@ export function LinkCarouselCard({
           </a>
         </div>
 
-        {related.length > 0 && (
-          <button
-            type="button"
-            className="carousel-related-toggle"
-            onClick={() => setShowRelated(v => !v)}
-          >
-            {showRelated ? 'Hide related' : `${related.length} related`}
-          </button>
-        )}
 
-        {showRelated && related.length > 0 && (
-          <div className="carousel-related-list">
-            {related.map(r => (
-              <a key={r.id} href={r.url} target="_blank" rel="noopener noreferrer" className="carousel-related-item">
-                {r.title}
-              </a>
-            ))}
-          </div>
-        )}
 
         <span className="carousel-card-domain">{domain}</span>
       </div>

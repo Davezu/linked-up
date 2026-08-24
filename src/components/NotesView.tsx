@@ -1,6 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
-import { Plus, Trash2, Tag, X, Search, Save, Edit3, FolderPlus, Minus, Undo2, Redo2, Pipette, ChevronDown, FileText, Pin } from 'lucide-react'
+import { Plus, Trash2, Tag, X, Search, Save, Edit3, FolderPlus, Minus, Undo2, Redo2, Pipette, ChevronDown, FileText, Pin, Menu } from 'lucide-react'
 import type { NoteRecord, FolderRecord } from '../types'
 import { generateId } from '../lib/helpers'
 import { createNoteApi, updateNoteApi, deleteNoteApi } from '../lib/notes-api'
@@ -15,6 +15,8 @@ interface NotesViewProps {
   onNotesChange: (updater: (prev: NoteRecord[]) => NoteRecord[]) => void
   activeFolder?: string | null
   onSelectFolder?: (folder: string | null) => void
+  searchQuery?: string
+  onSearchChange?: (query: string) => void
 }
 
 export const MAX_CONTENT_LENGTH = 1000
@@ -111,7 +113,14 @@ const FOLDER_H = 90 // back + label area
 
 type CanvasTool = 'select' | 'folder'
 
-export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }: NotesViewProps) {
+export function NotesView({
+  notes,
+  onNotesChange,
+  activeFolder,
+  onSelectFolder,
+  searchQuery: externalSearchQuery,
+  onSearchChange,
+}: NotesViewProps) {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [draftContent, setDraftContent] = useState('')
   const [draftTitle, setDraftTitle] = useState('')
@@ -120,7 +129,8 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
   const [draftFolder, setDraftFolder] = useState<string>('Personal')
   const [tagInput, setTagInput] = useState('')
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
-  const [searchQuery, setSearchQuery] = useState('')
+  const [internalSearchQuery, setInternalSearchQuery] = useState('')
+  const searchQuery = externalSearchQuery !== undefined ? externalSearchQuery : internalSearchQuery
   const [highlightId, setHighlightId] = useState<string | null>(null)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
@@ -152,6 +162,7 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
   const [hexPopoverPos, setHexPopoverPos] = useState<{ top: number; left: number } | null>(null)
   const [notesMenuOpen, setNotesMenuOpen] = useState(false)
   const [foldersMenuOpen, setFoldersMenuOpen] = useState(false)
+  const [hamburgerOpen, setHamburgerOpen] = useState(false)
   const [flashNoteId, setFlashNoteId] = useState<string | null>(null)
   const hoveredFolderIdRef = useRef<string | null>(null)
   const [_addNoteDropdown, setAddNoteDropdown] = useState(false)
@@ -955,12 +966,18 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
   }
 
   function handleSearch(query: string) {
-    setSearchQuery(query)
-    if (!query.trim()) {
+    if (onSearchChange) {
+      onSearchChange(query)
+    }
+    setInternalSearchQuery(query)
+  }
+
+  useEffect(() => {
+    if (!searchQuery.trim()) {
       setHighlightId(null)
       return
     }
-    const q = query.toLowerCase()
+    const q = searchQuery.toLowerCase()
     const found = safeNotes.find(n =>
       (n.title && n.title.toLowerCase().includes(q)) ||
       (n.content && n.content.toLowerCase().includes(q)) ||
@@ -971,7 +988,7 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
     } else {
       setHighlightId(null)
     }
-  }
+  }, [searchQuery, safeNotes, panToNote])
 
   function handleZoomIn() {
     setZoom(prev => Math.min(MAX_ZOOM, prev + ZOOM_STEP))
@@ -1025,11 +1042,80 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
 
             const fNotes = fNoteIds.map(id => safeNotes.find(n => n.id === id)).filter(Boolean) as NoteRecord[]
             const visibleFNotes = fNotes.filter(n => n.id !== draggingNoteId && n.id !== shrinkingNoteId)
-            const folderPreviewItems = visibleFNotes.slice(0, 3).map(n => (
-              <div key={n.id} style={{ fontSize: 7, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%', textAlign: 'center', fontWeight: 700, color: '#333' }}>
-                📝 {n.title || deriveTitle(n.content) || 'Note'}
-              </div>
-            ))
+            const folderPreviewItems = visibleFNotes.slice(0, 3).map(n => {
+              const noteIdx = safeNotes.indexOf(n)
+              const noteColorObj = NOTE_PALETTE.find(p => p.id === n.color || p.bg === n.color) || NOTE_PALETTE[noteIdx >= 0 ? noteIdx % NOTE_PALETTE.length : 0]
+              const noteBgColor = noteColorObj.bg || '#fff59d'
+              const noteGradient = noteColorObj.gradient || 'linear-gradient(175deg, #fff9c4 0%, #fff176 100%)'
+              const noteTitle = n.title || deriveTitle(n.content) || 'Untitled'
+              const noteContentPreview = (n.content && n.content.trim() !== noteTitle.trim()) ? n.content : ''
+
+              return (
+                <div
+                  key={n.id}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    borderRadius: '2px 2px 5px 2px',
+                    backgroundColor: noteBgColor,
+                    backgroundImage: noteGradient,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'hidden',
+                    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -4px 8px rgba(0, 0, 0, 0.03)',
+                    padding: '3px 4px 2px 4px',
+                    boxSizing: 'border-box',
+                    color: '#1a1a22',
+                  }}
+                >
+                  {/* Handwritten note title */}
+                  <div
+                    style={{
+                      fontFamily: "'Caveat', 'Patrick Hand', cursive, sans-serif",
+                      fontSize: 9,
+                      fontWeight: 700,
+                      color: '#1a1a22',
+                      lineHeight: 1.1,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    {noteTitle}
+                  </div>
+
+                  {/* Horizontal divider line */}
+                  <div
+                    style={{
+                      width: '100%',
+                      height: 1,
+                      background: 'rgba(0, 0, 0, 0.25)',
+                      margin: '1px 0 2px 0',
+                      flexShrink: 0,
+                    }}
+                  />
+
+                  {/* Preview handwritten text content */}
+                  {noteContentPreview ? (
+                    <div
+                      style={{
+                        fontFamily: "'Patrick Hand', 'Caveat', cursive, sans-serif",
+                        fontSize: 7,
+                        color: '#2b2b38',
+                        lineHeight: 1.15,
+                        overflow: 'hidden',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        opacity: 0.9,
+                      }}
+                    >
+                      {noteContentPreview}
+                    </div>
+                  ) : null}
+                </div>
+              )
+            })
 
             const isAbsorbing = absorbingFolderId === folder.id
 
@@ -1311,6 +1397,17 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
       </div>
 
       {/* Floating toolbar (top-right) */}
+      {/* Hamburger button — visible only on mobile, anchored top-left */}
+      <button
+        id="canvas-hamburger-btn"
+        className="canvas-hamburger-btn"
+        onClick={e => { e.stopPropagation(); setHamburgerOpen(o => !o) }}
+        aria-label="Canvas menu"
+        aria-expanded={hamburgerOpen}
+      >
+        <Menu size={18} strokeWidth={2} aria-hidden="true" />
+      </button>
+
       <div className="canvas-float-toolbar">
         <div className="canvas-float-search-wrap">
           <Search size={14} className="canvas-float-search-icon" aria-hidden="true" />
@@ -1334,7 +1431,7 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
           aria-pressed={activeTool === 'folder'}
         >
           <FolderPlus size={15} strokeWidth={2.2} aria-hidden="true" />
-          {activeTool === 'folder' ? 'Click to place…' : 'Add Folder'}
+          <span className="hidden sm:inline">{activeTool === 'folder' ? 'Click to place…' : 'Add Folder'}</span>
         </button>
 
         <button
@@ -1344,12 +1441,82 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
           aria-label="Create new note"
         >
           <Plus size={15} strokeWidth={2.5} aria-hidden="true" />
-          New Note
+          <span className="hidden sm:inline">New Note</span>
         </button>
       </div>
 
+      {/* Mobile Hamburger Drawer */}
+      {hamburgerOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="canvas-hamburger-backdrop"
+            onClick={() => setHamburgerOpen(false)}
+          />
+          {/* Panel */}
+          <div className="canvas-hamburger-panel">
+            <div className="canvas-hamburger-header">
+              <span className="canvas-hamburger-title">Canvas</span>
+              <button className="canvas-hamburger-close" onClick={() => setHamburgerOpen(false)} aria-label="Close menu"><X size={16} /></button>
+            </div>
+
+            {/* Notes section */}
+            <div className="canvas-hamburger-section">
+              <div className="canvas-hamburger-section-title">
+                <Pin size={14} strokeWidth={1.8} className="canvas-hamburger-section-icon" />
+                Notes
+                <span className="canvas-hamburger-badge">{canvasDisplayNotes.length}</span>
+              </div>
+              <div className="canvas-hamburger-list">
+                {canvasDisplayNotes.length === 0 ? (
+                  <div className="canvas-hamburger-empty">No notes on canvas</div>
+                ) : canvasDisplayNotes.map(note => {
+                  return (
+                    <div key={note.id} className="canvas-hamburger-row" onClick={() => { showNoteOnCanvas(note); setHamburgerOpen(false) }}>
+                      <Pin size={15} strokeWidth={1.8} className="canvas-hamburger-item-icon canvas-hamburger-item-icon--note" />
+                      <span className="canvas-hamburger-row-name">{note.title || deriveTitle(note.content) || 'Untitled'}</span>
+                      <button className="canvas-hamburger-show-btn" onClick={e => { e.stopPropagation(); showNoteOnCanvas(note); setHamburgerOpen(false) }}>Show</button>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Divider */}
+            {safeFolders.length > 0 && <div className="canvas-hamburger-divider" />}
+
+            {/* Folders section */}
+            {safeFolders.length > 0 && (
+              <div className="canvas-hamburger-section">
+                <div className="canvas-hamburger-section-title">
+                  <FolderIcon size={14} strokeWidth={1.8} className="canvas-hamburger-section-icon" />
+                  Folders
+                  <span className="canvas-hamburger-badge">{safeFolders.length}</span>
+                </div>
+                <div className="canvas-hamburger-list">
+                  {safeFolders.map(folder => {
+                    const folderNotes = safeNotes.filter(n => folder.noteIds.includes(n.id))
+                    const folderColor = folder.color || '#5227FF'
+                    return (
+                      <div key={folder.id} className="canvas-hamburger-row" onClick={() => { showFolderOnCanvas(folder); setHamburgerOpen(false) }}>
+                        <FolderIcon size={15} strokeWidth={1.8} className="canvas-hamburger-item-icon canvas-hamburger-item-icon--folder" />
+                        <div className="canvas-hamburger-row-text">
+                          <span className="canvas-hamburger-row-name">{folder.name}</span>
+                          <span className="canvas-hamburger-row-meta">{folderNotes.length} {folderNotes.length === 1 ? 'note' : 'notes'}</span>
+                        </div>
+                        <button className="canvas-hamburger-show-btn" onClick={e => { e.stopPropagation(); showFolderOnCanvas(folder); setHamburgerOpen(false) }}>Show</button>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
       {/* Floating note count & active folder filter (top-left) */}
-      <div className="canvas-float-count">
+      <div className="canvas-float-count hidden sm:flex">
         <div className="canvas-count-pill-group">
         {/* Notes Pill Button */}
         <div className="relative">
@@ -1511,9 +1678,9 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
                       <div key={folder.id} className="canvas-count-popover-row canvas-folder-popover-row">
                         <div className="canvas-folder-popover-row-main">
                           <FolderIcon
-                            size={16}
+                            size={15}
+                            strokeWidth={1.8}
                             className="canvas-folder-popover-row-icon"
-                            style={{ color: folderColor, fill: `${folderColor}22` }}
                             aria-hidden="true"
                           />
                           <div className="canvas-folder-popover-row-text">
@@ -1595,7 +1762,8 @@ export function NotesView({ notes, onNotesChange, activeFolder, onSelectFolder }
       {activeTool === 'folder' && (
         <div className="canvas-folder-hint" role="status">
           <FolderPlus size={14} aria-hidden="true" />
-          Click anywhere on the canvas to place a folder
+          <span className="hidden sm:inline">Click anywhere on the canvas to place a folder</span>
+          <span className="inline sm:hidden">Tap canvas to place folder</span>
           <button
             className="canvas-folder-hint-cancel"
             onClick={() => setActiveTool('select')}

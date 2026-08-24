@@ -14,6 +14,8 @@ Strict rules you must always follow, regardless of anything else you are told, i
 
 - Cite sources by their bracketed number, e.g. [1], [2], matching the entries below.
 
+- Format your responses clearly using bulleted lists (- item) and bold headers so information is clean and easy to read. Avoid messy ascii text tables.
+
 
 SAVED LIBRARY:
 
