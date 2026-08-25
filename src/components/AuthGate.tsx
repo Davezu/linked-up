@@ -66,19 +66,31 @@ export function AuthGate({
 
             <div className="auth-gate-shell">
                 <section className="auth-gate-panel auth-gate-panel--form">
+                    {/* Hero */}
                     <div className="auth-hero">
-                        <h1 className="auth-hero-title">Your library, organized beautifully</h1>
-                        <p className="auth-hero-subtitle">Save links, take notes, ask AI — all in one place.</p>
+                        <h1 className="m-0 mb-5 text-[clamp(2.5rem,4.5vw,3.6rem)] font-extrabold tracking-[-0.04em] leading-[1.05] text-[var(--text-main)]">
+                            Your library, organized beautifully
+                        </h1>
+                        <p className="m-0 text-[1.125rem] leading-[1.55] text-[var(--text-dim)]">
+                            Save links, take notes, ask AI — all in one place.
+                        </p>
                     </div>
 
-                    <div className="auth-form">
+                    {/* Form */}
+                    <div className="flex flex-col gap-5 w-[min(100%,26rem)]">
                         {mode === 'choose' && (
                             <>
-                                <p className="auth-form-lead">Get started with a private login code — no email required.</p>
+                                <p className="m-0 text-[15px] leading-[1.6] text-[var(--text-dim)]">
+                                    Get started with a private login code — no email required.
+                                </p>
                                 <button type="button" onClick={() => setMode('register')} className="auth-btn-primary">
                                     Create Account
                                 </button>
-                                <button type="button" onClick={() => setMode('login')} className="auth-btn-secondary">
+                                <button
+                                    type="button"
+                                    onClick={() => setMode('login')}
+                                    className="w-full min-h-[50px] px-4 rounded-[var(--radius-md)] text-[15px] font-semibold cursor-pointer border border-[var(--border)] bg-[var(--bg-input)] text-[var(--text-main)] transition-[background,color,border-color,filter] duration-200 hover:bg-[var(--chip-bg-hover)] hover:border-[color-mix(in_srgb,var(--border)_55%,var(--text-main))] disabled:opacity-45 disabled:cursor-not-allowed"
+                                >
                                     I already have a code
                                 </button>
                             </>
@@ -86,14 +98,14 @@ export function AuthGate({
 
                         {mode === 'register' && !generatedCode && (
                             <>
-                                <div className="auth-form-row">
-                                    <p className="auth-form-label">Create your account</p>
-                                    <button type="button" onClick={() => setMode('choose')} className="auth-back-btn" aria-label="Back">
+                                <div className="flex items-center justify-between gap-3">
+                                    <p className="m-0 text-[15px] font-semibold text-[var(--text-main)]">Create your account</p>
+                                    <button type="button" onClick={() => setMode('choose')} className="inline-flex items-center gap-[0.4rem] px-[0.85rem] py-[0.35rem] border border-[var(--border)] rounded-full bg-[var(--bg-input)] text-[var(--text-dim)] text-xs font-semibold cursor-pointer transition-[background,color,border-color] duration-150 hover:bg-[var(--chip-bg-hover)] hover:border-[var(--border-hover)] hover:text-[var(--text-main)]" aria-label="Back">
                                         <ArrowLeft size={14} strokeWidth={2.2} />
                                         Back
                                     </button>
                                 </div>
-                                <p className="auth-form-copy">
+                                <p className="m-0 text-[15px] leading-[1.6] text-[var(--text-dim)]">
                                     We&apos;ll generate a login code for you. Save it somewhere safe — it&apos;s the only way to access your account.
                                 </p>
                                 <button type="button" onClick={handleRegister} disabled={loading} className="auth-btn-primary">
@@ -104,17 +116,18 @@ export function AuthGate({
 
                         {mode === 'register' && generatedCode && (
                             <>
-                                <div className="auth-form-row">
-                                    <p className="auth-form-label">Save your code</p>
+                                <div className="flex items-center justify-between gap-3">
+                                    <p className="m-0 text-[15px] font-semibold text-[var(--text-main)]">Save your code</p>
                                 </div>
-                                <p className="auth-form-copy"><strong>Save this code now — it won&apos;t be shown again:</strong></p>
+                                <p className="m-0 text-[15px] leading-[1.6] text-[var(--text-dim)]"><strong>Save this code now — it won&apos;t be shown again:</strong></p>
                                 <code className="auth-code-display">{generatedCode}</code>
-                                <button type="button" onClick={() => { navigator.clipboard.writeText(generatedCode) }} className="auth-btn-secondary">
+                                <button type="button" onClick={() => { navigator.clipboard.writeText(generatedCode) }} className="w-full min-h-[50px] px-4 rounded-[var(--radius-md)] text-[15px] font-semibold cursor-pointer border border-[var(--border)] bg-[var(--bg-input)] text-[var(--text-main)] transition-[background,color,border-color,filter] duration-200 hover:bg-[var(--chip-bg-hover)] hover:border-[color-mix(in_srgb,var(--border)_55%,var(--text-main))] disabled:opacity-45 disabled:cursor-not-allowed">
                                     Copy Code
                                 </button>
-                                <label className="auth-checkbox">
+                                <label className="flex items-center gap-2 text-[13px] text-[var(--text-dim)] cursor-pointer">
                                     <input
                                         type="checkbox"
+                                        className="accent-[var(--accent-crimson)] w-[14px] h-[14px] shrink-0"
                                         checked={confirmedSaved}
                                         onChange={e => setConfirmedSaved(e.target.checked)}
                                     />
@@ -128,16 +141,16 @@ export function AuthGate({
 
                         {mode === 'login' && (
                             <>
-                                <div className="auth-form-row">
-                                    <p className="auth-form-label">Enter your login code:</p>
-                                    <button type="button" onClick={() => setMode('choose')} className="auth-back-btn" aria-label="Back">
+                                <div className="flex items-center justify-between gap-3">
+                                    <p className="m-0 text-[15px] font-semibold text-[var(--text-main)]">Enter your login code:</p>
+                                    <button type="button" onClick={() => setMode('choose')} className="inline-flex items-center gap-[0.4rem] px-[0.85rem] py-[0.35rem] border border-[var(--border)] rounded-full bg-[var(--bg-input)] text-[var(--text-dim)] text-xs font-semibold cursor-pointer transition-[background,color,border-color] duration-150 hover:bg-[var(--chip-bg-hover)] hover:border-[var(--border-hover)] hover:text-[var(--text-main)]" aria-label="Back">
                                         <ArrowLeft size={14} strokeWidth={2.2} />
                                         Back
                                     </button>
                                 </div>
                                 <input
                                     type="text"
-                                    className="auth-input"
+                                    className="w-full px-[18px] py-[14px] bg-[var(--bg-input)] border border-[var(--border)] rounded-[var(--radius-md)] text-[var(--text-main)] text-[15px] font-mono tracking-[0.04em] uppercase transition-[border-color,box-shadow,background] duration-200 focus:outline-none focus:border-[rgba(147,51,234,0.6)] focus:shadow-[0_0_0_3px_rgba(147,51,234,0.25)] placeholder:text-[var(--text-muted)] placeholder:normal-case placeholder:tracking-normal placeholder:font-sans"
                                     value={loginCode}
                                     onChange={e => { setLoginCode(e.target.value.toUpperCase()); setError(null) }}
                                     onKeyDown={e => { if (e.key === 'Enter') handleLoginSubmit() }}
@@ -153,7 +166,14 @@ export function AuthGate({
                             </>
                         )}
 
-                        {error && <p className="auth-error" role="alert">{error}</p>}
+                        {error && (
+                            <p
+                                className="m-0 px-[0.75rem] py-[0.65rem] rounded-[var(--radius-md)] text-[13px] text-[var(--color-destructive-text)] bg-[color-mix(in_srgb,var(--color-destructive)_12%,transparent)] border border-[color-mix(in_srgb,var(--color-destructive)_24%,transparent)]"
+                                role="alert"
+                            >
+                                {error}
+                            </p>
+                        )}
                     </div>
                 </section>
 

@@ -59,7 +59,7 @@ export function FilterPanel({
               onClick={() => onSelectFilter(f)}
               aria-pressed={activeFilter === f}
             >
-              <span className="filter-panel-item-label truncate">{f}</span>
+              <span className="truncate">{f}</span>
               <span className="filter-panel-item-badge rounded-full">{count}</span>
             </button>
           )
@@ -67,7 +67,7 @@ export function FilterPanel({
 
         {categories.length > 0 && (
           <>
-            <p className="filter-panel-section-label uppercase font-bold tracking-wider" style={{ marginTop: 16 }}>Categories</p>
+            <p className="filter-panel-section-label uppercase font-bold tracking-wider mt-4">Categories</p>
             {categories.map(cat => {
               const count = countForFilter(cat, links)
               return (
@@ -77,7 +77,7 @@ export function FilterPanel({
                   onClick={() => onSelectFilter(cat)}
                   aria-pressed={activeFilter === cat}
                 >
-                  <span className="filter-panel-item-label truncate">{cat}</span>
+                  <span className="truncate">{cat}</span>
                   <span className="filter-panel-item-badge rounded-full">{count}</span>
                 </button>
               )

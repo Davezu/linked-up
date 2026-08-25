@@ -265,7 +265,7 @@ function renderInline(text: string, sources?: SourceItem[]): React.ReactNode[] {
     if (citationMatch) {
       const numVal = parseInt(citationMatch[2] || citationMatch[3], 10)
       const source = sources && sources[numVal - 1]
-      if (source) {
+      if (source && source.url) {
         return (
           <a
             key={idx}

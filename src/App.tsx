@@ -359,7 +359,7 @@ export default function App() {
     />
   }
   return (
-    <div className="app-shell">
+    <div className="flex flex-col h-screen w-screen overflow-hidden bg-[var(--color-bg)] text-[var(--text-main)]">
       {/* Top Navigation Bar */}
       <TopNav
         activeView={activeView}
@@ -387,12 +387,12 @@ export default function App() {
       />
 
       {/* Page body */}
-      <div className="app-body">
+      <div className="w-full flex flex-1 min-h-0 overflow-hidden relative">
 
         {/* Main content */}
-        <div className={`app-content${activeView === 'notes' || activeView === 'chat' ? ' app-content--full' : ''}`}>
+        <div className={`w-full flex-1 flex flex-col gap-3 pt-4 pb-2 min-w-0 min-h-0 overflow-hidden relative ${activeView === 'notes' || activeView === 'chat' ? '!gap-0 !p-0' : ''}`}>
           {activeView === 'chat' ? (
-            <ChatView links={links} />
+            <ChatView links={links} notes={notes} />
           ) : activeView === 'notes' ? (
             <NotesView
               notes={notes}
@@ -412,7 +412,7 @@ export default function App() {
                     id="url-input"
                     ref={inputRef}
                     type="url"
-                    className="flex-1 text-[var(--text-main)] bg-transparent text-xs px-3 py-2 outline-none url-input"
+                    className="url-input"
                     placeholder="https://tiktok.com/@… or any link"
                     value={url}
                     onChange={e => { setUrl(e.target.value); setError(null); setNotice(null) }}
@@ -468,33 +468,33 @@ export default function App() {
               </section>
 
               {/* Link list */}
-              <main className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-6 main">
+              <main className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-6 px-6">
                 {filteredLinks.length === 0 && !isProcessing ? (
-                  <div className="text-center py-16 flex flex-col items-center gap-3 empty-state">
-                    <div className="text-4xl opacity-20 mb-2 empty-icon">{activeFilter !== 'All' ? '🔍' : '📭'}</div>
+                  <div className="text-center py-16 max-md:py-4 flex flex-col items-center gap-3">
+                    <div className="text-[40px] max-md:text-[32px] opacity-20 mb-2 max-md:mb-0">{activeFilter !== 'All' ? '🔍' : '📭'}</div>
                     {activeFilter !== 'All' ? (
                       <>
-                        <h1 className="font-[family-name:var(--font-display)] text-base font-semibold text-[var(--text-main)] empty-title">Nothing in {activeFilter}</h1>
-                        <p className="text-xs text-[var(--text-dim)] max-w-[360px] leading-relaxed empty-desc">
+                        <h1 className="font-[family-name:var(--font-display)] text-base font-semibold text-[var(--text-main)]">Nothing in {activeFilter}</h1>
+                        <p className="text-xs text-[var(--text-dim)] max-w-[360px] leading-relaxed">
                           No links are categorized here yet. Paste a link above and AI will sort it automatically.
                         </p>
                       </>
                     ) : (
                       <>
-                        <h1 className="font-[family-name:var(--font-display)] text-base font-semibold text-[var(--text-main)] empty-title">Your vault is empty</h1>
-                        <p className="text-xs text-[var(--text-dim)] max-w-[360px] leading-relaxed empty-desc">
+                        <h1 className="font-[family-name:var(--font-display)] text-base font-semibold text-[var(--text-main)]">Your vault is empty</h1>
+                        <p className="text-xs text-[var(--text-dim)] max-w-[360px] leading-relaxed">
                           Paste any link above — YouTube, Reddit, TikTok, articles — and AI will classify and organize it for you.
                         </p>
                       </>
                     )}
                   </div>
                 ) : activeFilter !== 'All' ? (
-                  <div className="flex flex-col gap-4 w-full filtered-vertical-list">
-                    <div className="category-header">
-                      <span className="category-name">{activeFilter}</span>
-                      <span className="category-badge">{filteredLinks.length}</span>
+                  <div className="flex flex-col gap-4 w-full">
+                    <div className="flex items-center gap-[10px] px-[2px] pb-[10px] mb-[4px] text-[14px] max-md:text-[16px] before:content-[''] before:shrink-0 before:w-[3px] before:h-[1.25em] before:rounded-full before:bg-[var(--gradient-accent)] before:opacity-90">
+                      <span className="font-[family-name:var(--font-display)] text-[14px] font-semibold text-[var(--text-main)] tracking-[-0.01em]">{activeFilter}</span>
+                      <span className="text-[11px] bg-[var(--badge-bg)] text-[var(--text-muted)] px-2 py-[2px] rounded-[var(--radius-xl)] font-semibold">{filteredLinks.length}</span>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full vertical-cards-stack">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full">
                       {filteredLinks.map(link => (
                         <LinkCard
                           key={link.id}
@@ -507,12 +507,12 @@ export default function App() {
                     </div>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 content-start categories-grid">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 content-start max-md:pb-10 max-md:gap-10">
                     {grouped.map(group => (
-                      <section key={group.name} className="flex flex-col gap-0.5 category-group" aria-label={group.name}>
-                        <div className="category-header">
-                          <span className="category-name">{group.name}</span>
-                          <span className="category-badge">{group.items.length}</span>
+                      <section key={group.name} className="flex flex-col gap-0.5 max-md:gap-3" aria-label={group.name}>
+                        <div className="flex items-center gap-[10px] px-[2px] pb-[10px] mb-[4px] text-[14px] max-md:text-[16px] before:content-[''] before:shrink-0 before:w-[3px] before:h-[1.25em] before:rounded-full before:bg-[var(--gradient-accent)] before:opacity-90">
+                          <span className="font-[family-name:var(--font-display)] text-[14px] font-semibold text-[var(--text-main)] tracking-[-0.01em]">{group.name}</span>
+                          <span className="text-[11px] bg-[var(--badge-bg)] text-[var(--text-muted)] px-2 py-[2px] rounded-[var(--radius-xl)] font-semibold">{group.items.length}</span>
                         </div>
                         <LinkFan
                           items={group.items}

@@ -45,15 +45,25 @@ export function MobileBottomNav({
           <button
             key={tab.id}
             type="button"
-            className={`nav-tab ${isActive ? 'active' : ''}`}
-            style={{ position: 'relative', zIndex: 2 }}
+            className={[
+              'relative z-[2] flex flex-col items-center justify-center gap-[3px]',
+              'w-auto h-[46px] mx-[6px] my-[5px] px-[10px] py-[4px]',
+              'text-[11px] font-medium leading-none rounded-xl border-none cursor-pointer',
+              'transition-all duration-200',
+              isActive ? 'text-[var(--text-main)]' : 'text-[var(--text-dim)]',
+              'hover:text-[var(--text-main)]',
+              'focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--focus-ring)] focus-visible:-outline-offset-2',
+            ].join(' ')}
             onClick={() => onViewChange(tab.id)}
             aria-current={isActive ? 'page' : undefined}
           >
-            <span className="nav-tab-icon" aria-hidden="true">
+            <span
+              className="flex items-center justify-center w-[22px] h-[22px] shrink-0"
+              aria-hidden="true"
+            >
               <Icon size={20} strokeWidth={1.8} />
             </span>
-            <span className="nav-tab-label-text">{tab.label}</span>
+            <span className="block leading-[1.2] whitespace-nowrap">{tab.label}</span>
           </button>
         )
       })}

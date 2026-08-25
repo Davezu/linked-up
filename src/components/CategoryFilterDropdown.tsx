@@ -160,7 +160,7 @@ export function CategoryFilterDropdown({
           style={{ top: menuPos.top, left: menuPos.left, minWidth: menuPos.minWidth }}
         >
           <div
-            className={`category-filter-menu${scrollable ? ' category-filter-menu--scrollable' : ''}`}
+            className={`p-1 rounded-[var(--radius-md)] bg-[var(--chip-bg)] border border-[var(--chip-border)] shadow-[0_4px_16px_rgba(0,0,0,0.1)]${scrollable ? ' category-filter-menu--scrollable' : ''}`}
             role="listbox"
             aria-label="Categories"
             style={scrollable ? { maxHeight: (SCROLLABLE_THRESHOLD + 1) * ITEM_HEIGHT + 12 } : undefined}
@@ -169,17 +169,21 @@ export function CategoryFilterDropdown({
               type="button"
               role="option"
               aria-selected={!activeCategory}
-              className={`category-filter-option category-filter-option--clear${!activeCategory ? ' category-filter-option--active' : ''}`}
+              className={`flex items-center justify-between gap-2 w-full min-h-[28px] px-2 py-1 border-none rounded-[calc(var(--radius-sm)-1px)] bg-transparent text-[11px] leading-[1.2] cursor-pointer text-left transition-colors duration-150 hover:bg-[var(--chip-bg-hover)] hover:text-[var(--text-main)] ${
+                !activeCategory
+                  ? 'bg-[var(--chip-bg-hover)] text-[var(--text-main)] font-semibold'
+                  : 'text-[var(--text-dim)]'
+              }`}
               onClick={() => selectCategory(null)}
             >
-              <span className="category-filter-option-label">All categories</span>
-              <span className="category-filter-option-meta">
-                <span className="filter-pill-count">{links.length}</span>
+              <span className="flex-1 min-w-0">All categories</span>
+              <span className="inline-flex items-center gap-1 shrink-0">
+                <span className="filter-pill-count min-w-[14px] h-[14px] px-[3px] text-[9px]">{links.length}</span>
                 {!activeCategory && <Check size={12} strokeWidth={2.5} aria-hidden="true" />}
               </span>
             </button>
 
-            <div className="category-filter-divider" role="separator" />
+            <div className="h-[1px] my-[3px] mx-[6px] bg-[var(--border)]" role="separator" />
 
             {categories.map(cat => {
               const count = countForCategory(cat, links)
@@ -190,12 +194,16 @@ export function CategoryFilterDropdown({
                   type="button"
                   role="option"
                   aria-selected={isActive}
-                  className={`category-filter-option${isActive ? ' category-filter-option--active' : ''}`}
+                  className={`flex items-center justify-between gap-2 w-full min-h-[28px] px-2 py-1 border-none rounded-[calc(var(--radius-sm)-1px)] bg-transparent text-[11px] leading-[1.2] cursor-pointer text-left transition-colors duration-150 hover:bg-[var(--chip-bg-hover)] hover:text-[var(--text-main)] ${
+                    isActive
+                      ? 'bg-[var(--chip-bg-hover)] text-[var(--text-main)] font-semibold'
+                      : 'text-[var(--text-main)]'
+                  }`}
                   onClick={() => selectCategory(isActive ? null : cat)}
                 >
-                  <span className="category-filter-option-label truncate">{cat}</span>
-                  <span className="category-filter-option-meta">
-                    <span className="filter-pill-count">{count}</span>
+                  <span className="flex-1 min-w-0 truncate">{cat}</span>
+                  <span className="inline-flex items-center gap-1 shrink-0">
+                    <span className="filter-pill-count min-w-[14px] h-[14px] px-[3px] text-[9px]">{count}</span>
                     {isActive && <Check size={12} strokeWidth={2.5} aria-hidden="true" />}
                   </span>
                 </button>

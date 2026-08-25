@@ -223,13 +223,13 @@ app.post('/api/chat', async (req, res) => {
         details: parsed.error.issues,
       });
     }
-    const { question, library } = parsed.data;
+    const { question, library, notes } = parsed.data;
 
     await checkRateLimit(req.ip ?? "unknown", "chat");
 
-    console.log(`[chat] Processing question: "${question}" with library size: ${library.length}`);
+    console.log(`[chat] Processing question: "${question}" with library size: ${library.length}, notes size: ${notes.length}`);
 
-    const { answer, sources } = await chatWithLibrary(question, library);
+    const { answer, sources } = await chatWithLibrary(question, library, notes);
 
     res.json({ answer, sources });
 

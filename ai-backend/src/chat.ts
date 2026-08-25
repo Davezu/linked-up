@@ -44,7 +44,7 @@ export async function checkRateLimit(identifier: string, routeKey: string = "cha
 
 const MAX_QUESTION_LENGTH = 500
 
-export async function chatWithLibrary(question: string, library: any[]): Promise<any> {
+export async function chatWithLibrary(question: string, library: any[] = [], notes: any[] = []): Promise<any> {
   const apiKey = process.env.GROQ_API_KEY
   if (!apiKey) {
     throw new Error('GROQ_API_KEY not set')
@@ -58,30 +58,43 @@ export async function chatWithLibrary(question: string, library: any[]): Promise
   const qLower = trimmedQuestion.toLowerCase()
   const keywords = qLower.split(/\s+/).filter((w: string) => w.length > 3)
 
-  const scored = library.map((item: any) => {
+  // Score & filter library items
+  const scoredLibrary = (library ?? []).map((item: any) => {
     const text = `${item.title} ${item.summary} ${(item.tags ?? []).join(' ')} ${item.category}`.toLowerCase()
     const score = keywords.reduce((s: number, kw: string) => s + (text.includes(kw) ? 1 : 0), 0)
     return { item, score }
   })
-
-  const relevant = scored
+  const relevantLibrary = scoredLibrary
     .sort((a: any, b: any) => b.score - a.score)
     .slice(0, 15)
     .filter((x: any) => x.score > 0 || library.length <= 15)
     .map((x: any) => x.item)
+  const finalLibrarySet = relevantLibrary.length > 0 ? relevantLibrary : (library ?? []).slice(0, 15)
 
-  const finalSet = relevant.length > 0 ? relevant : library.slice(0, 15)
+  // Score & filter notes
+  const scoredNotes = (notes ?? []).map((item: any) => {
+    const text = `${item.title} ${item.content} ${(item.tags ?? []).join(' ')} ${item.folder ?? ''}`.toLowerCase()
+    const score = keywords.reduce((s: number, kw: string) => s + (text.includes(kw) ? 1 : 0), 0)
+    return { item, score }
+  })
+  const relevantNotes = scoredNotes
+    .sort((a: any, b: any) => b.score - a.score)
+    .slice(0, 15)
+    .filter((x: any) => x.score > 0 || notes.length <= 15)
+    .map((x: any) => x.item)
+  const finalNotesSet = relevantNotes.length > 0 ? relevantNotes : (notes ?? []).slice(0, 15)
 
-  // Library content (title/summary/tags) is scraped from arbitrary third-party
-  // webpages - it is UNTRUSTED input, same as the user's question. Wrapping each
-  // field in a clearly delimited block, and keeping instructions only in the
-  // system message, makes it much harder for text hidden in a saved page to be
-  // interpreted as a command rather than data.
-  const libraryContext = finalSet.map((item: any, i: number) =>
-    `[${i + 1}]\nTitle: ${sanitizeField(item.title)}\nCategory: ${sanitizeField(item.category)}\nSummary: ${sanitizeField(item.summary)}\nTags: ${(item.tags ?? []).map(sanitizeField).join(', ')}\nURL: ${sanitizeField(item.url)}`
+  const libraryContext = finalLibrarySet.map((item: any, i: number) =>
+    `[L${i + 1}]\nTitle: ${sanitizeField(item.title)}\nCategory: ${sanitizeField(item.category)}\nSummary: ${sanitizeField(item.summary)}\nTags: ${(item.tags ?? []).map(sanitizeField).join(', ')}\nURL: ${sanitizeField(item.url)}`
   ).join('\n\n')
 
-  const systemPrompt = createChatSystemPrompt(libraryContext)
+  const notesContext = finalNotesSet.map((item: any, i: number) =>
+    `[N${i + 1}]\nTitle: ${sanitizeField(item.title)}\nFolder: ${sanitizeField(item.folder ?? 'General')}\nContent: ${sanitizeField(item.content)}\nTags: ${(item.tags ?? []).map(sanitizeField).join(', ')}`
+  ).join('\n\n')
+
+  const fullContext = `=== SAVED LINKS ===\n${libraryContext || 'No saved links.'}\n\n=== SAVED NOTES ===\n${notesContext || 'No saved notes.'}`
+
+  const systemPrompt = createChatSystemPrompt(fullContext)
 
   const res = await retry(async () => {
     const controller = new AbortController();
@@ -113,13 +126,11 @@ export async function chatWithLibrary(question: string, library: any[]): Promise
       }
 
       return response;
-
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") {
         throw new Error("Groq request timed out. Please try again.");
       }
       throw error;
-
     } finally {
       clearTimeout(timeout);
     }
@@ -128,11 +139,17 @@ export async function chatWithLibrary(question: string, library: any[]): Promise
   const data = await res.json() as any
   const answer = data.choices?.[0]?.message?.content ?? 'No response generated.'
 
-  const citedIndices = [...answer.matchAll(/\[(\d+)\]/g)]
-    .map((m: RegExpMatchArray) => parseInt(m[1]) - 1)
-    .filter((i: number) => i >= 0 && i < finalSet.length)
-  const uniqueIndices = [...new Set(citedIndices)]
-  const sources = uniqueIndices.map((i: number) => finalSet[i])
+  // Gather cited sources from links [L1], [L2], etc. and notes [N1], [N2], etc.
+  const linkSources = finalLibrarySet.map((item: any, i: number) => {
+    const cited = new RegExp(`\\[L${i + 1}\\]|\\[${i + 1}\\]`, 'i').test(answer)
+    return cited ? { ...item, type: 'link' } : null
+  })
+  const noteSources = finalNotesSet.map((item: any, i: number) => {
+    const cited = new RegExp(`\\[N${i + 1}\\]`, 'i').test(answer)
+    return cited ? { id: item.id || `note-${i}`, title: item.title, content: item.content, category: item.folder || 'Note', type: 'note' } : null
+  })
+
+  const sources = [...linkSources, ...noteSources].filter(Boolean)
 
   return { answer, sources }
 }

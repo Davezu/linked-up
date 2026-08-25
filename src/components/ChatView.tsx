@@ -13,7 +13,7 @@ import {
   Pencil,
   Plus
 } from 'lucide-react'
-import type { LinkRecord, ChatMessage } from '../types'
+import type { LinkRecord, NoteRecord, ChatMessage } from '../types'
 import { API_BASE, AI_API_BASE } from '../lib/constants'
 import { delay } from '../lib/helpers'
 import { MarkdownRenderer } from './MarkdownRenderer'
@@ -41,15 +41,17 @@ const SUGGESTED_PROMPTS = [
   },
 ]
 
-export function ChatView({ links }: { links: LinkRecord[] }) {
+export function ChatView({ links, notes = [] }: { links: LinkRecord[]; notes?: NoteRecord[] }) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const [chatLoading, setChatLoading] = useState(false)
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const scrollAreaRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const el = scrollAreaRef.current
+    if (el) el.scrollTop = el.scrollHeight
   }, [messages, chatLoading])
 
   function handleCopy(text: string, index: number) {
@@ -72,26 +74,33 @@ export function ChatView({ links }: { links: LinkRecord[] }) {
       let sources: ChatMessage['sources'] = []
 
       if (!API_BASE) {
-        // Demo mode: client-side keyword search
+        // Demo mode: client-side keyword search across links and notes
         await delay(1200)
         const qLower = q.toLowerCase()
-        const matches = links.filter(l => {
+        const matchLinks = links.filter(l => {
           const text = `${l.title} ${l.summary} ${l.tags.join(' ')} ${l.category}`.toLowerCase()
           return qLower.split(/\s+/).some(kw => kw.length > 2 && text.includes(kw))
         }).slice(0, 4)
+        const matchNotes = notes.filter(n => {
+          const text = `${n.title} ${n.content} ${(n.tags ?? []).join(' ')} ${n.folder ?? ''}`.toLowerCase()
+          return qLower.split(/\s+/).some(kw => kw.length > 2 && text.includes(kw))
+        }).slice(0, 4)
 
-        if (matches.length === 0) {
-          answer = "I couldn't find relevant links for that topic in your saved library. Try asking about saved topics or save related links first!"
+        if (matchLinks.length === 0 && matchNotes.length === 0) {
+          answer = "I couldn't find relevant links or notes for that topic in your saved collection. Try asking about saved topics or add related notes/links first!"
         } else {
-          answer = `Based on your saved library, here is what I found:\n\n${matches.map((m, i) => `[${i + 1}] **${m.title}**\n${m.summary || 'No summary provided.'}`).join('\n\n')}\n\n*(Demo mode — connect AI backend for full generative responses)*`
-          sources = matches.map(m => ({ id: m.id, title: m.title, url: m.url, category: m.category }))
+          answer = `Based on your saved links and notes, here is what I found:\n\n${matchLinks.map((m, i) => `[L${i + 1}] **${m.title}**\n${m.summary || 'No summary provided.'}`).join('\n\n')}\n\n${matchNotes.map((n, i) => `[N${i + 1}] **${n.title}**\n${n.content || 'Empty note.'}`).join('\n\n')}\n\n*(Demo mode — connect AI backend for full generative responses)*`
+          sources = [
+            ...matchLinks.map(m => ({ id: m.id, title: m.title, url: m.url, category: m.category })),
+            ...matchNotes.map(n => ({ id: n.id, title: n.title, url: '#', category: n.folder || 'Note' }))
+          ]
         }
       } else {
         if (!AI_API_BASE) throw new Error('AI API not configured (VITE_AI_API_BASE)')
         const res = await fetch(`${AI_API_BASE}/chat`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ question: q, library: links }),
+          body: JSON.stringify({ question: q, library: links, notes }),
         })
         if (!res.ok) throw new Error(`AI Server error ${res.status}`)
         const data = await res.json()
@@ -118,7 +127,7 @@ export function ChatView({ links }: { links: LinkRecord[] }) {
   return (
     <div className="chat-container">
       {/* Messages Scroll Area */}
-      <div className="chat-scroll-area">
+      <div ref={scrollAreaRef} className="chat-scroll-area">
         <div className="chat-max-width">
           {messages.length === 0 ? (
             <div className="chat-empty-hero">
@@ -162,14 +171,14 @@ export function ChatView({ links }: { links: LinkRecord[] }) {
                       )}
                     </div>
 
-                    {msg.role === 'assistant' && msg.sources && msg.sources.length > 0 && (
+                    {msg.role === 'assistant' && msg.sources && msg.sources.filter(Boolean).length > 0 && (
                       <div className="chat-sources-block">
                         <div className="chat-sources-header">
                           <BookOpen size={12} />
                           <span>Sources from library:</span>
                         </div>
                         <div className="chat-sources-list">
-                          {msg.sources.map((s, j) => (
+                          {msg.sources.filter(Boolean).map((s, j) => (
                             <a
                               key={j}
                               href={s.url}
@@ -291,4 +300,3 @@ export function ChatView({ links }: { links: LinkRecord[] }) {
     </div>
   )
 }
-

@@ -35,7 +35,7 @@ export function AuthShowcase() {
         >
           {SHOWCASE_CARDS.map(({ title, icon: Icon, media }) => (
             <Card key={title} className="auth-swap-card">
-              <div className="auth-swap-card-header">
+              <div className="flex items-center gap-[14px] px-6 py-4 border-b border-[var(--border)] text-[17px] font-semibold text-[var(--text-main)] bg-[color-mix(in_srgb,var(--text-main)_4%,transparent)]">
                 <Icon size={20} strokeWidth={2.2} aria-hidden="true" />
                 <span>{title}</span>
               </div>
