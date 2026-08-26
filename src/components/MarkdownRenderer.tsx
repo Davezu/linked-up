@@ -3,16 +3,20 @@ import React from 'react'
 export interface SourceItem {
   id?: string
   title: string
-  url: string
+  url?: string
   category?: string
+  folder?: string
+  type?: 'link' | 'note'
 }
 
 interface MarkdownRendererProps {
   content: string
   sources?: SourceItem[]
+  onSelectView?: (view: 'library' | 'notes' | 'chat') => void
+  onOpenNoteFolder?: (folder?: string | null) => void
 }
 
-export function MarkdownRenderer({ content, sources }: MarkdownRendererProps) {
+export function MarkdownRenderer({ content, sources, onSelectView, onOpenNoteFolder }: MarkdownRendererProps) {
   const blocks = parseBlocks(content)
 
   return (
@@ -21,7 +25,7 @@ export function MarkdownRenderer({ content, sources }: MarkdownRendererProps) {
         switch (block.type) {
           case 'heading': {
             const level = block.level || 3
-            const headingContent = renderInline(block.content, sources)
+            const headingContent = renderInline(block.content, sources, onSelectView, onOpenNoteFolder)
             if (level === 1) return <h1 key={idx} className="chat-md-h chat-md-h1">{headingContent}</h1>
             if (level === 2) return <h2 key={idx} className="chat-md-h chat-md-h2">{headingContent}</h2>
             return <h3 key={idx} className="chat-md-h chat-md-h3">{headingContent}</h3>
@@ -34,7 +38,7 @@ export function MarkdownRenderer({ content, sources }: MarkdownRendererProps) {
                   <thead>
                     <tr>
                       {block.headers.map((h, i) => (
-                        <th key={i}>{renderInline(h, sources)}</th>
+                        <th key={i}>{renderInline(h, sources, onSelectView)}</th>
                       ))}
                     </tr>
                   </thead>
@@ -42,7 +46,7 @@ export function MarkdownRenderer({ content, sources }: MarkdownRendererProps) {
                     {block.rows.map((row, i) => (
                       <tr key={i}>
                         {row.map((cell, j) => (
-                          <td key={j}>{renderInline(cell, sources)}</td>
+                          <td key={j}>{renderInline(cell, sources, onSelectView)}</td>
                         ))}
                       </tr>
                     ))}
@@ -56,7 +60,7 @@ export function MarkdownRenderer({ content, sources }: MarkdownRendererProps) {
             return (
               <ul key={idx} className="chat-md-ul">
                 {block.items.map((item, i) => (
-                  <li key={i}>{renderInline(item, sources)}</li>
+                  <li key={i}>{renderInline(item, sources, onSelectView)}</li>
                 ))}
               </ul>
             )
@@ -66,7 +70,7 @@ export function MarkdownRenderer({ content, sources }: MarkdownRendererProps) {
             return (
               <ol key={idx} className="chat-md-ol">
                 {block.items.map((item, i) => (
-                  <li key={i}>{renderInline(item, sources)}</li>
+                  <li key={i}>{renderInline(item, sources, onSelectView)}</li>
                 ))}
               </ol>
             )
@@ -85,7 +89,7 @@ export function MarkdownRenderer({ content, sources }: MarkdownRendererProps) {
             if (!block.content.trim()) return null
             return (
               <p key={idx} className="chat-md-p">
-                {renderInline(block.content, sources)}
+                {renderInline(block.content, sources, onSelectView)}
               </p>
             )
           }
@@ -149,7 +153,6 @@ function parseBlocks(raw: string): Block[] {
         blocks.push(parsedTable)
         continue
       }
-      // If table parsing failed, fallback to normal processing
     }
 
     // Unordered List (- or * or +)
@@ -226,7 +229,6 @@ function parseTableLines(lines: string[]): { type: 'table'; headers: string[]; r
   const headers = cleanCells(lines[0])
 
   let startRowIdx = 1
-  // Check if line 2 is a separator like |---|---|
   if (lines[1].includes('---')) {
     startRowIdx = 2
   }
@@ -242,30 +244,69 @@ function parseTableLines(lines: string[]): { type: 'table'; headers: string[]; r
   return { type: 'table', headers, rows }
 }
 
-/**
- * Render inline formatting (bold, italic, code, citation badges [1] or 【1】)
- */
-function renderInline(text: string, sources?: SourceItem[]): React.ReactNode[] {
+function renderInline(
+  text: string,
+  sources?: SourceItem[],
+  onSelectView?: (view: 'library' | 'notes' | 'chat') => void,
+  onOpenNoteFolder?: (folder?: string | null) => void
+): React.ReactNode[] {
   if (!text) return []
 
-  // Tokenize string for citations, bold, italic, code
-  // Regex matches:
-  // 1. Citations: \[\d+\] or 【\d+】
-  // 2. Bold: \*\*.*?\*\*
-  // 3. Italic: \*.*?\* or _.*?_
-  // 4. Code: `.*?`
-  const regex = /(\[\d+\]|【\d+】|\*\*.*?\*\*|\*.*?\*|_.*?_|`.*?`)/g
+  const regex = /(\[\d+\]|【\d+】|\[L\d+\]|\[N\d+\]|\bN\d+\b|\bL\d+\b|\*\*.*?\*\*|\*.*?\*|_.*?_|`.*?`)/g
   const parts = text.split(regex)
 
   return parts.map((part, idx) => {
     if (!part) return null
 
-    // Citation badge [1] or 【1】
-    const citationMatch = part.match(/^(\[(\d+)\]|【(\d+)】)$/)
+    const citationMatch = part.match(/^(\[(\d+)\]|【(\d+)】|\[L(\d+)\]|\[N(\d+)\]|L(\d+)|N(\d+))$/i)
     if (citationMatch) {
-      const numVal = parseInt(citationMatch[2] || citationMatch[3], 10)
-      const source = sources && sources[numVal - 1]
-      if (source && source.url) {
+      const linkNumVal = citationMatch[4] || citationMatch[6]
+      const noteNumVal = citationMatch[5] || citationMatch[7]
+      const genericNumVal = citationMatch[2] || citationMatch[3]
+      const numVal = parseInt(genericNumVal || linkNumVal || noteNumVal || '1', 10)
+
+      let source: SourceItem | undefined
+      if ((part.toUpperCase().startsWith('[L') || part.toUpperCase().startsWith('L')) && linkNumVal) {
+        const linkNum = parseInt(linkNumVal, 10)
+        const linkSources = (sources || []).filter(s => s && s.type !== 'note' && s.url && s.url !== '#')
+        source = linkSources[linkNum - 1]
+      } else if ((part.toUpperCase().startsWith('[N') || part.toUpperCase().startsWith('N')) && noteNumVal) {
+        const noteNum = parseInt(noteNumVal, 10)
+        const noteSources = (sources || []).filter(s => s && (s.type === 'note' || !s.url || s.url === '#'))
+        source = noteSources[noteNum - 1]
+      } else {
+        source = sources && sources[numVal - 1]
+      }
+
+      const isNoteRef = Boolean(noteNumVal) || (source && (source.type === 'note' || !source.url || source.url === '#'))
+
+      if (isNoteRef) {
+        const rawFolder = source?.folder || source?.category
+        const realFolder = (rawFolder && rawFolder !== 'Note') ? rawFolder : null
+        const displayTitle = source?.title ? (source.title.length > 20 ? `${source.title.slice(0, 20)}…` : source.title) : part.toUpperCase()
+
+        return (
+          <button
+            key={idx}
+            type="button"
+            onClick={() => {
+              const targetNoteOrFolder = source?.title || source?.id || realFolder
+              if (targetNoteOrFolder && onOpenNoteFolder) {
+                onOpenNoteFolder(targetNoteOrFolder)
+              } else {
+                onSelectView?.('notes')
+              }
+            }}
+            className="chat-citation-pill cursor-pointer"
+            title={`View Note: ${source?.title || part}`}
+          >
+            <span className="chat-citation-dot" />
+            <span className="chat-citation-title">{displayTitle}</span>
+          </button>
+        )
+      }
+
+      if (source) {
         return (
           <a
             key={idx}
@@ -282,25 +323,23 @@ function renderInline(text: string, sources?: SourceItem[]): React.ReactNode[] {
           </a>
         )
       }
+
       return (
-        <span key={idx} className="chat-citation-pill" title={`Source [${numVal}]`}>
+        <span key={idx} className="chat-citation-pill" title={`Source ${part}`}>
           <span className="chat-citation-dot" />
-          <span className="chat-citation-title">Source {numVal}</span>
+          <span className="chat-citation-title">{part.replace(/[\[\]]/g, '')}</span>
         </span>
       )
     }
 
-    // Bold **text**
     if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
       return <strong key={idx}>{part.slice(2, -2)}</strong>
     }
 
-    // Italic *text* or _text_
     if ((part.startsWith('*') && part.endsWith('*') && part.length > 2) || (part.startsWith('_') && part.endsWith('_') && part.length > 2)) {
       return <em key={idx}>{part.slice(1, -1)}</em>
     }
 
-    // Inline code `text`
     if (part.startsWith('`') && part.endsWith('`') && part.length > 2) {
       return (
         <code key={idx} className="chat-md-inline-code">

@@ -145,8 +145,15 @@ export async function chatWithLibrary(question: string, library: any[] = [], not
     return cited ? { ...item, type: 'link' } : null
   })
   const noteSources = finalNotesSet.map((item: any, i: number) => {
-    const cited = new RegExp(`\\[N${i + 1}\\]`, 'i').test(answer)
-    return cited ? { id: item.id || `note-${i}`, title: item.title, content: item.content, category: item.folder || 'Note', type: 'note' } : null
+    const cited = new RegExp(`\\[N${i + 1}\\]|\\[${i + 1}\\]`, 'i').test(answer)
+    return cited ? {
+      id: item.id || `note-${i}`,
+      title: item.title,
+      content: item.content,
+      folder: item.folder || null,
+      category: item.folder || '',
+      type: 'note'
+    } : null
   })
 
   const sources = [...linkSources, ...noteSources].filter(Boolean)

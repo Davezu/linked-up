@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Bookmark, FileText, Sparkles } from 'lucide-react'
 import CardSwap, { Card } from './react-bits/CardSwap'
 
@@ -15,11 +16,11 @@ const SHOWCASE_CARDS = [
   {
     title: 'Ask AI',
     icon: Sparkles,
-    media: { type: 'video' as const, src: '/resources/vid1.mp4', alt: 'AI chat preview' },
+    media: { type: 'video' as const, src: '/resources/ai-vid.mp4', alt: 'AI chat preview' },
   },
 ]
 
-export function AuthShowcase() {
+export const AuthShowcase = memo(function AuthShowcase() {
   return (
     <aside className="auth-showcase" aria-hidden="true">
       <div className="auth-showcase-stage">
@@ -27,17 +28,17 @@ export function AuthShowcase() {
           className="card-swap-container--auth"
           width={800}
           height={530}
-          cardDistance={90}
-          verticalDistance={100}
+          cardDistance={60}
+          verticalDistance={70}
           delay={4500}
           pauseOnHover
           skewAmount={6}
         >
           {SHOWCASE_CARDS.map(({ title, icon: Icon, media }) => (
             <Card key={title} className="auth-swap-card">
-              <div className="flex items-center gap-[14px] px-6 py-4 border-b border-[var(--border)] text-[17px] font-semibold text-[var(--text-main)] bg-[color-mix(in_srgb,var(--text-main)_4%,transparent)]">
-                <Icon size={20} strokeWidth={2.2} aria-hidden="true" />
-                <span>{title}</span>
+              <div className="auth-swap-card-header">
+                <Icon size={16} strokeWidth={2} aria-hidden="true" className="text-white/80" />
+                <span className="text-[14px] font-medium text-white/90">{title}</span>
               </div>
               <div className="auth-swap-card-media">
                 {media.type === 'image' ? (
@@ -60,4 +61,4 @@ export function AuthShowcase() {
       </div>
     </aside>
   )
-}
+})

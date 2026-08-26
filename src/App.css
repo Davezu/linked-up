@@ -17,74 +17,53 @@
   display: none !important;
 }
 
-/* Custom scrollbar - noticeable contrast matching Image 2 */
-.main,
-.sidebar,
-.chat-scroll-area,
-.chat-messages,
-.app-content {
+/* Custom modern scrollbar system matching Image 2 */
+* {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.45) rgba(0, 0, 0, 0.15);
+  scrollbar-color: rgba(120, 120, 140, 0.45) transparent;
 }
 
-[data-theme="light"] .main,
-[data-theme="light"] .sidebar,
-[data-theme="light"] .chat-scroll-area,
-[data-theme="light"] .chat-messages,
-[data-theme="light"] .app-content {
-  scrollbar-color: rgba(0, 0, 0, 0.38) rgba(0, 0, 0, 0.06);
+[data-theme="light"] * {
+  scrollbar-color: rgba(100, 100, 120, 0.45) transparent;
 }
 
-.main::-webkit-scrollbar,
-.sidebar::-webkit-scrollbar,
-.chat-scroll-area::-webkit-scrollbar,
-.chat-messages::-webkit-scrollbar,
-.app-content::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+/* Remove native browser scrollbar arrow buttons */
+*::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
-.main::-webkit-scrollbar-track,
-.sidebar::-webkit-scrollbar-track,
-.chat-scroll-area::-webkit-scrollbar-track,
-.chat-messages::-webkit-scrollbar-track,
-.app-content::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.12);
+*::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
   border-radius: 9999px;
 }
 
-.main::-webkit-scrollbar-thumb,
-.sidebar::-webkit-scrollbar-thumb,
-.chat-scroll-area::-webkit-scrollbar-thumb,
-.chat-messages::-webkit-scrollbar-thumb,
-.app-content::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.45);
+*::-webkit-scrollbar-thumb {
+  background: rgba(120, 120, 140, 0.45);
   border-radius: 9999px;
   transition: background 0.2s ease;
 }
 
-[data-theme="light"] .main::-webkit-scrollbar-thumb,
-[data-theme="light"] .sidebar::-webkit-scrollbar-thumb,
-[data-theme="light"] .chat-scroll-area::-webkit-scrollbar-thumb,
-[data-theme="light"] .chat-messages::-webkit-scrollbar-thumb,
-[data-theme="light"] .app-content::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.38);
+[data-theme="light"] *::-webkit-scrollbar-thumb {
+  background: rgba(100, 100, 120, 0.45);
 }
 
-.main::-webkit-scrollbar-thumb:hover,
-.sidebar::-webkit-scrollbar-thumb:hover,
-.chat-scroll-area::-webkit-scrollbar-thumb:hover,
-.chat-messages::-webkit-scrollbar-thumb:hover,
-.app-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.75) !important;
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(140, 140, 170, 0.75) !important;
 }
 
-[data-theme="light"] .main::-webkit-scrollbar-thumb:hover,
-[data-theme="light"] .sidebar::-webkit-scrollbar-thumb:hover,
-[data-theme="light"] .chat-scroll-area::-webkit-scrollbar-thumb:hover,
-[data-theme="light"] .chat-messages::-webkit-scrollbar-thumb:hover,
-[data-theme="light"] .app-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.6) !important;
+[data-theme="light"] *::-webkit-scrollbar-thumb:hover {
+  background: rgba(80, 80, 100, 0.75) !important;
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 .tab-switch-badge--active {
@@ -2808,7 +2787,7 @@
 
 
 
-/* Auth Gate */
+/* Auth Gate — base */
 .auth-gate {
   position: relative;
   display: flex;
@@ -2818,10 +2797,82 @@
   min-height: 100dvh;
   width: 100%;
   padding: 0;
-  background: var(--color-bg);
   overflow: hidden;
+  transition: background 0.35s ease;
 }
 
+.auth-darkveil-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.auth-darkveil-bg canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+/* ── Dark mode ── */
+.auth-gate[data-auth-theme="dark"] {
+  background: #07060f;
+  --text-main: rgba(255,255,255,0.96);
+  --text-dim: rgba(255,255,255,0.65);
+  --text-muted: rgba(255,255,255,0.38);
+  --border: rgba(255,255,255,0.14);
+  --border-hover: rgba(255,255,255,0.28);
+  --bg-input: rgba(255,255,255,0.08);
+  --chip-bg-hover: rgba(255,255,255,0.14);
+}
+
+/* ── Light mode ── */
+.auth-gate[data-auth-theme="light"] {
+  background: #f5f4f8;
+  --text-main: #111018;
+  --text-dim: #555068;
+  --text-muted: #807c94;
+  --border: rgba(0, 0, 0, 0.12);
+  --border-hover: rgba(0, 0, 0, 0.25);
+  --bg-input: rgba(0, 0, 0, 0.05);
+  --chip-bg-hover: rgba(0, 0, 0, 0.09);
+}
+
+.auth-gate[data-auth-theme="light"] .auth-gate-panel--form {
+  background: linear-gradient(
+    to right,
+    rgba(245, 244, 248, 0.96) 60%,
+    rgba(245, 244, 248, 0.0) 100%
+  );
+}
+
+/* Theme toggle button */
+.auth-theme-toggle-btn {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  color: var(--text-main);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+  backdrop-filter: blur(8px);
+}
+
+.auth-theme-toggle-btn:hover {
+  background: var(--chip-bg-hover);
+  border-color: var(--border-hover);
+  transform: scale(1.08);
+}
+
+/* Keep old class in case it's referenced elsewhere */
 .auth-theme-toggle {
   position: fixed;
   top: 1.25rem;
@@ -2830,6 +2881,8 @@
 }
 
 .auth-gate-shell {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: minmax(320px, 1fr) minmax(400px, 1.15fr);
   width: 100%;
@@ -2840,21 +2893,30 @@
   border: none;
   border-radius: 0;
   overflow: hidden;
-  background: var(--color-bg);
+  background: transparent;
   box-shadow: none;
 }
 
 .auth-gate-panel--form {
   display: flex;
   flex-direction: column;
+  align-items: center;
   justify-content: center;
-  gap: 2.5rem;
-  padding: clamp(3rem, 7vw, 7rem);
-  background: var(--color-bg);
+  gap: 1.5rem;
+  padding: clamp(2rem, 5vw, 4.5rem);
+  background: linear-gradient(
+    to right,
+    rgba(7, 6, 15, 0.82) 60%,
+    rgba(7, 6, 15, 0.0) 100%
+  );
   color: var(--text-main);
-  max-width: 620px;
   width: 100%;
-  margin: 0 auto;
+  border-right: none;
+}
+
+.auth-gate-panel--form > * {
+  width: 100%;
+  max-width: 32rem;
 }
 
 .auth-hero {
@@ -2868,39 +2930,110 @@
   color: var(--text-muted);
 }
 
-.auth-form .auth-btn-primary,
-.auth-form .auth-btn-secondary {
+/* Auth Back Button */
+.auth-back-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 8px 18px !important;
+  height: 38px !important;
+  border-radius: 10px !important;
+  background: var(--bg-input) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-main) !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease !important;
+}
+
+.auth-back-btn:hover {
+  background: var(--chip-bg-hover) !important;
+  border-color: var(--border-hover) !important;
+}
+
+.auth-back-btn:focus-visible {
+  outline: 2px solid rgba(168, 85, 247, 0.6) !important;
+  outline-offset: 2px !important;
+}
+
+/* Auth Code Input */
+.auth-code-input {
+  width: 100% !important;
+  height: 50px !important;
+  padding: 0 18px !important;
+  border-radius: 10px !important;
+  background: var(--bg-input) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-main) !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+  box-sizing: border-box !important;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.auth-code-input::placeholder {
+  color: var(--text-muted) !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  font-family: 'Inter', system-ui, sans-serif !important;
+  font-weight: 400 !important;
+  opacity: 1 !important;
+}
+
+.auth-code-input:focus {
+  outline: none !important;
+  background: var(--bg-input) !important;
+  border-color: rgba(168, 85, 247, 0.75) !important;
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.25) !important;
+}
+
+.auth-btn-primary {
   width: 100%;
   min-height: 50px;
-  padding: 0 var(--space-4);
-  border-radius: var(--radius-md);
+  padding: 0 1.25rem;
+  border-radius: 12px;
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, filter 0.2s ease;
+  border: none;
+  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+}
+
+.auth-btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #6d28d9 0%, #9333ea 100%);
+  filter: brightness(1.05);
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.45);
 }
 
 .auth-btn-secondary {
+  width: 100%;
+  min-height: 50px;
+  padding: 0 1.25rem;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
   border: 1px solid var(--border);
   background: var(--bg-input);
   color: var(--text-main);
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 .auth-btn-secondary:hover:not(:disabled) {
   background: var(--chip-bg-hover);
-  border-color: color-mix(in srgb, var(--border) 55%, var(--text-main));
-}
-
-.auth-btn-primary {
-  border: none;
-  background: var(--gradient-accent);
-  color: #ffffff;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
-}
-
-.auth-btn-primary:hover:not(:disabled) {
-  background: var(--gradient-hover);
-  filter: brightness(1.04);
+  border-color: var(--border-hover);
 }
 
 .auth-form button:disabled,
@@ -2912,13 +3045,15 @@
 .auth-code-display {
   display: block;
   width: 100%;
-  padding: var(--space-3);
+  padding: 14px 20px;
   background: var(--bg-input);
   border: 1px solid var(--border-hover);
-  border-radius: var(--radius-md);
+  border-radius: 12px;
   color: var(--accent-crimson);
   font-family: ui-monospace, 'Cascadia Code', monospace;
-  font-size: 13px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
   word-break: break-all;
   text-align: left;
 }
@@ -2928,16 +3063,16 @@
   min-height: 100%;
   height: 100%;
   overflow: hidden;
-  background: var(--color-bg);
+  background: transparent;
   border-left: none;
 }
 
 [data-theme="light"] .auth-showcase {
-  background: var(--color-bg);
+  background: transparent;
 }
 
 [data-theme="dark"] .auth-showcase {
-  background: var(--color-bg);
+  background: transparent;
 }
 
 .auth-showcase-stage {
@@ -2951,8 +3086,19 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: var(--bg-card) !important;
-  border-color: var(--border) !important;
+  border-radius: 14px !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  background: #090814 !important;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.5) !important;
+}
+
+.auth-swap-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 

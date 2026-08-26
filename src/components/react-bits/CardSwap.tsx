@@ -121,7 +121,11 @@ export default function CardSwap({
 
     const total = refs.length
     refs.forEach((r, i) => {
-      if (r.current) placeNow(r.current, makeSlot(i, cardDistance, verticalDistance, total), skewAmount)
+      if (r.current) {
+        const slotIdx = order.current.indexOf(i)
+        const slot = makeSlot(slotIdx >= 0 ? slotIdx : i, cardDistance, verticalDistance, total)
+        placeNow(r.current, slot, skewAmount)
+      }
     })
 
     const swap = () => {
@@ -181,7 +185,6 @@ export default function CardSwap({
       })
     }
 
-    swap()
     intervalRef.current = window.setInterval(swap, delay)
 
     if (pauseOnHover && container.current) {

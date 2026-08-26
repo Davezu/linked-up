@@ -46,7 +46,7 @@ export interface FolderRecord {
 export interface ChatMessage {
   role: 'user' | 'assistant'
   content: string
-  sources?: { id: string; title: string; url: string; category: string }[]
+  sources?: { id?: string; title: string; url?: string; category?: string; folder?: string; type?: 'link' | 'note' }[]
   timestamp: Date
 }
 

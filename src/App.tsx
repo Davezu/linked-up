@@ -351,6 +351,13 @@ export default function App() {
   const isProcessing = loading
   const allCategories = Array.from(new Set(links.map(l => l.category))).sort()
 
+  const handleViewChange = (newView: AppView) => {
+    if (newView === 'library') {
+      setSearchQuery('')
+    }
+    setActiveView(newView)
+  }
+
   if (!authenticated) {
     return <AuthGate
       theme={theme}
@@ -363,7 +370,7 @@ export default function App() {
       {/* Top Navigation Bar */}
       <TopNav
         activeView={activeView}
-        onViewChange={v => { setActiveView(v) }}
+        onViewChange={handleViewChange}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         notesCount={notes.length}
@@ -392,7 +399,18 @@ export default function App() {
         {/* Main content */}
         <div className={`w-full flex-1 flex flex-col gap-3 pt-4 pb-2 min-w-0 min-h-0 overflow-hidden relative ${activeView === 'notes' || activeView === 'chat' ? '!gap-0 !p-0' : ''}`}>
           {activeView === 'chat' ? (
-            <ChatView links={links} notes={notes} />
+            <ChatView
+              links={links}
+              notes={notes}
+              onSelectView={handleViewChange}
+              onOpenNoteFolder={(folderOrNote) => {
+                if (folderOrNote) {
+                  setSearchQuery(folderOrNote)
+                  setActiveNoteFolder(null)
+                }
+                setActiveView('notes')
+              }}
+            />
           ) : activeView === 'notes' ? (
             <NotesView
               notes={notes}
@@ -542,7 +560,7 @@ export default function App() {
         )}
       </div>
 
-      <MobileBottomNav activeView={activeView} onViewChange={setActiveView} />
+      <MobileBottomNav activeView={activeView} onViewChange={handleViewChange} />
 
       {deleteTarget && (
         <DeleteConfirmDialog

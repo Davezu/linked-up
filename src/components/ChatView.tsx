@@ -41,7 +41,17 @@ const SUGGESTED_PROMPTS = [
   },
 ]
 
-export function ChatView({ links, notes = [] }: { links: LinkRecord[]; notes?: NoteRecord[] }) {
+export function ChatView({
+  links,
+  notes = [],
+  onSelectView,
+  onOpenNoteFolder,
+}: {
+  links: LinkRecord[]
+  notes?: NoteRecord[]
+  onSelectView?: (view: 'library' | 'notes' | 'chat') => void
+  onOpenNoteFolder?: (folder?: string | null) => void
+}) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const [chatLoading, setChatLoading] = useState(false)
@@ -147,7 +157,7 @@ export function ChatView({ links, notes = [] }: { links: LinkRecord[]; notes?: N
                     type="button"
                     className="chat-prompt-card"
                     onClick={() => handleSend(prompt)}
-                    disabled={links.length === 0}
+                    disabled={links.length === 0 && notes.length === 0}
                   >
                     <div className="chat-prompt-header">
                       <Icon size={16} className="chat-prompt-icon" />
@@ -165,7 +175,7 @@ export function ChatView({ links, notes = [] }: { links: LinkRecord[]; notes?: N
                   <div className={`chat-bubble chat-bubble--${msg.role}`}>
                     <div className="chat-bubble-body">
                       {msg.role === 'assistant' ? (
-                        <MarkdownRenderer content={msg.content} sources={msg.sources} />
+                        <MarkdownRenderer content={msg.content} sources={msg.sources} onSelectView={onSelectView} onOpenNoteFolder={onOpenNoteFolder} />
                       ) : (
                         <p className="chat-text-line">{msg.content}</p>
                       )}
@@ -178,18 +188,44 @@ export function ChatView({ links, notes = [] }: { links: LinkRecord[]; notes?: N
                           <span>Sources from library:</span>
                         </div>
                         <div className="chat-sources-list">
-                          {msg.sources.filter(Boolean).map((s, j) => (
-                            <a
-                              key={j}
-                              href={s.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="chat-source-card"
-                            >
-                              <span className="chat-source-title">{s.title}</span>
-                              <ExternalLink size={12} className="chat-source-ext" />
-                            </a>
-                          ))}
+                          {msg.sources.filter(Boolean).map((s, j) => {
+                            const isNote = s.type === 'note' || !s.url || s.url === '#' || s.url.startsWith('#')
+                            const realFolder = s.folder || (s.category && s.category !== 'Note' ? s.category : null)
+                            if (isNote) {
+                              return (
+                                <button
+                                  key={j}
+                                  type="button"
+                                  onClick={() => {
+                                    const targetNoteOrFolder = s.title || s.id || realFolder
+                                    if (targetNoteOrFolder && onOpenNoteFolder) {
+                                      onOpenNoteFolder(targetNoteOrFolder)
+                                    } else {
+                                      onSelectView?.('notes')
+                                    }
+                                  }}
+                                  className="chat-source-card cursor-pointer border-none"
+                                  title={`Open Note: ${s.title}`}
+                                >
+                                  <span className="chat-source-title">{s.title}</span>
+                                  <FileText size={12} className="chat-source-ext text-[var(--accent-crimson)]" />
+                                </button>
+                              )
+                            }
+                            return (
+                              <a
+                                key={j}
+                                href={s.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="chat-source-card"
+                                title={`Open Link: ${s.title}`}
+                              >
+                                <span className="chat-source-title">{s.title}</span>
+                                <ExternalLink size={12} className="chat-source-ext" />
+                              </a>
+                            )
+                          })}
                         </div>
                       </div>
                     )}

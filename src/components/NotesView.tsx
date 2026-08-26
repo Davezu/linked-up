@@ -353,13 +353,17 @@ export function NotesView({
   // Otherwise, display notes that are NOT inside a canvas folder!
   // Also always include a note currently being dragged or shrinking
   // so the user can see it during the drag and absorption animation.
+  const activeFolderObj = activeFolder
+    ? safeFolders.find(f => f.name.toLowerCase() === activeFolder.toLowerCase() || f.id === activeFolder)
+    : null
+
   const canvasDisplayNotes = (() => {
     const activeAnimId = draggingNoteId || shrinkingNoteId
     const activeAnimNote = activeAnimId
       ? safeNotes.find(n => n.id === activeAnimId) ?? null
       : null
-    const base = activeFolder
-      ? safeNotes.filter(n => n.folder === activeFolder)
+    const base = activeFolderObj
+      ? safeNotes.filter(n => n.folder === activeFolderObj.name || (activeFolderObj.noteIds && activeFolderObj.noteIds.includes(n.id)))
       : safeNotes.filter(n => !allCanvasFolderNoteIds.has(n.id))
     if (activeAnimNote && !base.some(n => n.id === activeAnimNote.id)) {
       return [...base, activeAnimNote]
@@ -374,8 +378,54 @@ export function NotesView({
     origY: number
   } | null>(null)
 
+  const lastPannedSearchRef = useRef<string | null>(null)
+  const lastPannedFolderRef = useRef<string | null>(null)
+
   // Persist folders whenever they change
   useEffect(() => { saveFolders(folders) }, [folders])
+
+  // Auto-open folder or note ONCE when activeFolder prop changes
+  useEffect(() => {
+    if (!activeFolder) {
+      lastPannedFolderRef.current = null
+      return
+    }
+
+    if (lastPannedFolderRef.current === activeFolder) return
+    lastPannedFolderRef.current = activeFolder
+
+    const targetLower = activeFolder.toLowerCase()
+
+    // 1. Check if activeFolder matches a folder name or ID
+    const matchingFolder = safeFolders.find(f =>
+      f.name.toLowerCase() === targetLower || f.id === activeFolder
+    )
+    if (matchingFolder) {
+      setOpenFolderId(matchingFolder.id)
+      setSelectedFolderId(matchingFolder.id)
+      panToFolder(matchingFolder)
+      return
+    }
+
+    // 2. Check if activeFolder matches a note title or note ID
+    const matchingNote = safeNotes.find(n =>
+      n.id === activeFolder ||
+      n.title.toLowerCase() === targetLower
+    )
+    if (matchingNote) {
+      const parentFolder = safeFolders.find(f =>
+        (f.noteIds && f.noteIds.includes(matchingNote.id)) ||
+        (matchingNote.folder && f.name.toLowerCase() === matchingNote.folder.toLowerCase())
+      )
+      if (parentFolder) {
+        setOpenFolderId(parentFolder.id)
+        setSelectedFolderId(parentFolder.id)
+        panToFolder(parentFolder)
+      }
+      setFlashNoteId(matchingNote.id)
+      setTimeout(() => setFlashNoteId(null), 3000)
+    }
+  }, [activeFolder, safeNotes, safeFolders])
 
   // Auto-dismiss toast notifications after 3.5 seconds
   useEffect(() => {
@@ -500,6 +550,11 @@ export function NotesView({
   function handleCanvasPointerDown(e: React.PointerEvent) {
     if ((e.target as HTMLElement).closest('.postit-note')) return
     if ((e.target as HTMLElement).closest('.canvas-folder-item')) return
+    if ((e.target as HTMLElement).closest('.folder-popover')) return
+
+    // Clicking empty canvas space deselects currently selected folder
+    setSelectedFolderId(null)
+
     if (activeTool === 'folder') return // folder placement handled by onClick
     if (e.button !== 0) return
 
@@ -700,10 +755,8 @@ export function NotesView({
   function handleFolderPointerDown(e: React.PointerEvent, folder: FolderRecord) {
     if (e.button !== 0) return
     if ((e.target as HTMLElement).closest('.folder-popover')) return
+    if ((e.target as HTMLElement).closest('.folder-cloud-callout')) return
     if ((e.target as HTMLElement).closest('.paper') && openFolderId === folder.id) return
-    e.stopPropagation()
-    const el = e.currentTarget as HTMLElement
-    el.setPointerCapture(e.pointerId)
 
     folderDragRef.current = {
       folderId: folder.id,
@@ -718,9 +771,10 @@ export function NotesView({
 
   function handleFolderClick(e: React.MouseEvent, folder: FolderRecord) {
     if ((e.target as HTMLElement).closest('.paper') && openFolderId === folder.id) return
+    if ((e.target as HTMLElement).closest('.folder-cloud-callout')) return
     e.stopPropagation()
     setSelectedFolderId(folder.id)
-    setOpenFolderId(prev => prev === folder.id ? null : folder.id)
+    setOpenFolderId(folder.id)
     setAddNoteDropdown(false)
   }
 
@@ -975,9 +1029,15 @@ export function NotesView({
   useEffect(() => {
     if (!searchQuery.trim()) {
       setHighlightId(null)
+      lastPannedSearchRef.current = null
       return
     }
-    const q = searchQuery.toLowerCase()
+
+    const trimmedQ = searchQuery.trim()
+    if (lastPannedSearchRef.current === trimmedQ) return
+    lastPannedSearchRef.current = trimmedQ
+
+    const q = trimmedQ.toLowerCase()
     const found = safeNotes.find(n =>
       (n.title && n.title.toLowerCase().includes(q)) ||
       (n.content && n.content.toLowerCase().includes(q)) ||
@@ -988,7 +1048,7 @@ export function NotesView({
     } else {
       setHighlightId(null)
     }
-  }, [searchQuery, safeNotes, panToNote])
+  }, [searchQuery, safeNotes])
 
   function handleZoomIn() {
     setZoom(prev => Math.min(MAX_ZOOM, prev + ZOOM_STEP))
@@ -1150,7 +1210,18 @@ export function NotesView({
                   isOpen={isOpen}
                   isDropTarget={isDropTarget}
                   isDropFull={isDropFull}
-                  onOpenChange={open => setOpenFolderId(open ? folder.id : null)}
+                  onOpenChange={open => {
+                    if (open) {
+                      setSelectedFolderId(folder.id)
+                      setOpenFolderId(folder.id)
+                    } else {
+                      setOpenFolderId(null)
+                    }
+                  }}
+                  onClick={() => {
+                    setSelectedFolderId(folder.id)
+                    setOpenFolderId(folder.id)
+                  }}
                   onItemClick={index => {
                     const targetNote = visibleFNotes[index]
                     if (targetNote) openNote(targetNote)
@@ -1209,7 +1280,7 @@ export function NotesView({
                 )}
 
                 {/* Speech bubble / Cloud callout action toolbar (Edit | Colors | Notes List | Delete) */}
-                {isOpen && (
+                {isSelected && (
                   <div
                     className="folder-cloud-callout"
                     onClick={e => e.stopPropagation()}
@@ -1712,10 +1783,10 @@ export function NotesView({
 
         </div>
 
-        {activeFolder && (
-          <span className="flex items-center gap-1 bg-[#5227FF] text-white px-2 py-0.5 rounded-full text-xs font-semibold">
-            <FolderIcon size={11} /> {activeFolder}
-            <button onClick={() => onSelectFolder?.(null)} className="ml-1 hover:text-amber-300">✕</button>
+        {activeFolderObj && (
+          <span className="flex items-center gap-1 bg-[#5227FF] text-white px-2.5 py-1 rounded-full text-xs font-semibold shadow-sm">
+            <FolderIcon size={12} /> {activeFolderObj.name}
+            <button onClick={() => onSelectFolder?.(null)} className="ml-1 hover:text-amber-300 transition-colors">✕</button>
           </span>
         )}
       </div>
