@@ -37,7 +37,7 @@ export const AuthShowcase = memo(function AuthShowcase() {
           {SHOWCASE_CARDS.map(({ title, icon: Icon, media }) => (
             <Card key={title} className="auth-swap-card">
               <div className="auth-swap-card-header">
-                <Icon size={16} strokeWidth={2} aria-hidden="true" className="text-white/80" />
+                <Icon size={13} strokeWidth={2} aria-hidden="true" className="text-white/80" />
                 <span className="text-[14px] font-medium text-white/90">{title}</span>
               </div>
               <div className="auth-swap-card-media">
