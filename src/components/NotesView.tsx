@@ -1567,7 +1567,6 @@ export function NotesView({
                 <div className="canvas-hamburger-list">
                   {safeFolders.map(folder => {
                     const folderNotes = safeNotes.filter(n => folder.noteIds.includes(n.id))
-                    const folderColor = folder.color || '#5227FF'
                     return (
                       <div key={folder.id} className="canvas-hamburger-row" onClick={() => { showFolderOnCanvas(folder); setHamburgerOpen(false) }}>
                         <FolderIcon size={15} strokeWidth={1.8} className="canvas-hamburger-item-icon canvas-hamburger-item-icon--folder" />
@@ -1744,7 +1743,6 @@ export function NotesView({
                 <div className="canvas-count-popover-list canvas-folder-popover-list">
                   {safeFolders.map(folder => {
                     const folderNotes = safeNotes.filter(n => folder.noteIds.includes(n.id))
-                    const folderColor = folder.color || '#5227FF'
                     return (
                       <div key={folder.id} className="canvas-count-popover-row canvas-folder-popover-row">
                         <div className="canvas-folder-popover-row-main">

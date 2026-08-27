@@ -17,8 +17,6 @@ import { LinkCard } from './components/LinkCard'
 import { LinkFan } from './components/LinkFan'
 import { NotesView } from './components/NotesView'
 import { TopNav } from './components/TopNav'
-import { CategoryFilterDropdown } from './components/CategoryFilterDropdown'
-import { FilterPillList } from './components/FilterPillList'
 
 import { hasToken, authHeaders, clearToken } from './lib/auth/tokenStorage'
 import { AuthGate } from './components/AuthGate'

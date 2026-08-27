@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { ExternalLink, Trash2 } from 'lucide-react'
 import type { LinkRecord } from '../types'
-import { getDomain, getFaviconUrl, getRelated, formatCarouselBadge } from '../lib/helpers'
+import { getDomain, getFaviconUrl, formatCarouselBadge } from '../lib/helpers'
 
 export function LinkCarouselCard({
   link,
-  allLinks,
+  allLinks: _allLinks,
   onDelete,
   onStatusChange,
   isActive,
@@ -20,8 +20,6 @@ export function LinkCarouselCard({
 }) {
   const domain = getDomain(link.url)
   const favicon = getFaviconUrl(link.url)
-  const related = getRelated(link, allLinks)
-  const [showRelated, setShowRelated] = useState(false)
   const [imageFailed, setImageFailed] = useState(false)
   const previewImage = link.image && !imageFailed ? link.image : null
 

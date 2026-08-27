@@ -1,21 +1,18 @@
-import { useState } from 'react'
 import { Trash2, Loader2 } from 'lucide-react'
 import type { LinkRecord } from '../types'
-import { getDomain, getFaviconUrl, getRelated } from '../lib/helpers'
+import { getDomain, getFaviconUrl } from '../lib/helpers'
 import { SpectacularButton } from './react-bits/SpectacularButton'
 
 export function LinkCard({
-  link, allLinks, onDelete, onStatusChange
+  link, allLinks: _allLinks, onDelete, onStatusChange
 }: {
   link: LinkRecord
   allLinks: LinkRecord[]
   onDelete: (id: string) => void
   onStatusChange: (id: string, status: string) => void
 }) {
-  const [showRelated, setShowRelated] = useState(false)
   const domain = getDomain(link.url)
   const favicon = getFaviconUrl(link.url)
-  const related = getRelated(link, allLinks)
   const isProcessing = link.processing === true
   const cardBlurb = (link.summary || link.description || '').trim()
 
