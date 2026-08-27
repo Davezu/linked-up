@@ -25,9 +25,23 @@ const app = express();
 app.set('trust proxy', 1);
 
 app.use(cors({
-  origin: process.env.FRONTEND_URL || '*',
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    const cleanOrigin = origin.replace(/\/+$/, '');
+    const allowedEnv = process.env.FRONTEND_URL ? process.env.FRONTEND_URL.replace(/\/+$/, '') : '';
+
+    if (!allowedEnv || allowedEnv === '*' || cleanOrigin === allowedEnv || cleanOrigin.endsWith('.vercel.app')) {
+      return callback(null, true);
+    }
+    return callback(null, true);
+  },
+  credentials: true,
 }));
 app.use(express.json({ limit: '1mb' }));
+
+app.get(['/', '/health'], (req, res) => {
+  res.json({ status: 'ok', message: 'AI Backend is running' });
+});
 
 interface OGMetaResult {
   title: string;
@@ -156,7 +170,7 @@ async function getOGMeta(url: string): Promise<OGMetaResult> {
   }
 }
 
-app.post('/api/classify', async (req, res) => {
+app.post(['/classify', '/api/classify'], async (req, res) => {
   try {
     const parsed = ClassifySchema.safeParse(req.body);
     if (!parsed.success) {
@@ -200,7 +214,7 @@ app.post('/api/classify', async (req, res) => {
 });
 
 // Fast endpoint: Returns title, description, and image URL immediately
-app.post('/api/metadata', async (req, res) => {
+app.post(['/metadata', '/api/metadata'], async (req, res) => {
   try {
     const { url } = req.body;
     if (!url) return res.status(400).json({ error: 'URL required' });
@@ -213,7 +227,7 @@ app.post('/api/metadata', async (req, res) => {
 });
 
 
-app.post('/api/chat', async (req, res) => {
+app.post(['/chat', '/api/chat'], async (req, res) => {
   try {
     const parsed = ChatSchema.safeParse(req.body);
 
