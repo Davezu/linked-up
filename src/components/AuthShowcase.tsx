@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { memo, useState } from 'react'
 import { Bookmark, FileText, Sparkles } from 'lucide-react'
 import CardSwap, { Card } from './react-bits/CardSwap'
 
@@ -21,6 +21,8 @@ const SHOWCASE_CARDS = [
 ]
 
 export const AuthShowcase = memo(function AuthShowcase() {
+  const [videoError, setVideoError] = useState(false)
+
   return (
     <aside className="auth-showcase" aria-hidden="true">
       <div className="auth-showcase-stage">
@@ -41,8 +43,13 @@ export const AuthShowcase = memo(function AuthShowcase() {
                 <span className="text-[14px] font-medium text-white/90">{title}</span>
               </div>
               <div className="auth-swap-card-media">
-                {media.type === 'image' ? (
-                  <img src={media.src} alt={media.alt} loading="lazy" draggable={false} />
+                {media.type === 'image' || (media.type === 'video' && videoError) ? (
+                  <img
+                    src={media.type === 'image' ? media.src : '/resources/img2.png'}
+                    alt={media.alt}
+                    loading="lazy"
+                    draggable={false}
+                  />
                 ) : (
                   <video
                     src={media.src}
@@ -52,6 +59,7 @@ export const AuthShowcase = memo(function AuthShowcase() {
                     playsInline
                     preload="metadata"
                     aria-label={media.alt}
+                    onError={() => setVideoError(true)}
                   />
                 )}
               </div>

@@ -14,9 +14,7 @@ folder-tool.md
 migration.md
 reactbits-cardswap.md
 bg.md
-vid1.mp4
-public/resources/ai-vid.mp4
-public/resources/*.mp4
+
 
 node_modules/
 backend/node_modules/
