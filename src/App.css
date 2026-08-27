@@ -3192,7 +3192,7 @@
 .auth-swap-card-media {
   flex: 1;
   min-height: 0;
-  background: var(--color-base);
+  background: #090814 !important;
 }
 
 .auth-swap-card-media img,

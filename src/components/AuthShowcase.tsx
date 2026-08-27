@@ -16,7 +16,7 @@ const SHOWCASE_CARDS = [
   {
     title: 'Ask AI',
     icon: Sparkles,
-    media: { type: 'video' as const, src: '/resources/ai-vid.mp4', alt: 'AI chat preview' },
+    media: { type: 'image' as const, src: '/resources/img3.png', alt: 'Ask AI assistant preview' },
   },
 ]
 
