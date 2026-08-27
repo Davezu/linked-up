@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/api/:path*",
+      "destination": "https://0cronx78oe.execute-api.ap-southeast-1.amazonaws.com/default/link-organizer/:path*"
+    },
+    {
       "source": "/((?!api|resources|logo.svg|favicon.svg|assets).*)",
       "destination": "/index.html"
     }
