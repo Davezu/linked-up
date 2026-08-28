@@ -2723,8 +2723,23 @@
 }
 
 @media (max-width: 768px) {
+  .chat-container {
+    height: 100%;
+    max-height: calc(100dvh - 64px - env(safe-area-inset-bottom, 0px));
+  }
+
   .chat-input-dock {
-    padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important;
+    position: sticky;
+    bottom: 0;
+    z-index: 25;
+    background: var(--color-bg);
+    padding: 0.5rem 0.85rem calc(76px + env(safe-area-inset-bottom, 0px)) 0.85rem !important;
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.18);
+  }
+
+  .chat-footer-note {
+    display: none;
   }
 }
 
