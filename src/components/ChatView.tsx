@@ -312,7 +312,6 @@ export function ChatView({
               onChange={e => setInput(e.target.value)}
               onKeyDown={handleChatKey}
               disabled={chatLoading || links.length === 0}
-              autoFocus
             />
             <button
               type="button"

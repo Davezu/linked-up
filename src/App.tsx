@@ -421,7 +421,7 @@ export default function App() {
           ) : (
             <>
               {/* URL Input zone */}
-              <section className="flex-shrink-0 input-zone" aria-label="Add a new link">
+              <section className="flex-shrink-0 input-zone max-md:px-4" aria-label="Add a new link">
                 <label htmlFor="url-input" className="hidden input-label">Paste a link</label>
                 <div className={`input-row${error ? ' input-row--error' : ''}`}>
                   <input
@@ -434,7 +434,6 @@ export default function App() {
                     onChange={e => { setUrl(e.target.value); setError(null); setNotice(null) }}
                     onKeyDown={handleKeyDown}
                     disabled={isProcessing}
-                    autoFocus
                     autoComplete="off"
                     spellCheck={false}
                     aria-invalid={error ? true : undefined}
@@ -484,7 +483,7 @@ export default function App() {
               </section>
 
               {/* Link list */}
-              <main className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-6 px-6 max-md:pb-32">
+              <main className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-6 px-6 max-md:pb-40">
                 {filteredLinks.length === 0 && !isProcessing ? (
                   <div className="text-center py-16 max-md:py-4 flex flex-col items-center gap-3">
                     <div className="text-[40px] max-md:text-[32px] opacity-20 mb-2 max-md:mb-0">{activeFilter !== 'All' ? '🔍' : '📭'}</div>
@@ -505,7 +504,7 @@ export default function App() {
                     )}
                   </div>
                 ) : activeFilter !== 'All' ? (
-                  <div className="flex flex-col gap-4 w-full max-md:pb-32">
+                  <div className="flex flex-col gap-4 w-full max-md:pb-40">
                     <div className="flex items-center gap-[10px] px-[2px] pb-[10px] mb-[4px] text-[14px] max-md:text-[16px] before:content-[''] before:shrink-0 before:w-[3px] before:h-[1.25em] before:rounded-full before:bg-[var(--gradient-accent)] before:opacity-90">
                       <span className="font-[family-name:var(--font-display)] text-[14px] font-semibold text-[var(--text-main)] tracking-[-0.01em]">{activeFilter}</span>
                       <span className="text-[11px] bg-[var(--badge-bg)] text-[var(--text-muted)] px-2 py-[2px] rounded-[var(--radius-xl)] font-semibold">{filteredLinks.length}</span>
@@ -523,7 +522,7 @@ export default function App() {
                     </div>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 content-start max-md:pb-32 max-md:gap-10">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 content-start max-md:pb-40 max-md:gap-10">
                     {grouped.map(group => (
                       <section key={group.name} className="flex flex-col gap-0.5 max-md:gap-3" aria-label={group.name}>
                         <div className="flex items-center gap-[10px] px-[2px] pb-[10px] mb-[4px] text-[14px] max-md:text-[16px] before:content-[''] before:shrink-0 before:w-[3px] before:h-[1.25em] before:rounded-full before:bg-[var(--gradient-accent)] before:opacity-90">
