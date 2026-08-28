@@ -5191,7 +5191,7 @@
   width: 100%;
   max-width: 540px;
   min-height: 490px;
-  max-height: 80vh;
+  max-height: 80dvh;
   border-radius: 2px 2px 8px 2px;
   display: flex;
   flex-direction: column;
@@ -5203,6 +5203,22 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.7);
   animation: modalSlideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: visible;
+}
+
+@media (max-width: 768px) {
+  .note-modal-overlay {
+    align-items: flex-start;
+    padding: 0.75rem;
+    padding-top: 1rem;
+  }
+
+  .note-modal-paper {
+    min-height: unset;
+    max-height: 90dvh;
+    margin-top: 0;
+    padding: 1.25rem 1rem 1rem 1.25rem;
+    overflow-y: auto;
+  }
 }
 
 /* Subtle Notebook Ruled Lines on paper body */

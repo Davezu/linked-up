@@ -164,6 +164,25 @@ export function NotesView({
   const [foldersMenuOpen, setFoldersMenuOpen] = useState(false)
   const [hamburgerOpen, setHamburgerOpen] = useState(false)
   const [flashNoteId, setFlashNoteId] = useState<string | null>(null)
+
+  // Track visual viewport (iOS keyboard awareness)
+  const [vvHeight, setVvHeight] = useState<number | null>(null)
+  const [vvOffsetTop, setVvOffsetTop] = useState<number>(0)
+  useEffect(() => {
+    const vv = window.visualViewport
+    if (!vv) return
+    function update() {
+      setVvHeight(vv!.height)
+      setVvOffsetTop(vv!.offsetTop)
+    }
+    update()
+    vv.addEventListener('resize', update)
+    vv.addEventListener('scroll', update)
+    return () => {
+      vv.removeEventListener('resize', update)
+      vv.removeEventListener('scroll', update)
+    }
+  }, [])
   const hoveredFolderIdRef = useRef<string | null>(null)
   const [_addNoteDropdown, setAddNoteDropdown] = useState(false)
   const renameInputRef = useRef<HTMLInputElement>(null)
@@ -1844,7 +1863,18 @@ export function NotesView({
 
       {/* ── Note Click / Editor Modal ── */}
       {editingId && (
-        <div className="note-modal-overlay" onClick={closeEditor} role="dialog" aria-modal="true" aria-label="Note editor">
+        <div
+          className="note-modal-overlay"
+          onClick={closeEditor}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Note editor"
+          style={vvHeight != null ? {
+            top: vvOffsetTop,
+            height: vvHeight,
+            bottom: 'auto',
+          } : undefined}
+        >
           <div
             className="note-modal-paper"
             style={{
