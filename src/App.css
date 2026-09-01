@@ -5207,15 +5207,15 @@
   .note-modal-overlay {
     align-items: flex-start;
     padding: 0.75rem;
-    padding-top: 1rem;
+    padding-top: 2.25rem;
   }
 
   .note-modal-paper {
     min-height: unset;
-    max-height: 90dvh;
-    margin-top: 0;
+    max-height: 85dvh;
+    margin-top: 16px;
     padding: 1.25rem 1rem 1rem 1.25rem;
-    overflow-y: auto;
+    overflow: visible;
   }
 }
 
