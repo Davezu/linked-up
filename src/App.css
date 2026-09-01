@@ -869,16 +869,12 @@
   --fan-spread: 35px;
   position: relative;
   display: flex;
-  flex: 1;
-  /* grow to fill remaining space in .main */
-  min-height: 0;
-  /* required so flex children can shrink/grow correctly */
+  width: 100%;
   flex-direction: column;
   align-items: center;
-  justify-content: stretch;
-  /* stretch fan to fill, not just center content */
+  justify-content: flex-start;
   gap: 0;
-  padding: 0 calc(var(--fan-spread) + 10px) 24px;
+  padding: 0 calc(var(--fan-spread) + 10px) 28px;
   zoom: var(--fan-scale);
 }
 
@@ -898,21 +894,23 @@
   .link-fan-wrap {
     --fan-scale: 0.95;
     --fan-spread: 24px;
-    padding: 0 calc(var(--fan-spread) + 4px) 20px;
+    padding: 0 calc(var(--fan-spread) + 4px) 24px;
   }
 }
 
 .link-fan {
   position: relative;
   width: min(100%, 340px);
-  flex: 1;
   display: grid;
+  align-items: start;
+  min-height: fit-content;
 }
 
 .link-fan-card {
   grid-area: 1 / 1;
   width: 100%;
-  height: 100%;
+  height: auto;
+  min-height: 100%;
   cursor: pointer;
   user-select: none;
   will-change: transform, opacity;
@@ -5433,13 +5431,16 @@
 }
 
 /* Footer matching Image 2 */
+/* Footer matching Image 2 */
 .note-modal-paper-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.6rem;
   padding-top: 0.75rem;
   border-top: 1px solid rgba(0, 0, 0, 0.08);
   margin-top: auto;
+  flex-wrap: wrap;
 }
 
 .note-modal-save-error {
@@ -5459,6 +5460,8 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
 }
 
 .note-color-dot {
@@ -5469,6 +5472,7 @@
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
   outline: none;
+  flex-shrink: 0;
 }
 
 .note-color-dot:hover {
@@ -5485,7 +5489,10 @@
 .note-modal-footer-right {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  margin-left: auto;
 }
 
 .note-modal-char-count {
@@ -5493,6 +5500,8 @@
   font-size: 0.6875rem;
   font-weight: 500;
   color: rgba(0, 0, 0, 0.45);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .note-modal-char-count--limit {
@@ -5504,6 +5513,8 @@
   font-size: 1.05rem;
   font-style: italic;
   color: #4a4a58;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .note-modal-paper-delete-btn {
@@ -5517,6 +5528,7 @@
   align-items: center;
   justify-content: center;
   transition: all 0.15s ease;
+  flex-shrink: 0;
 }
 
 .note-modal-paper-delete-btn:hover {
@@ -5539,11 +5551,36 @@
   cursor: pointer;
   transition: all 0.15s ease;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .note-modal-paper-save-btn:hover:not(:disabled) {
   background: #333342;
   transform: translateY(-1px);
+}
+
+@media (max-width: 640px) {
+  .note-modal-paper-footer {
+    gap: 0.5rem;
+  }
+
+  .note-modal-colors {
+    gap: 0.35rem;
+  }
+
+  .note-color-dot {
+    width: 20px;
+    height: 20px;
+  }
+
+  .note-modal-footer-right {
+    gap: 0.4rem;
+  }
+
+  .note-modal-paper-date {
+    font-size: 0.9rem;
+  }
 }
 
 /* Note Delete Modal */
