@@ -13,7 +13,7 @@ export function normalizeCategory(category: string): string {
 export const DELETED_IDS_KEY = 'link-organizer-deleted-ids'
 const TOMBSTONE_TTL_MS = 7 * 24 * 60 * 60 * 1000 // 7 days
 
-// Fix 2: Safe localStorage.setItem — swallows QuotaExceededError gracefully
+/* Safe localStorage.setItem - swallows QuotaExceededError gracefully */
 function trySet(key: string, value: string): void {
   try {
     localStorage.setItem(key, value)
@@ -26,7 +26,7 @@ function trySet(key: string, value: string): void {
   }
 }
 
-// Fix 1: Tombstones stored as { [id]: timestamp } — entries expire after 7 days
+/* Tombstones stored as { [id]: timestamp } — entries expire after 7 days */
 function readTombstoneMap(): Record<string, number> {
   try {
     const raw = JSON.parse(localStorage.getItem(DELETED_IDS_KEY) ?? '{}')
@@ -87,7 +87,7 @@ export function saveLinks(links: LinkRecord[]) {
   trySet(STORAGE_KEY, JSON.stringify(links.map(l => ({ ...l, isNew: false }))))
 }
 
-// ── Notes local cache (with tombstone filtering) ─────────────────────────
+// Notes local cache (with tombstone filtering)
 export function loadNotes(): NoteRecord[] {
   try {
     const deleted = getDeletedIds()
@@ -108,7 +108,7 @@ export function saveNotes(notes: NoteRecord[]) {
   trySet(NOTES_STORAGE_KEY, JSON.stringify(notes.map(n => ({ ...n, isNew: false }))))
 }
 
-// ── Canvas Folders local persistence ─────────────────────────────────────
+// Canvas Folders local persistence 
 export function loadFolders(): FolderRecord[] {
   try {
     const raw = JSON.parse(localStorage.getItem(FOLDERS_STORAGE_KEY) ?? '[]')
