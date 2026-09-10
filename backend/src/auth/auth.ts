@@ -7,7 +7,7 @@ import { DynamoDBDocumentClient, PutCommand, GetCommand } from '@aws-sdk/lib-dyn
 
 const client = new DynamoDBClient({});
 const dynamo = DynamoDBDocumentClient.from(client);
-const ACCOUNTS_TABLE = process.env.ACCOUNTS_TABLE || 'link-organizer-accounts';
+const ACCOUNTS_TABLE = process.env.ACCOUNTS_TABLE;
 const JWT_SECRET = process.env.JWT_SECRET as string;
 const JWT_EXPIRY = (process.env.JWT_EXPIRY || '30d') as SignOptions['expiresIn'];
 
