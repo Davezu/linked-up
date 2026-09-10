@@ -56,16 +56,12 @@ export async function createLink(accountId: string, body: string | null) {
     return { success: true, record }
 }
 
-/* Hard-delete link — permanently removes from DynamoDB.
- * Idempotent: succeeds even if already deleted.
- * NOTE: Soft delete (deletedAt + TTL) is reserved for the future Notes feature. */
+/* Hard-delete link - permanently removes from db */
 export async function deleteLink(accountId: string, body: string | null, queryId?: string) {
     let id: string | undefined
     try {
         id = parseBody<{ id?: string }>(body).id
-    } catch {
-        // body may legitimately be empty when id is passed as a query param
-    }
+    } catch {}
     id ??= queryId
 
     if (!id) throw new HttpError(400, 'Missing id')
