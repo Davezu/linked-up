@@ -16,8 +16,6 @@ export async function handleLogin(body: string | null, sourceIp: string) {
     try {
         return await loginWithCode(loginCode)
     } catch {
-        // Never leak *why* it failed (wrong code vs no such account) — both
-        // read the same to a caller, which avoids account enumeration.
         throw new HttpError(401, 'Invalid login code')
     }
 }
