@@ -16,7 +16,7 @@ export function formatCarouselBadge(text: string): string {
   return text.replace(/[^\w\s#&]/g, '').trim().toUpperCase() || 'LINK'
 }
 
-// ── Related content (shared category / tags) ────────────────────────────
+// Related content (shared category / tags)
 export function getRelated(link: LinkRecord, allLinks: LinkRecord[]): LinkRecord[] {
   return allLinks
     .filter(l => l.id !== link.id)
