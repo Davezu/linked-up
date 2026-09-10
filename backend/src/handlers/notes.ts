@@ -4,9 +4,6 @@ import { dynamo, LINKS_TABLE } from '../services/dynamo'
 import { HttpError } from '../utils/errors'
 import { parseBody } from '../utils/response'
 
-// Reuses LINKS_TABLE — same DynamoDB table, NOTE# prefix distinguishes notes from LINK# items.
-// Think of LINKS_TABLE as "ITEMS_TABLE"; rename pending a future cleanup pass.
-
 const noteKey = (id: string) => `NOTE#${id}`
 const MAX_CONTENT_LENGTH = 20000
 
@@ -124,9 +121,7 @@ export async function deleteNote(accountId: string, body: string | null, queryId
     let id: string | undefined
     try {
         id = parseBody<{ id?: string }>(body).id
-    } catch {
-        // body may be empty when id comes as a query param
-    }
+    } catch {}
     id ??= queryId
 
     if (!id) throw new HttpError(400, 'Missing id')
